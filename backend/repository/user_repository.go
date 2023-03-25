@@ -3,6 +3,7 @@ package repository
 import (
 	"context"
 	"log"
+	"fmt"
 
 	"gorm.io/gorm"
 
@@ -21,7 +22,16 @@ type pGUserRepository struct {
 
 // NewUserRepository is a factory for initializing User Repositories
 func NewUserRepository(db *sqlx.DB) model.UserRepository {
-	dsn := "host=localhost user=gorm password=gorm dbname=gorm port=9920 sslmode=disable TimeZone=Europe/Lisbon"
+	// load env variables
+	pgHost := os.Getenv("POSTGRES_HOST")
+	pgPort := os.Getenv("POSTGRES_PORT")
+	pgUser := os.Getenv("POSTGRES_USER")
+	pgPassword := os.Getenv("POSTGRES_PASSWORD")
+	pgDB := os.Getenv("POSTGRES_DB")
+	pgSSL := os.Getenv("POSTGRES_SSL")
+
+	pgConnString := fmt.Sprintf("host=%s port=%s user=%s password=%s dbname=%s sslmode=%s", pgHost, pgPort, pgUser, pgPassword, pgDB, pgSSL)
+	dsn := "host=postgres user=admin password=admin dbname=di port=5432 sslmode=disable TimeZone=Europe/Lisbon"
 	db, err := gorm.Open()
 	if err != nil {
 		panic("failed to connect database")
