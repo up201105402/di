@@ -1,12 +1,26 @@
 package main
 
 import (
+	"di/util"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
 )
 
 var db = make(map[string]string)
+
+func main() {
+	r := setupRouter()
+	dbConnection := util.ConnectToDB()
+	error := util.CreateOrUpdateSchema(dbConnection)
+
+	if error != nil {
+
+	}
+
+	// Listen and Server in 0.0.0.0:8001
+	r.Run(":8001")
+}
 
 func setupRouter() *gin.Engine {
 	// Disable Console Color
@@ -74,10 +88,4 @@ func setupRouter() *gin.Engine {
 	})
 
 	return r
-}
-
-func main() {
-	r := setupRouter()
-	// Listen and Server in 0.0.0.0:8001
-	r.Run(":8001")
 }
