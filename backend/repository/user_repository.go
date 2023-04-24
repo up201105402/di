@@ -12,7 +12,7 @@ type userRepository struct {
 	DB *gorm.DB
 }
 
-// NewUserRepository is a User Repositories factory
+// NewUserRepository is a User Repository factory
 func NewUserRepository(gormDB *gorm.DB) model.UserRepository {
 	return &userRepository{
 		DB: gormDB,
@@ -61,7 +61,7 @@ func (repo *userRepository) FindByID(id uint) (*model.User, error) {
 func (repo *userRepository) FindByUsername(username string) (*model.User, error) {
 	var user = model.User{Username: username}
 
-	result := repo.DB.First(&user)
+	result := repo.DB.First(&user, "username = ?", username)
 
 	if errors.Is(result.Error, gorm.ErrRecordNotFound) {
 		log.Printf("Failed to get user with username: %v. Reason: %v\n", username, result.Error)
