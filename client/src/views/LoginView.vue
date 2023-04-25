@@ -11,6 +11,7 @@
   import BaseButton from "@/components/BaseButton.vue";
   import BaseButtons from "@/components/BaseButtons.vue";
   import LayoutGuest from "@/layouts/LayoutGuest.vue";
+  import SectionTitle from "@/components/SectionTitle.vue";
   import CardBoxComponentTitle from "@/components/CardBoxComponentTitle.vue";
   import ErrorModal from '@/components/ErrorModal.vue';
   import { storeToRefs } from "pinia";

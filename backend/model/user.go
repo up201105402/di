@@ -12,3 +12,9 @@ type User struct {
 	Avatar        string `json:"avatar"`
 	Password      string `json:"password"`
 }
+
+// it is used for validation and json marshalling
+type UserReq struct {
+	Username string `json:"username" binding:"required,gte=5,lte=30"`
+	Password string `json:"password" binding:"required,gte=5,lte=30"`
+}

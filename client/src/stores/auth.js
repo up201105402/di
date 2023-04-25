@@ -12,6 +12,7 @@ export const useAuthStore = defineStore("auth", {
     userName: null,
     userEmail: null,
     userAvatar: null,
+    idToken: null,
 
     error: null,
 
@@ -24,7 +25,7 @@ export const useAuthStore = defineStore("auth", {
 
     onAuthRoute: '/',
     requireAuthRoute: '/login',
-    publicRoutePaths: ['/signup']
+    publicRoutePaths: ['/signup', '/login']
   }),
   actions: {
     setUser(payload) {
@@ -56,14 +57,14 @@ export const useAuthStore = defineStore("auth", {
         const { data, error } = await authenticate(username, password, '/api/user/login')
 
         if (error) {
-            // this.idToken = data.idToken;
+            this.idToken = data.idToken;
             this.error = error;
             return;
         }
 
         this.userName = username;
         this.error = null;
-        // this.idToken = data.idToken;
+        this.idToken = data.idToken;
         router.push(redirectURL);
     },
     
@@ -71,14 +72,13 @@ export const useAuthStore = defineStore("auth", {
         const { data, error } = await authenticate(username, password, '/api/user/signup');
 
         if (error) {
-            // this.idToken = data.idToken;
             this.error = error;
             return;
         }
 
         this.userName = username;
         this.error = null;
-        // this.idToken = data.idToken;
+        this.idToken = data.idToken;
         router.push(redirectURL);
     },
 
@@ -92,8 +92,9 @@ export const useAuthStore = defineStore("auth", {
         });
     
         if (error) {
-            state.error = error;
-            state.isLoading = false;
+            // state.error = error;
+            // state.isLoading = false;
+            this.error = error;
             return;
         }
     

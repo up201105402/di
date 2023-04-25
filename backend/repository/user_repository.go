@@ -8,19 +8,19 @@ import (
 	"gorm.io/gorm"
 )
 
-type userRepository struct {
+type userRepositoryImpl struct {
 	DB *gorm.DB
 }
 
 // NewUserRepository is a User Repository factory
-func NewUserRepository(gormDB *gorm.DB) model.UserRepository {
-	return &userRepository{
+func NewUserRepository(gormDB *gorm.DB) UserRepository {
+	return &userRepositoryImpl{
 		DB: gormDB,
 	}
 }
 
 // Creates a new user
-func (repo *userRepository) Create(user *model.User) error {
+func (repo *userRepositoryImpl) Create(user *model.User) error {
 	result := repo.DB.Create(user)
 
 	if result.Error != nil {
@@ -32,7 +32,7 @@ func (repo *userRepository) Create(user *model.User) error {
 }
 
 // Updates a user's properties
-func (repo *userRepository) Update(user *model.User) error {
+func (repo *userRepositoryImpl) Update(user *model.User) error {
 	result := repo.DB.Save(user)
 
 	if errors.Is(result.Error, gorm.ErrRecordNotFound) {
@@ -43,7 +43,7 @@ func (repo *userRepository) Update(user *model.User) error {
 }
 
 // FindByID fetches a user by id
-func (repo *userRepository) FindByID(id uint) (*model.User, error) {
+func (repo *userRepositoryImpl) FindByID(id uint) (*model.User, error) {
 
 	var user = model.User{}
 
@@ -58,7 +58,7 @@ func (repo *userRepository) FindByID(id uint) (*model.User, error) {
 }
 
 // FindByUsername fetches a user by username
-func (repo *userRepository) FindByUsername(username string) (*model.User, error) {
+func (repo *userRepositoryImpl) FindByUsername(username string) (*model.User, error) {
 	var user = model.User{Username: username}
 
 	result := repo.DB.First(&user, "username = ?", username)

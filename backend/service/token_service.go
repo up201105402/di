@@ -4,15 +4,18 @@ import (
 	"context"
 	"crypto/rsa"
 	"di/model"
+	"di/repository"
 	"di/util/errors"
 	"fmt"
+	"io/ioutil"
 	"log"
+	"os"
+	"strconv"
 	"time"
 
 	"github.com/dgrijalva/jwt-go"
+	"github.com/go-redis/redis/v8"
 	"github.com/google/uuid"
-	// "github.com/jacobsngoodwin/memrizr/account/model"
-	// "github.com/jacobsngoodwin/memrizr/account/model/apperrors"
 )
 
 // tokenService used for injecting an implementation of TokenRepository
@@ -27,10 +30,10 @@ type tokenService struct {
 	RefreshExpirationSecs int64
 }
 
-// TSConfig will hold repositories that will eventually be injected into this
+// TokenServiceConfig will hold repositories that will eventually be injected into this
 // this service layer
-type TSConfig struct {
-	TokenRepository       model.TokenRepository
+type TokenServiceConfig struct {
+	RedisClient           *redis.Client
 	PrivKey               *rsa.PrivateKey
 	PubKey                *rsa.PublicKey
 	RefreshSecret         string
@@ -44,32 +47,87 @@ type idTokenCustomClaims struct {
 	jwt.StandardClaims
 }
 
+func GetTokenServiceConfig(redisClient *redis.Client) (*TokenServiceConfig, error) {
+
+	// privKeyFile := os.Getenv("./jwt/rsa_private.pem")
+	priv, err := ioutil.ReadFile("./jwt/rsa_private.pem")
+
+	if err != nil {
+		return nil, fmt.Errorf("Could not read private key pem file: %w", err)
+	}
+
+	privKey, err := jwt.ParseRSAPrivateKeyFromPEM(priv)
+
+	if err != nil {
+		return nil, fmt.Errorf("Could not parse private key: %w", err)
+	}
+
+	// pubKeyFile := os.Getenv("./jwt/rsa_public.pem")
+	pub, err := ioutil.ReadFile("./jwt/rsa_public.pem")
+
+	if err != nil {
+		return nil, fmt.Errorf("Could not read public key pem file: %w", err)
+	}
+
+	pubKey, err := jwt.ParseRSAPublicKeyFromPEM(pub)
+
+	if err != nil {
+		return nil, fmt.Errorf("Could not parse public key: %w", err)
+	}
+
+	// load refresh token secret from env variable
+	tokenRefreshSecret := os.Getenv("TOKEN_REFRESH_SECRET")
+
+	// load expiration lengths from env variables and parse as int
+	idTokenDuration := os.Getenv("ID_TOKEN_DURATION")
+	refreshTokenDuration := os.Getenv("REFRESH_TOKEN_DURATION")
+
+	idExp, err := strconv.ParseInt(idTokenDuration, 0, 64)
+	if err != nil {
+		return nil, fmt.Errorf("Could not parse ID_TOKEN_EXP as int: %w", err)
+	}
+
+	refreshExp, err := strconv.ParseInt(refreshTokenDuration, 0, 64)
+	if err != nil {
+		return nil, fmt.Errorf("Could not parse REFRESH_TOKEN_EXP as int: %w", err)
+	}
+
+	return &TokenServiceConfig{
+		RedisClient:           redisClient,
+		PrivKey:               privKey,
+		PubKey:                pubKey,
+		RefreshSecret:         tokenRefreshSecret,
+		IDExpirationSecs:      idExp,
+		RefreshExpirationSecs: refreshExp,
+	}, nil
+}
+
 // NewTokenService is a factory function for
 // initializing a UserService with its repository layer dependencies
-func NewTokenService(c *TSConfig) model.TokenService {
+func NewTokenService(config *TokenServiceConfig) TokenService {
 	return &tokenService{
-		TokenRepository:       c.TokenRepository,
-		PrivKey:               c.PrivKey,
-		PubKey:                c.PubKey,
-		RefreshSecret:         c.RefreshSecret,
-		IDExpirationSecs:      c.IDExpirationSecs,
-		RefreshExpirationSecs: c.RefreshExpirationSecs,
+		TokenRepository:       repository.NewTokenRepository(config.RedisClient),
+		PrivKey:               config.PrivKey,
+		PubKey:                config.PubKey,
+		RefreshSecret:         config.RefreshSecret,
+		IDExpirationSecs:      config.IDExpirationSecs,
+		RefreshExpirationSecs: config.RefreshExpirationSecs,
 	}
 }
 
 // NewPairFromUser creates fresh id and refresh tokens for the current user
 // If a previous token is included, the previous token is removed from
 // the tokens repository
-func (s *tokenService) NewFirstPairFromUser(ctx context.Context, u *model.User) (*model.TokenPair, error) {
+func (service *tokenService) NewFirstPairFromUser(ctx context.Context, u *model.User) (*model.TokenPair, error) {
 	// No need to use a repository for idToken as it is unrelated to any data source
-	idToken, err := generateIDToken(u, s.PrivKey, s.IDExpirationSecs)
+	idToken, err := generateIDToken(u, service.PrivKey, service.IDExpirationSecs)
 
 	if err != nil {
 		log.Printf("Error generating idToken for uid: %v. Error: %v\n", u.ID, err.Error())
 		return nil, errors.NewInternal()
 	}
 
-	refreshToken, err := generateRefreshToken(u.ID, s.RefreshSecret, s.RefreshExpirationSecs)
+	refreshToken, err := generateRefreshToken(u.ID, service.RefreshSecret, service.RefreshExpirationSecs)
 
 	if err != nil {
 		log.Printf("Error generating refreshToken for uid: %v. Error: %v\n", u.ID, err.Error())
@@ -77,14 +135,14 @@ func (s *tokenService) NewFirstPairFromUser(ctx context.Context, u *model.User) 
 	}
 
 	// set freshly minted refresh token to valid list
-	if err := s.TokenRepository.SetRefreshToken(ctx, u.ID, refreshToken.ID, refreshToken.ExpiresIn); err != nil {
+	if err := service.TokenRepository.SetRefreshToken(ctx, u.ID, refreshToken.ID, refreshToken.ExpiresIn); err != nil {
 		log.Printf("Error storing tokenID for uid: %v. Error: %v\n", u.ID, err.Error())
 		return nil, errors.NewInternal()
 	}
 
 	return &model.TokenPair{
 		IDToken:      model.IDToken{SS: idToken},
-		RefreshToken: model.RefreshToken{SS: refreshToken.SS, ID: refreshToken.ID, UID: u.ID},
+		RefreshToken: model.RefreshToken{SS: refreshToken.SignedTokenString, ID: refreshToken.ID, UID: u.ID},
 	}, nil
 }
 
@@ -150,35 +208,35 @@ func (service *tokenService) ValidateRefreshToken(tokenString string) (*model.Re
 
 // generateIDToken generates an IDToken which is a jwt with myCustomClaims
 // Could call this GenerateIDTokenString, but the signature makes this fairly clear
-func generateIDToken(u *model.User, key *rsa.PrivateKey, exp int64) (string, error) {
-	unixTime := time.Now().Unix()
-	tokenExp := unixTime + exp
+func generateIDToken(u *model.User, key *rsa.PrivateKey, duration int64) (string, error) {
+	timestamp := time.Now().Unix()
+	tokenExp := timestamp + duration
 
 	claims := idTokenCustomClaims{
 		User: u,
 		StandardClaims: jwt.StandardClaims{
-			IssuedAt:  unixTime,
+			IssuedAt:  timestamp,
 			ExpiresAt: tokenExp,
 		},
 	}
 
 	token := jwt.NewWithClaims(jwt.SigningMethodRS256, claims)
-	ss, err := token.SignedString(key)
+	signedTokenString, err := token.SignedString(key)
 
 	if err != nil {
 		log.Println("Failed to sign id token string")
 		return "", err
 	}
 
-	return ss, nil
+	return signedTokenString, nil
 }
 
 // refreshTokenData holds the actual signed jwt string along with the ID
 // We return the id so it can be used without re-parsing the JWT from signed string
 type refreshTokenData struct {
-	SS        string
-	ID        uint
-	ExpiresIn time.Duration
+	SignedTokenString string
+	ID                uint
+	ExpiresIn         time.Duration
 }
 
 // refreshTokenCustomClaims holds the payload of a refresh token
@@ -191,9 +249,9 @@ type refreshTokenCustomClaims struct {
 
 // generateRefreshToken creates a refresh token
 // The refresh token stores only the user's ID, a string
-func generateRefreshToken(uid uint, key string, exp int64) (*refreshTokenData, error) {
-	currentTime := time.Now()
-	tokenExp := currentTime.Add(time.Duration(exp) * time.Second)
+func generateRefreshToken(uid uint, key string, duration int64) (*refreshTokenData, error) {
+	timestamp := time.Now()
+	tokenExp := timestamp.Add(time.Duration(duration) * time.Second)
 	tokenID, err := uuid.NewRandom() // v4 uuid in the google uuid lib
 
 	if err != nil {
@@ -204,14 +262,14 @@ func generateRefreshToken(uid uint, key string, exp int64) (*refreshTokenData, e
 	claims := refreshTokenCustomClaims{
 		UID: uid,
 		StandardClaims: jwt.StandardClaims{
-			IssuedAt:  currentTime.Unix(),
+			IssuedAt:  timestamp.Unix(),
 			ExpiresAt: tokenExp.Unix(),
 			Id:        tokenID.String(),
 		},
 	}
 
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
-	ss, err := token.SignedString([]byte(key))
+	signedTokenString, err := token.SignedString([]byte(key))
 
 	if err != nil {
 		log.Println("Failed to sign refresh token string")
@@ -219,21 +277,18 @@ func generateRefreshToken(uid uint, key string, exp int64) (*refreshTokenData, e
 	}
 
 	return &refreshTokenData{
-		SS:        ss,
-		ID:        uint(tokenID.ID()),
-		ExpiresIn: tokenExp.Sub(currentTime),
+		SignedTokenString: signedTokenString,
+		ID:                uint(tokenID.ID()),
+		ExpiresIn:         tokenExp.Sub(timestamp),
 	}, nil
 }
 
-// validateIDToken returns the token's claims if the token is valid
 func validateIDToken(tokenString string, key *rsa.PublicKey) (*idTokenCustomClaims, error) {
 	claims := &idTokenCustomClaims{}
-
 	token, err := jwt.ParseWithClaims(tokenString, claims, func(token *jwt.Token) (interface{}, error) {
 		return key, nil
 	})
 
-	// For now we'll just return the error and handle logging in service level
 	if err != nil {
 		return nil, err
 	}
@@ -251,7 +306,6 @@ func validateIDToken(tokenString string, key *rsa.PublicKey) (*idTokenCustomClai
 	return claims, nil
 }
 
-// validateRefreshToken uses the secret key to validate a refresh token
 func validateRefreshToken(tokenString string, key string) (*refreshTokenCustomClaims, error) {
 	claims := &refreshTokenCustomClaims{}
 	token, err := jwt.ParseWithClaims(tokenString, claims, func(token *jwt.Token) (interface{}, error) {

@@ -11,7 +11,7 @@ type pipelineServiceImpl struct {
 	PipelineRepository model.PipelineRepository
 }
 
-func NewPipelineService(gormDB *gorm.DB) model.PipelineService {
+func NewPipelineService(gormDB *gorm.DB) PipelineService {
 	return &pipelineServiceImpl{
 		PipelineRepository: repository.NewPipelineRepository(gormDB),
 	}

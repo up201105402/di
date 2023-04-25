@@ -9,22 +9,27 @@ import (
 	"gorm.io/gorm"
 )
 
-type userService struct {
-	UserRepository model.UserRepository
+type userServiceImpl struct {
+	UserRepository repository.UserRepository
 }
 
-func NewUserService(gormDB *gorm.DB) model.UserService {
-	return &userService{
+func NewUserService(gormDB *gorm.DB) UserService {
+	return &userServiceImpl{
 		UserRepository: repository.NewUserRepository(gormDB),
 	}
 }
 
-func (service *userService) Get(id uint) (*model.User, error) {
+func (service *userServiceImpl) Get(id uint) (*model.User, error) {
 	user, error := service.UserRepository.FindByID(id)
 	return user, error
 }
 
-func (service *userService) Signup(username string, password string) error {
+func (service *userServiceImpl) GetByUsername(username string) (*model.User, error) {
+	user, error := service.UserRepository.FindByUsername(username)
+	return user, error
+}
+
+func (service *userServiceImpl) Signup(username string, password string) error {
 	pw, err := util.HashPassword(password)
 
 	if err != nil {
@@ -39,7 +44,7 @@ func (service *userService) Signup(username string, password string) error {
 	return nil
 }
 
-func (service *userService) Signin(user *model.User) error {
+func (service *userServiceImpl) Signin(user *model.User) error {
 	uFetched, err := service.UserRepository.FindByUsername(user.Username)
 
 	if err != nil {
@@ -60,7 +65,7 @@ func (service *userService) Signin(user *model.User) error {
 	return nil
 }
 
-func (service *userService) UpdateDetails(user *model.User) error {
+func (service *userServiceImpl) UpdateDetails(user *model.User) error {
 	// Update user in UserRepository
 	err := service.UserRepository.Update(user)
 
