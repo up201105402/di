@@ -1,44 +1,61 @@
 <script setup>
-    import { computed, ref, onMounted } from "vue";
-    import { useMainStore } from "@/stores/main";
-    import {
-      mdiAccountMultiple,
-      mdiCartOutline,
-      mdiChartTimelineVariant,
-      mdiMonitorCellphone,
-      mdiReload,
-      mdiGithub,
-      mdiChartPie,
-    } from "@mdi/js";
-    import * as chartConfig from "@/components/Charts/chart.config.js";
-    import LineChart from "@/components/Charts/LineChart.vue";
-    import SectionMain from "@/components/SectionMain.vue";
-    import CardBoxWidget from "@/components/CardBoxWidget.vue";
-    import CardBox from "@/components/CardBox.vue";
-    import TableSampleClients from "@/components/TableSampleClients.vue";
-    import NotificationBar from "@/components/NotificationBar.vue";
-    import BaseButton from "@/components/BaseButton.vue";
-    import CardBoxTransaction from "@/components/CardBoxTransaction.vue";
-    import CardBoxClient from "@/components/CardBoxClient.vue";
-    import LayoutAuthenticated from "@/layouts/LayoutAuthenticated.vue";
-    import SectionTitleLineWithButton from "@/components/SectionTitleLineWithButton.vue";
-    import PipelinesTable from "@/components/PipelinesTable.vue";
-  
-    const mainStore = useMainStore();
-  
-    const clientBarItems = computed(() => mainStore.clients.slice(0, 4));
+import { ref, reactive } from "vue";
+import {
+  mdiChartTimelineVariant,
+  mdiPlus
+} from "@mdi/js";
+import { storeToRefs } from 'pinia';
+import SectionMain from "@/components/SectionMain.vue";
+import LayoutAuthenticated from "@/layouts/LayoutAuthenticated.vue";
+import SectionTitleLineWithButton from "@/components/SectionTitleLineWithButton.vue";
+import PipelinesTable from "@/components/PipelinesTable.vue";
+import CardBoxModal from "@/components/CardBoxModal.vue";
+import BaseButton from "@/components/BaseButton.vue";
+import FormControl from "@/components/FormControl.vue";
+import FormField from "@/components/FormField.vue";
+import { useAuthStore } from "@/stores/auth";
+import { doRequest } from "@/util";
 
-  </script>
-  
-  <template>
-    <LayoutAuthenticated>
-      <SectionMain>
-        <SectionTitleLineWithButton :icon="mdiChartTimelineVariant" :title="$t('pages.pipelines.name')" main>
-          <span />
-        </SectionTitleLineWithButton>
+const isNewPipelineModalActive = ref(false);
+const { idToken } = storeToRefs(useAuthStore());
 
-        <PipelinesTable checkable />
-        
-      </SectionMain>
-    </LayoutAuthenticated>
-  </template>
+const onNewPipelineClicked = (e) => isNewPipelineModalActive.value = true;
+
+const createNewPipeline = (e) => {
+  doRequest({
+    url: '/api/pipeline',
+    method: 'POST',
+    headers: {
+      Authorization: `Bearer ${idToken}`,
+    },
+    data: {
+      name: form.name
+    },
+  });
+}
+
+const form = reactive({
+  name: "",
+});
+
+</script>
+  
+<template>
+  <LayoutAuthenticated>
+    <SectionMain>
+      <SectionTitleLineWithButton :icon="mdiChartTimelineVariant" :title="$t('pages.pipelines.name')" main>
+        <BaseButton :icon="mdiPlus" @click="onNewPipelineClicked" />
+      </SectionTitleLineWithButton>
+
+      <PipelinesTable checkable />
+
+    </SectionMain>
+
+    <CardBoxModal v-model="isNewPipelineModalActive" @confirm="createNewPipeline" title="Please confirm" button="success"
+      has-cancel>
+      <FormField label="Name" help="Please enter the pipeline name">
+        <FormControl v-model="form.name" name="name" autocomplete="name" placeholder="Name" />
+      </FormField>
+    </CardBoxModal>
+  </LayoutAuthenticated>
+</template>

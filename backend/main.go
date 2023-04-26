@@ -84,10 +84,14 @@ func setupRouter(services *service.Services) *gin.Engine {
 		context.HTML(http.StatusOK, "index.html", gin.H{})
 	})
 
-	private := router.Group("/api/user")
-	private.POST("/login", handlers.LogIn(services))
-	private.POST("/signup", middleware.Auth(services.TokenService), handlers.SignUp(services))
-	private.POST("/signout", middleware.Auth(services.TokenService), handlers.SignOut(services))
+	userAPI := router.Group("/api/user")
+	userAPI.POST("/login", handlers.LogIn(services))
+	userAPI.POST("/signup", middleware.Auth(services.TokenService), handlers.SignUp(services))
+	userAPI.POST("/signout", middleware.Auth(services.TokenService), handlers.SignOut(services))
+
+	pipelineAPI := router.Group("/api/pipeline")
+	pipelineAPI.GET("/", middleware.Auth(services.TokenService), handlers.GetPipelines(services))
+	pipelineAPI.POST("/", middleware.Auth(services.TokenService), handlers.CreatePipeline(services))
 
 	return router
 }

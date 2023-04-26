@@ -180,8 +180,6 @@ export const useAuth = () => {
 }
 
 const authenticate = async (username, password, url) => {
-    // state.isLoading = true;
-    // state.error = null;
 
     const { data, error } = await doRequest({
         url,
