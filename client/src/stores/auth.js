@@ -57,14 +57,13 @@ export const useAuthStore = defineStore("auth", {
         const { data, error } = await authenticate(username, password, '/api/user/login')
 
         if (error) {
-            this.idToken = data.idToken;
             this.error = error;
             return;
         }
 
         this.userName = username;
         this.error = null;
-        this.idToken = data.idToken;
+        this.idToken = data.token.idToken;
         router.push(redirectURL);
     },
     

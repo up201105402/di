@@ -141,8 +141,8 @@ func (service *tokenService) NewFirstPairFromUser(ctx context.Context, u *model.
 	}
 
 	return &model.TokenPair{
-		IDToken:      model.IDToken{SS: idToken},
-		RefreshToken: model.RefreshToken{SS: refreshToken.SignedTokenString, ID: refreshToken.ID, UID: u.ID},
+		IDToken:      model.IDToken{SignedString: idToken},
+		RefreshToken: model.RefreshToken{SignedString: refreshToken.SignedTokenString, ID: refreshToken.ID, UID: u.ID},
 	}, nil
 }
 
@@ -200,9 +200,9 @@ func (service *tokenService) ValidateRefreshToken(tokenString string) (*model.Re
 	}
 
 	return &model.RefreshToken{
-		SS:  tokenString,
-		ID:  claims.UID,
-		UID: claims.UID,
+		SignedString: tokenString,
+		ID:           claims.UID,
+		UID:          claims.UID,
 	}, nil
 }
 

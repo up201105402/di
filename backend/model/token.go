@@ -1,13 +1,13 @@
 package model
 
 type RefreshToken struct {
-	ID  uint   `json:"-"`
-	UID uint   `json:"-"`
-	SS  string `json:"refreshToken"`
+	ID           uint   `json:"-"`
+	UID          uint   `json:"-"`
+	SignedString string `json:"refreshToken"`
 }
 
 type IDToken struct {
-	SS string `json:"idToken"`
+	SignedString string `json:"idToken"`
 }
 
 type TokenPair struct {
