@@ -1,57 +1,64 @@
 <script setup>
-  import { ref, reactive, computed } from "vue";
-  import { Promised, usePromise } from 'vue-promised';
-  import {
-    mdiChartTimelineVariant,
-    mdiPlus
-  } from "@mdi/js";
-  import { storeToRefs } from 'pinia';
-  import SectionMain from "@/components/SectionMain.vue";
-  import LayoutAuthenticated from "@/layouts/LayoutAuthenticated.vue";
-  import SectionTitleLineWithButton from "@/components/SectionTitleLineWithButton.vue";
-  import PipelinesTable from "@/components/PipelinesTable.vue";
-  import CardBoxModal from "@/components/CardBoxModal.vue";
-  import BaseButton from "@/components/BaseButton.vue";
-  import FormControl from "@/components/FormControl.vue";
-  import FormField from "@/components/FormField.vue";
-  import { useAuthStore } from "@/stores/auth";
-  import { doRequest } from "@/util";
+import { ref, reactive, computed } from "vue";
+import {
+  mdiChartTimelineVariant,
+  mdiPlus
+} from "@mdi/js";
+import { storeToRefs } from 'pinia';
+import SectionMain from "@/components/SectionMain.vue";
+import LayoutAuthenticated from "@/layouts/LayoutAuthenticated.vue";
+import SectionTitleLineWithButton from "@/components/SectionTitleLineWithButton.vue";
+import PipelinesTable from "@/components/PipelinesTable.vue";
+import CardBoxModal from "@/components/CardBoxModal.vue";
+import BaseButton from "@/components/BaseButton.vue";
+import FormControl from "@/components/FormControl.vue";
+import FormField from "@/components/FormField.vue";
+import { useAuthStore } from "@/stores/auth";
+import { doRequest } from "@/util";
+import { useAsyncState } from '@vueuse/core'
 
-  const isNewPipelineModalActive = ref(false);
-  const { idToken } = storeToRefs(useAuthStore());
+const isNewPipelineModalActive = ref(false);
+const { idToken } = storeToRefs(useAuthStore());
 
-  const fetchPipelines = () => doRequest({
+const { isLoading, state: fetchResponse, isReady, execute: fetchPipelines } = useAsyncState(
+  () => {
+    return doRequest({
+      url: '/api/pipeline',
+      method: 'GET',
+      headers: {
+        Authorization: `${idToken.value}`
+      },
+    })
+  },
+  {},
+  {
+    delay: 200,
+    resetOnExecute: false,
+  },
+)
+
+const onNewPipelineClicked = (e) => isNewPipelineModalActive.value = true;
+
+const createNewPipeline = (e) => {
+  doRequest({
     url: '/api/pipeline',
-    method: 'GET',
+    method: 'POST',
     headers: {
       Authorization: `${idToken.value}`,
-      "Content-Type": 'application/json',
+    },
+    data: {
+      name: form.name
     },
   });
 
-  // const pipelines = computed(() => fetchPipelines())
-  var pipelines = fetchPipelines();
+  fetchPipelines(200);
+}
 
-  const onNewPipelineClicked = (e) => isNewPipelineModalActive.value = true;
+const pipelines = computed(() => fetchResponse?.data?.pipelines)
 
-  const createNewPipeline = (e) => {
-    doRequest({
-      url: '/api/pipeline',
-      method: 'POST',
-      headers: {
-        Authorization: `${idToken.value}`,
-      },
-      data: {
-        name: form.name
-      },
-    });
-
-    pipelines = fetchPipelines();
-  }
-
-  const form = reactive({
-    name: "",
-  });
+const form = reactive({
+  name: "",
+});
 
 </script>
 
@@ -62,27 +69,14 @@
         <BaseButton :icon="mdiPlus" @click="onNewPipelineClicked" />
       </SectionTitleLineWithButton>
 
-      <Promised :promise="pipelines">
-        <!-- Use the "pending" slot to display a loading message -->
-        <template v-slot:pending="previousData">
-          <PipelinesTable :items="data.data.pipelines" checkable />
-        </template>
-        <!-- The default scoped slot will be used as the result -->
-        <template v-slot="data">
-          <PipelinesTable :items="data.data.pipelines" checkable />
-        </template>
-        <!-- The "rejected" scoped slot will be used if there is an error -->
-        <template v-slot:rejected="error">
-          <p>Error: {{ error.message }}</p>
-        </template>
-      </Promised>
+      <PipelinesTable :items="fetchResponse?.data ? fetchResponse.data.pipelines : []" @pipelineDeleted="fetchPipelines(200)" checkable />
 
     </SectionMain>
 
-    <CardBoxModal v-model="isNewPipelineModalActive" @confirm="createNewPipeline" title="Create Pipeline"
-      button="success" has-cancel>
+    <CardBoxModal v-model="isNewPipelineModalActive" @confirm="createNewPipeline" title="Create Pipeline" button="success"
+      has-cancel>
       <FormField label="Name" help="Please enter the pipeline name">
-        <FormControl v-model="form.name" name="name" autocomplete="name" placeholder="Name" />
+        <FormControl v-model="form.name" name="name" autocomplete="name" placeholder="Name" :focus="isNewPipelineModalActive" />
       </FormField>
     </CardBoxModal>
   </LayoutAuthenticated>

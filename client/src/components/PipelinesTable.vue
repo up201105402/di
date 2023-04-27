@@ -1,93 +1,128 @@
 <script setup>
-    import { computed, ref, watch } from "vue";
-    import { usePipelinesStore } from "@/stores/pipelines";
-    import { mdiEye, mdiTrashCan } from "@mdi/js";
-    import CardBoxModal from "@/components/CardBoxModal.vue";
-    import TableCheckboxCell from "@/components/TableCheckboxCell.vue";
-    import BaseLevel from "@/components/BaseLevel.vue";
-    import BaseButtons from "@/components/BaseButtons.vue";
-    import BaseButton from "@/components/BaseButton.vue";
-    import UserAvatar from "@/components/UserAvatar.vue";
+import { computed, ref, watch } from "vue";
+import { mdiEye, mdiTrashCan } from "@mdi/js";
+import CardBoxModal from "@/components/CardBoxModal.vue";
+import TableCheckboxCell from "@/components/TableCheckboxCell.vue";
+import BaseLevel from "@/components/BaseLevel.vue";
+import BaseButtons from "@/components/BaseButtons.vue";
+import BaseButton from "@/components/BaseButton.vue";
+import UserAvatar from "@/components/UserAvatar.vue";
+import { storeToRefs } from 'pinia';
+import { useAuthStore } from "@/stores/auth";
+import { useAsyncState } from '@vueuse/core'
+import { doRequest } from "@/util";
 
-    const props = defineProps({
-        items: Array,
-        checkable: Boolean,
-    });
+const props = defineProps({
+    items: Array,
+    checkable: Boolean,
+});
 
-    const pipelinesStore = usePipelinesStore();
+const { idToken } = storeToRefs(useAuthStore());
 
-    const pipelines = ref(props.items.value)
-
-    watch(props.items, () => pipelines = props.items);
-
-    const isModalActive = ref(false);
-
-    const isModalDangerActive = ref(false);
-
-    const idToDelete = ref(0);
-
-    const perPage = ref(5);
-
-    const currentPage = ref(0);
-
-    const checkedRows = ref([]);
-
-    const itemsPaginated = computed(() =>
-        props.items.slice(
-            perPage.value * currentPage.value,
-            perPage.value * (currentPage.value + 1)
-        )
-    );
-
-    const numPages = computed(() => Math.ceil(props.items.length / perPage.value));
-
-    const currentPageHuman = computed(() => currentPage.value + 1);
-
-    const pagesList = computed(() => {
-        const pagesList = [];
-
-        for (let i = 0; i < numPages.value; i++) {
-            pagesList.push(i);
+const { isLoading, state: deleteResponse, isReady: deleteFinished, execute: deletePipeline } = useAsyncState(
+    (pipelineID) => {
+        if (pipelineID) {
+            return doRequest({
+                url: '/api/pipeline',
+                method: 'DELETE',
+                headers: {
+                    Authorization: `${idToken.value}`,
+                },
+                data: {
+                    ID: pipelineID
+                },
+            });
         }
 
-        return pagesList;
-    });
+        return {};
+    },
+    {},
+    {
+        delay: 200,
+        resetOnExecute: false,
+        immediate: false,
+    },
+)
 
-    const remove = (arr, cb) => {
-        const newArr = [];
+const emit = defineEmits(["pipelineDeleted"]);
 
-        arr.forEach((item) => {
-            if (!cb(item)) {
-                newArr.push(item);
-            }
-        });
-
-        return newArr;
-    };
-
-    const checked = (isChecked, pipeline) => {
-        if (isChecked) {
-            checkedRows.value.push(pipeline);
-        } else {
-            checkedRows.value = remove(
-                checkedRows.value,
-                (row) => row.id === pipeline.id
-            );
-        }
-    };
-
-    const deletePipeline = (e) => {
-        console.error(e);
+watch(deleteFinished, () => {
+    if (deleteFinished.value) {
+        emit("pipelineDeleted");
     }
+})
+
+const isErrorModalActive = ref(false);
+
+const isModalDangerActive = ref(false);
+
+const pipelineIdToDelete = ref(0);
+
+const perPage = ref(5);
+
+const currentPage = ref(0);
+
+const checkedRows = ref([]);
+
+const itemsPaginated = computed(() => {
+    return props.items ? props.items.slice(
+        perPage.value * currentPage.value,
+        perPage.value * (currentPage.value + 1)
+    ) : [];
+});
+
+const numPages = computed(() => Math.ceil(props.items?.length / perPage.value));
+
+const currentPageHuman = computed(() => currentPage.value + 1);
+
+const pagesList = computed(() => {
+    const pagesList = [];
+
+    for (let i = 0; i < numPages.value; i++) {
+        pagesList.push(i);
+    }
+
+    return pagesList;
+});
+
+const remove = (arr, cb) => {
+    const newArr = [];
+
+    arr.forEach((item) => {
+        if (!cb(item)) {
+            newArr.push(item);
+        }
+    });
+
+    return newArr;
+};
+
+const checked = (isChecked, pipeline) => {
+    if (isChecked) {
+        checkedRows.value.push(pipeline);
+    } else {
+        checkedRows.value = remove(
+            checkedRows.value,
+            (row) => row.id === pipeline.id
+        );
+    }
+};
+
+const showDeleteModal = (id) => {
+    isModalDangerActive.value = true;
+    pipelineIdToDelete.value = id;
+}
+
 </script>
 
 <template>
-    <CardBoxModal v-model="isModalActive" title="Sample modal">
+    <CardBoxModal v-model="deleteResponse.error" title="Sample modal">
         <p>Lorem ipsum dolor sit amet <b>adipiscing elit</b></p>
         <p>This is sample modal</p>
     </CardBoxModal>
 
-    <CardBoxModal v-model="isModalDangerActive" title="Confirm Delete" :id="idToDelete" @confirm="deletePipeline" button="danger" has-cancel>
+    <CardBoxModal v-model="isModalDangerActive" title="Confirm Delete" :target-id="pipelineIdToDelete"
+        @confirm="deletePipeline(200, pipelineIdToDelete)" button="danger" has-cancel>
         <p>This will permanently delete this pipeline.</p>
     </CardBoxModal>
 
@@ -124,12 +159,14 @@
                     </progress>
                 </td>
                 <td data-label="Created" class="lg:w-1 whitespace-nowrap">
-                    <small class="text-gray-500 dark:text-slate-400" :title="pipeline.CreatedAt">{{ pipeline.CreatedAt }}</small>
+                    <small class="text-gray-500 dark:text-slate-400" :title="pipeline.CreatedAt">{{ pipeline.CreatedAt
+                    }}</small>
                 </td>
                 <td class="before:hidden lg:w-1 whitespace-nowrap">
                     <BaseButtons type="justify-start lg:justify-end" no-wrap>
-                        <BaseButton color="info" :icon="mdiEye" small :to="'/pipeline/' + pipeline.id"/>
-                        <BaseButton color="danger" :icon="mdiTrashCan" small @click="() => { isModalDangerActive = true; idToDelete.value = pipeline.id }" />
+                        <BaseButton color="info" :icon="mdiEye" small :to="'/pipeline/' + pipeline.ID" />
+                        <BaseButton color="danger" :icon="mdiTrashCan" small :target-id="pipeline.ID"
+                            @clicked="showDeleteModal" />
                     </BaseButtons>
                 </td>
             </tr>
