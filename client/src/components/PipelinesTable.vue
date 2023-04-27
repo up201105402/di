@@ -1,5 +1,5 @@
 <script setup>
-    import { computed, ref } from "vue";
+    import { computed, ref, watch } from "vue";
     import { usePipelinesStore } from "@/stores/pipelines";
     import { mdiEye, mdiTrashCan } from "@mdi/js";
     import CardBoxModal from "@/components/CardBoxModal.vue";
@@ -9,17 +9,22 @@
     import BaseButton from "@/components/BaseButton.vue";
     import UserAvatar from "@/components/UserAvatar.vue";
 
-    defineProps({
+    const props = defineProps({
+        items: Array,
         checkable: Boolean,
     });
 
     const pipelinesStore = usePipelinesStore();
 
-    const items = computed(() => pipelinesStore.pipelines);
+    const pipelines = ref(props.items.value)
+
+    watch(props.items, () => pipelines = props.items);
 
     const isModalActive = ref(false);
 
     const isModalDangerActive = ref(false);
+
+    const idToDelete = ref(0);
 
     const perPage = ref(5);
 
@@ -28,13 +33,13 @@
     const checkedRows = ref([]);
 
     const itemsPaginated = computed(() =>
-        items.value.slice(
+        props.items.slice(
             perPage.value * currentPage.value,
             perPage.value * (currentPage.value + 1)
         )
     );
 
-    const numPages = computed(() => Math.ceil(items.value.length / perPage.value));
+    const numPages = computed(() => Math.ceil(props.items.length / perPage.value));
 
     const currentPageHuman = computed(() => currentPage.value + 1);
 
@@ -70,6 +75,10 @@
             );
         }
     };
+
+    const deletePipeline = (e) => {
+        console.error(e);
+    }
 </script>
 
 <template>
@@ -78,9 +87,8 @@
         <p>This is sample modal</p>
     </CardBoxModal>
 
-    <CardBoxModal v-model="isModalDangerActive" title="Please confirm" button="danger" has-cancel>
-        <p>Lorem ipsum dolor sit amet <b>adipiscing elit</b></p>
-        <p>This is sample modal</p>
+    <CardBoxModal v-model="isModalDangerActive" title="Confirm Delete" :id="idToDelete" @confirm="deletePipeline" button="danger" has-cancel>
+        <p>This will permanently delete this pipeline.</p>
     </CardBoxModal>
 
     <div v-if="checkedRows.length" class="p-3 bg-gray-100/50 dark:bg-slate-800">
@@ -116,12 +124,12 @@
                     </progress>
                 </td>
                 <td data-label="Created" class="lg:w-1 whitespace-nowrap">
-                    <small class="text-gray-500 dark:text-slate-400" :title="pipeline.created">{{ pipeline.created }}</small>
+                    <small class="text-gray-500 dark:text-slate-400" :title="pipeline.CreatedAt">{{ pipeline.CreatedAt }}</small>
                 </td>
                 <td class="before:hidden lg:w-1 whitespace-nowrap">
                     <BaseButtons type="justify-start lg:justify-end" no-wrap>
                         <BaseButton color="info" :icon="mdiEye" small :to="'/pipeline/' + pipeline.id"/>
-                        <BaseButton color="danger" :icon="mdiTrashCan" small @click="isModalDangerActive = true" />
+                        <BaseButton color="danger" :icon="mdiTrashCan" small @click="() => { isModalDangerActive = true; idToDelete.value = pipeline.id }" />
                     </BaseButtons>
                 </td>
             </tr>

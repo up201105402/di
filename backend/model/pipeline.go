@@ -6,7 +6,7 @@ import (
 
 type Pipeline struct {
 	gorm.Model
-	UserID     uint `json:"owner"`
+	UserID     uint `json:"userId"`
 	User       User
 	Name       string `json:"name"`
 	Definition string `json:"definition"`

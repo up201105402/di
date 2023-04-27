@@ -3,7 +3,6 @@ package middleware
 import (
 	"di/service"
 	"di/util/errors"
-	"strings"
 
 	"github.com/gin-gonic/gin"
 	"github.com/go-playground/validator/v10"
@@ -62,10 +61,8 @@ func Auth(tokenService service.TokenService) gin.HandlerFunc {
 			return
 		}
 
-		idTokenHeader := strings.Split(authHeader.IDToken, "Bearer ")
-
-		if len(idTokenHeader) < 2 {
-			err := errors.NewAuthorization("Must provide Authorization header with format `Bearer {token}`")
+		if authHeader.IDToken == "" {
+			err := errors.NewAuthorization("Must provide Authorization header with format `{token}`")
 
 			context.JSON(err.Status(), gin.H{
 				"error": err,
@@ -75,7 +72,7 @@ func Auth(tokenService service.TokenService) gin.HandlerFunc {
 		}
 
 		// validate ID token here
-		user, err := tokenService.ValidateIDToken(idTokenHeader[1])
+		user, err := tokenService.ValidateIDToken(authHeader.IDToken)
 
 		if err != nil {
 			err := errors.NewAuthorization("Provided token is invalid")

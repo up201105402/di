@@ -86,7 +86,7 @@ export const useAuthStore = defineStore("auth", {
             url: '/api/user/signout',
             method: 'POST',
             headers: {
-                Authorization: `Bearer ${this.idToken}`,
+                Authorization: `${this.idToken}`,
             },
         });
     

@@ -8,6 +8,10 @@ import OverlayLayer from "@/components/OverlayLayer.vue";
 import CardBoxComponentTitle from "@/components/CardBoxComponentTitle.vue";
 
 const props = defineProps({
+  id: {
+    type: Number,
+    required: false,
+  },
   title: {
     type: String,
     required: true,
@@ -36,7 +40,7 @@ const value = computed({
 
 const confirmCancel = (mode) => {
   value.value = false;
-  emit(mode);
+  emit(mode, props.id);
 };
 
 const confirm = () => confirmCancel("confirm");
