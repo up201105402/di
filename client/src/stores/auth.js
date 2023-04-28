@@ -53,7 +53,7 @@ export const useAuthStore = defineStore("auth", {
         });
     },
 
-    async signIn(username, password, router, redirectURL) {
+    async logIn(username, password, router, redirectURL) {
         const { data, error } = await authenticate(username, password, '/api/user/login')
 
         if (error) {

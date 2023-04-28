@@ -1,5 +1,5 @@
 <script setup>
-import { ref, reactive, computed } from "vue";
+import { ref, reactive, computed, watch } from "vue";
 import {
   mdiChartTimelineVariant,
   mdiPlus
@@ -15,12 +15,15 @@ import FormControl from "@/components/FormControl.vue";
 import FormField from "@/components/FormField.vue";
 import { useAuthStore } from "@/stores/auth";
 import { doRequest } from "@/util";
-import { useAsyncState } from '@vueuse/core'
+import { useAsyncState } from "@vueuse/core";
+import Loading from "vue-loading-overlay";
+import "vue-loading-overlay/dist/css/index.css";
 
-const isNewPipelineModalActive = ref(false);
 const { idToken } = storeToRefs(useAuthStore());
 
-const { isLoading, state: fetchResponse, isReady, execute: fetchPipelines } = useAsyncState(
+// FETCH PIPELINES
+
+const { isLoading: isFetching, state: fetchResponse, isReady: isFetchFinished, execute: fetchPipelines } = useAsyncState(
   () => {
     return doRequest({
       url: '/api/pipeline',
@@ -32,52 +35,121 @@ const { isLoading, state: fetchResponse, isReady, execute: fetchPipelines } = us
   },
   {},
   {
-    delay: 200,
+    delay: 500,
     resetOnExecute: false,
   },
 )
 
-const onNewPipelineClicked = (e) => isNewPipelineModalActive.value = true;
+// CREATE PIPELINE
 
-const createNewPipeline = (e) => {
-  doRequest({
-    url: '/api/pipeline',
-    method: 'POST',
-    headers: {
-      Authorization: `${idToken.value}`,
-    },
-    data: {
-      name: form.name
-    },
-  });
+const isCreateModalActive = ref(false);
+const onNewPipelineClicked = (e) => isCreateModalActive.value = true;
 
-  fetchPipelines(200);
-}
-
-const pipelines = computed(() => fetchResponse?.data?.pipelines)
-
-const form = reactive({
+const createPipelineForm = reactive({
   name: "",
 });
+
+const { isLoading: isCreating, state: createResponse, isReady: createFinished, execute: createPipeline } = useAsyncState(
+  (name) => {
+    if (name && name != "") {
+      return doRequest({
+        url: '/api/pipeline',
+        method: 'POST',
+        headers: {
+          Authorization: `${idToken.value}`,
+        },
+        data: {
+          name: createPipelineForm.name
+        },
+      });
+    }
+
+    return {};
+  },
+  {},
+  {
+    delay: 500,
+    resetOnExecute: false,
+    immediate: false,
+  },
+)
+
+watch(createFinished, () => {
+  if (createFinished.value) {
+    fetchPipelines();
+  }
+})
+
+// DELETE PIPELINE
+
+const isDeleteModalActive = ref(false);
+const pipelineIdToDelete = ref(null);
+
+const onDeletePipelineClicked = (id) => {
+  isDeleteModalActive.value = true;
+  pipelineIdToDelete.value = id;
+}
+
+const { isLoading: isDeleting, state: deleteResponse, isReady: deleteFinished, execute: deletePipeline } = useAsyncState(
+  (pipelineID) => {
+    if (pipelineID) {
+      return doRequest({
+        url: '/api/pipeline',
+        method: 'DELETE',
+        headers: {
+          Authorization: `${idToken.value}`,
+        },
+        data: {
+          ID: pipelineID
+        },
+      });
+    }
+
+    return {};
+  },
+  {},
+  {
+    delay: 500,
+    resetOnExecute: false,
+    immediate: false,
+  },
+)
+
+watch(deleteFinished, () => {
+  if (deleteFinished.value) {
+    fetchPipelines();
+  }
+})
+
+const pipelines = computed(() => fetchResponse.value?.data ? fetchResponse.value.data.pipelines : []);
+const isLoading = computed(() => isFetching.value || isCreating.value || isDeleting.value)
 
 </script>
 
 <template>
   <LayoutAuthenticated>
     <SectionMain>
+      <loading v-model:active="isLoading" :is-full-page="false" />
+
       <SectionTitleLineWithButton :icon="mdiChartTimelineVariant" :title="$t('pages.pipelines.name')" main>
         <BaseButton :icon="mdiPlus" @click="onNewPipelineClicked" />
       </SectionTitleLineWithButton>
 
-      <PipelinesTable :items="fetchResponse?.data ? fetchResponse.data.pipelines : []" @pipelineDeleted="fetchPipelines(200)" checkable />
-
+      <PipelinesTable :items="pipelines" @deleteButtonClicked="onDeletePipelineClicked" checkable />
     </SectionMain>
 
-    <CardBoxModal v-model="isNewPipelineModalActive" @confirm="createNewPipeline" title="Create Pipeline" button="success"
+    <CardBoxModal v-model="isCreateModalActive" @confirm="createPipeline(200, createPipelineForm.name)" title="Create Pipeline" button="success"
       has-cancel>
       <FormField label="Name" help="Please enter the pipeline name">
-        <FormControl v-model="form.name" name="name" autocomplete="name" placeholder="Name" :focus="isNewPipelineModalActive" />
+        <FormControl v-model="createPipelineForm.name" name="name" autocomplete="name" placeholder="Name"
+          :focus="isCreateModalActive" />
       </FormField>
     </CardBoxModal>
+
+    <CardBoxModal v-model="isDeleteModalActive" title="Confirm Delete" :target-id="pipelineIdToDelete"
+      @confirm="deletePipeline(200, pipelineIdToDelete)" button="danger" has-cancel>
+      <p>This will permanently delete this pipeline.</p>
+    </CardBoxModal>
+
   </LayoutAuthenticated>
 </template>

@@ -32,6 +32,7 @@
     "vue-chartjs": "^5.2.0",
     "vue-flow": "^0.3.0",
     "vue-i18n": "^9.2.2",
+    "vue-loading-overlay": "^6.0",
     "vue-promised": "^2.2.0",
     "vue-router": "^4.1.6"
   },

@@ -34,7 +34,7 @@
   const router = useRouter();
 
   const signInAndRedirect = () => {
-    useAuthStore().signIn(form.username, form.password, router, '/pipelines');
+    useAuthStore().logIn(form.username, form.password, router, '/pipelines');
   };
 
   const acknowledge = () => {

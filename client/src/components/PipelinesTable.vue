@@ -1,62 +1,26 @@
 <script setup>
-import { computed, ref, watch } from "vue";
+import { computed, ref } from "vue";
 import { mdiEye, mdiTrashCan } from "@mdi/js";
-import CardBoxModal from "@/components/CardBoxModal.vue";
 import TableCheckboxCell from "@/components/TableCheckboxCell.vue";
 import BaseLevel from "@/components/BaseLevel.vue";
 import BaseButtons from "@/components/BaseButtons.vue";
 import BaseButton from "@/components/BaseButton.vue";
 import UserAvatar from "@/components/UserAvatar.vue";
-import { storeToRefs } from 'pinia';
-import { useAuthStore } from "@/stores/auth";
-import { useAsyncState } from '@vueuse/core'
-import { doRequest } from "@/util";
 
 const props = defineProps({
     items: Array,
     checkable: Boolean,
 });
 
-const { idToken } = storeToRefs(useAuthStore());
+// EMITS
 
-const { isLoading, state: deleteResponse, isReady: deleteFinished, execute: deletePipeline } = useAsyncState(
-    (pipelineID) => {
-        if (pipelineID) {
-            return doRequest({
-                url: '/api/pipeline',
-                method: 'DELETE',
-                headers: {
-                    Authorization: `${idToken.value}`,
-                },
-                data: {
-                    ID: pipelineID
-                },
-            });
-        }
+const emit = defineEmits(["deleteButtonClicked"]);
 
-        return {};
-    },
-    {},
-    {
-        delay: 200,
-        resetOnExecute: false,
-        immediate: false,
-    },
-)
+const deleteButtonClicked = (id) => {
+    emit("deleteButtonClicked", id);
+}
 
-const emit = defineEmits(["pipelineDeleted"]);
-
-watch(deleteFinished, () => {
-    if (deleteFinished.value) {
-        emit("pipelineDeleted");
-    }
-})
-
-const isErrorModalActive = ref(false);
-
-const isModalDangerActive = ref(false);
-
-const pipelineIdToDelete = ref(0);
+// ITEMS PROCESSING
 
 const perPage = ref(5);
 
@@ -108,24 +72,9 @@ const checked = (isChecked, pipeline) => {
     }
 };
 
-const showDeleteModal = (id) => {
-    isModalDangerActive.value = true;
-    pipelineIdToDelete.value = id;
-}
-
 </script>
 
 <template>
-    <CardBoxModal v-model="deleteResponse.error" title="Sample modal">
-        <p>Lorem ipsum dolor sit amet <b>adipiscing elit</b></p>
-        <p>This is sample modal</p>
-    </CardBoxModal>
-
-    <CardBoxModal v-model="isModalDangerActive" title="Confirm Delete" :target-id="pipelineIdToDelete"
-        @confirm="deletePipeline(200, pipelineIdToDelete)" button="danger" has-cancel>
-        <p>This will permanently delete this pipeline.</p>
-    </CardBoxModal>
-
     <div v-if="checkedRows.length" class="p-3 bg-gray-100/50 dark:bg-slate-800">
         <span v-for="checkedRow in checkedRows" :key="checkedRow.id"
             class="inline-block px-2 py-1 rounded-sm mr-2 text-sm bg-gray-100 dark:bg-slate-700">
@@ -165,8 +114,7 @@ const showDeleteModal = (id) => {
                 <td class="before:hidden lg:w-1 whitespace-nowrap">
                     <BaseButtons type="justify-start lg:justify-end" no-wrap>
                         <BaseButton color="info" :icon="mdiEye" small :to="'/pipeline/' + pipeline.ID" />
-                        <BaseButton color="danger" :icon="mdiTrashCan" small :target-id="pipeline.ID"
-                            @clicked="showDeleteModal" />
+                        <BaseButton color="danger" :icon="mdiTrashCan" small :target-id="pipeline.ID" @clicked="deleteButtonClicked" />
                     </BaseButtons>
                 </td>
             </tr>
