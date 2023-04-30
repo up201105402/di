@@ -69,25 +69,25 @@ export const useRequest = (reqOptions, options) => {
     };
 };
 
-const idTokenKey = '__malcorpId';
+const accessTokenKey = '__malcorpId';
 const refreshTokenKey = '__malcorpRf';
 
 // storeTokens utility for storing idAndRefreshToken
-export const storeTokens = (idToken, refreshToken) => {
-    localStorage.setItem(idTokenKey, idToken);
+export const storeTokens = (accessToken, refreshToken) => {
+    localStorage.setItem(accessTokenKey, accessToken);
     localStorage.setItem(refreshTokenKey, refreshToken);
 };
 
 export const removeTokens = () => {
-    localStorage.removeItem(idTokenKey);
+    localStorage.removeItem(accessTokenKey);
     localStorage.removeItem(refreshTokenKey);
 };
 
 export const getTokens = () => {
-    return [
-        localStorage.getItem(idTokenKey),
-        localStorage.getItem(refreshTokenKey),
-    ];
+    return {
+        accessToken: localStorage.getItem(accessTokenKey),
+        refreshToken: localStorage.getItem(refreshTokenKey),
+    };
 };
 
 // gets the token's payload, and returns null

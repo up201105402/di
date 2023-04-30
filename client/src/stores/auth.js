@@ -2,6 +2,7 @@
 import { watchEffect } from 'vue';
 import { storeTokens, getTokens, doRequest, getTokenPayload, removeTokens } from '../util';
 import { useRouter } from 'vue-router';
+import { useStorage } from '@vueuse/core'
 
 import { defineStore, storeToRefs } from "pinia";
 import axios from "axios";
@@ -12,7 +13,8 @@ export const useAuthStore = defineStore("auth", {
     userName: null,
     userEmail: null,
     userAvatar: null,
-    idToken: null,
+    accessToken: useStorage('accessToken', null),
+    refreshToken: useStorage('refreshToken', null),
 
     error: null,
 
@@ -39,20 +41,6 @@ export const useAuthStore = defineStore("auth", {
         this.userAvatar = payload.avatar;
       }
     },
-
-    fetch(sampleDataKey) {
-      axios
-        .get(`data-sources/${sampleDataKey}.json`)
-        .then((r) => {
-          if (r.data && r.data.data) {
-            this[sampleDataKey] = r.data.data;
-          }
-        })
-        .catch((error) => {
-          alert(error.message);
-        });
-    },
-
     async logIn(username, password, router, redirectURL) {
         const { data, error } = await authenticate(username, password, '/api/user/login')
 
@@ -63,7 +51,7 @@ export const useAuthStore = defineStore("auth", {
 
         this.userName = username;
         this.error = null;
-        this.idToken = data.token.idToken;
+        this.accessToken = data.token.idToken;
         router.push(redirectURL);
     },
     
@@ -77,7 +65,7 @@ export const useAuthStore = defineStore("auth", {
 
         this.userName = username;
         this.error = null;
-        this.idToken = data.idToken;
+        this.accessToken = data.idToken;
         router.push(redirectURL);
     },
 
@@ -86,22 +74,17 @@ export const useAuthStore = defineStore("auth", {
             url: '/api/user/signout',
             method: 'POST',
             headers: {
-                Authorization: `${this.idToken}`,
+                Authorization: `${this.accessToken}`,
             },
         });
     
         if (error) {
-            // state.error = error;
-            // state.isLoading = false;
             this.error = error;
             return;
         }
-    
-        // state.currentUser = null;
-        // state.idToken = null;
-
+        
         this.userName = null;
-        this.idToken = null;
+        this.accessToken = null;
     
         removeTokens();
     }
@@ -113,14 +96,14 @@ const initializeUser = async () => {
     state.isLoading = true;
     state.error = null;
 
-    const [idToken, refreshToken] = getTokens();
+    const [accessToken, refreshToken] = getTokens();
 
-    const idTokenClaims = getTokenPayload(idToken);
+    const accessTokenClaims = getTokenPayload(idToken);
     const refreshTokenClaims = getTokenPayload(refreshToken);
 
-    if (idTokenClaims) {
-        state.idToken = idToken;
-        state.currentUser = idTokenClaims.user;
+    if (accessTokenClaims) {
+        state.accessToken = accessToken;
+        state.currentUser = accessTokenClaims.user;
     }
 
     state.isLoading = false;
@@ -146,12 +129,12 @@ const initializeUser = async () => {
     }
 
     const { tokens } = data;
-    storeTokens(tokens.idToken, tokens.refreshToken);
+    storeTokens(tokens.accessToken, tokens.refreshToken);
 
-    const updatedIdTokenClaims = getTokenPayload(tokens.idToken);
+    const updatedaccessTokenClaims = getTokenPayload(tokens.accessToken);
 
-    state.currentUser = updatedIdTokenClaims.user;
-    state.idToken = tokens.idToken;
+    state.currentUser = updatedAccessTokenClaims.user;
+    state.accessToken = tokens.accessToken;
 };
 
 export const useAuth = () => {
@@ -198,12 +181,12 @@ const authenticate = async (username, password, url) => {
 
     // const { tokens } = data;
 
-    storeTokens('tokens.idToken_'  + username, 'tokens.refreshToken');
+    storeTokens('tokens.accessToken_'  + username, 'tokens.refreshToken');
 
-    //const tokenClaims = getTokenPayload(tokens.idToken);
+    //const tokenClaims = getTokenPayload(tokens.accessToken);
 
     // set tokens to local storage with expiry (separate function)
-    // state.idToken = 'tokens.idToken_' + username;
+    // state.accessToken = 'tokens.accessToken_' + username;
     //state.currentUser = tokenClaims.user;
     // state.currentUser = username;
     // state.isLoading = false;

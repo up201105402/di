@@ -22,6 +22,7 @@ const routes = [
     path: "/dashboard",
     name: "dashboard",
     component: Home,
+    private: true,
   },
   {
     // Document title tag
@@ -32,6 +33,7 @@ const routes = [
     path: "/pipelines",
     name: "pipelines",
     component: Pipelines,
+    private: true,
   },
   {
     // Document title tag
@@ -42,6 +44,7 @@ const routes = [
     path: "/pipeline/:id",
     name: "pipeline",
     component: PipelineEditor,
+    private: true,
   },
   {
     meta: {
@@ -66,6 +69,7 @@ const routes = [
     path: "/profile",
     name: "profile",
     component: () => import("@/views/ProfileView.vue"),
+    private: true,
   },
   {
     meta: {
