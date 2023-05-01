@@ -19,7 +19,7 @@ import { useAsyncState } from "@vueuse/core";
 import Loading from "vue-loading-overlay";
 import "vue-loading-overlay/dist/css/index.css";
 
-const { accessToken } = storeToRefs(useAuthStore());
+const { accessToken } = useAuthStore();
 
 // FETCH PIPELINES
 
@@ -29,7 +29,7 @@ const { isLoading: isFetching, state: fetchResponse, isReady: isFetchFinished, e
       url: '/api/pipeline',
       method: 'GET',
       headers: {
-        Authorization: `${accessToken.value}`
+        Authorization: `${accessToken}`
       },
     })
   },
@@ -56,7 +56,7 @@ const { isLoading: isCreating, state: createResponse, isReady: createFinished, e
         url: '/api/pipeline',
         method: 'POST',
         headers: {
-          Authorization: `${accessToken.value}`,
+          Authorization: `${accessToken}`,
         },
         data: {
           name: createPipelineForm.name
@@ -97,7 +97,7 @@ const { isLoading: isDeleting, state: deleteResponse, isReady: deleteFinished, e
         url: '/api/pipeline',
         method: 'DELETE',
         headers: {
-          Authorization: `${accessToken.value}`,
+          Authorization: `${accessToken}`,
         },
         data: {
           ID: pipelineID

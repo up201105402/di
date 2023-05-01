@@ -11,6 +11,6 @@ type IDToken struct {
 }
 
 type TokenPair struct {
-	IDToken
-	RefreshToken
+	IDToken      `json:"accessToken"`
+	RefreshToken `json:"refreshToken"`
 }

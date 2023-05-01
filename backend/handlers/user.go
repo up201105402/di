@@ -19,6 +19,10 @@ type invalidArgument struct {
 	Param string `json:"param"`
 }
 
+type tokensReq struct {
+	RefreshToken string `json:"refreshToken" binding:"required"`
+}
+
 func LogIn(services *service.Services) gin.HandlerFunc {
 	return func(context *gin.Context) {
 
@@ -43,7 +47,7 @@ func LogIn(services *service.Services) gin.HandlerFunc {
 			return
 		}
 
-		token, err := services.TokenService.NewFirstPairFromUser(context.Request.Context(), user)
+		tokens, err := services.TokenService.NewFirstPairFromUser(context.Request.Context(), user)
 
 		if err != nil {
 			log.Printf("Failed to create tokens for user: %v\n", err.Error())
@@ -56,7 +60,7 @@ func LogIn(services *service.Services) gin.HandlerFunc {
 		}
 
 		context.JSON(http.StatusOK, gin.H{
-			"token": token,
+			"tokens": tokens,
 		})
 	}
 }
@@ -121,6 +125,54 @@ func SignOut(services *service.Services) gin.HandlerFunc {
 
 		context.JSON(http.StatusOK, gin.H{
 			"message": "User signed out successfully!",
+		})
+	}
+}
+
+func NewAccessToken(services *service.Services) gin.HandlerFunc {
+	return func(context *gin.Context) {
+		// bind JSON to req of type tokensRew
+		var req tokensReq
+
+		if ok := bindData(context, &req); !ok {
+			return
+		}
+
+		ctx := context.Request.Context()
+
+		// verify refresh JWT
+		refreshToken, err := services.TokenService.ValidateRefreshToken(req.RefreshToken)
+
+		if err != nil {
+			context.JSON(errors.Status(err), gin.H{
+				"error": err,
+			})
+			return
+		}
+
+		// get up-to-date user
+		user, err := services.UserService.Get(refreshToken.UID)
+
+		if err != nil {
+			context.JSON(errors.Status(err), gin.H{
+				"error": err,
+			})
+			return
+		}
+
+		tokens, err := services.TokenService.NewPairFromUser(ctx, user, refreshToken.ID)
+
+		if err != nil {
+			log.Printf("Failed to create tokens for user: %+v. Error: %v\n", user, err.Error())
+
+			context.JSON(errors.Status(err), gin.H{
+				"error": err,
+			})
+			return
+		}
+
+		context.JSON(http.StatusOK, gin.H{
+			"tokens": tokens,
 		})
 	}
 }

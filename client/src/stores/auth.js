@@ -1,16 +1,15 @@
 
 import { watchEffect } from 'vue';
-import { storeTokens, getTokens, doRequest, getTokenPayload, removeTokens } from '../util';
+import jwt_decode from 'jwt-decode';
+import { doRequest } from '../util';
 import { useRouter } from 'vue-router';
 import { useStorage } from '@vueuse/core'
 
 import { defineStore, storeToRefs } from "pinia";
-import axios from "axios";
 
 export const useAuthStore = defineStore("auth", {
   state: () => ({
-    /* User */
-    userName: null,
+    userName: useStorage('userName', null),
     userEmail: null,
     userAvatar: null,
     accessToken: useStorage('accessToken', null),
@@ -18,29 +17,11 @@ export const useAuthStore = defineStore("auth", {
 
     error: null,
 
-    /* Field focus with ctrl+k (to register only once) */
-    isFieldFocusRegistered: false,
-
-    /* Sample data (commonly used) */
-    clients: [],
-    history: [],
-
     onAuthRoute: '/',
     requireAuthRoute: '/login',
     publicRoutePaths: ['/signup', '/login']
   }),
   actions: {
-    setUser(payload) {
-      if (payload.name) {
-        this.userName = payload.name;
-      }
-      if (payload.email) {
-        this.userEmail = payload.email;
-      }
-      if (payload.avatar) {
-        this.userAvatar = payload.avatar;
-      }
-    },
     async logIn(username, password, router, redirectURL) {
         const { data, error } = await authenticate(username, password, '/api/user/login')
 
@@ -51,10 +32,11 @@ export const useAuthStore = defineStore("auth", {
 
         this.userName = username;
         this.error = null;
-        this.accessToken = data.token.idToken;
+        const { accessToken, refreshToken } = data.tokens;
+        this.accessToken = accessToken.idToken;
+        this.refreshToken = refreshToken.idToken;
         router.push(redirectURL);
     },
-    
     async signUp(username, password, router, redirectURL) {
         const { data, error } = await authenticate(username, password, '/api/user/signup');
 
@@ -68,7 +50,6 @@ export const useAuthStore = defineStore("auth", {
         this.accessToken = data.idToken;
         router.push(redirectURL);
     },
-
     async signOut() {
         const { error } = await doRequest({
             url: '/api/user/signout',
@@ -83,12 +64,9 @@ export const useAuthStore = defineStore("auth", {
             return;
         }
         
-        this.userName = null;
-        this.accessToken = null;
-    
+        this.userName = this.accessToken = this.refreshToken = null;
         removeTokens();
     }
-
   },
 });
 
@@ -98,8 +76,8 @@ const initializeUser = async () => {
 
     const [accessToken, refreshToken] = getTokens();
 
-    const accessTokenClaims = getTokenPayload(idToken);
-    const refreshTokenClaims = getTokenPayload(refreshToken);
+    const accessTokenClaims = isTokenValid(idToken);
+    const refreshTokenClaims = isTokenValid(refreshToken);
 
     if (accessTokenClaims) {
         state.accessToken = accessToken;
@@ -131,7 +109,7 @@ const initializeUser = async () => {
     const { tokens } = data;
     storeTokens(tokens.accessToken, tokens.refreshToken);
 
-    const updatedaccessTokenClaims = getTokenPayload(tokens.accessToken);
+    const updatedaccessTokenClaims = isTokenValid(tokens.accessToken);
 
     state.currentUser = updatedAccessTokenClaims.user;
     state.accessToken = tokens.accessToken;
@@ -140,12 +118,26 @@ const initializeUser = async () => {
 export const useAuth = () => {
 
     const store = useAuthStore();
-
-    if (!store) {
-        throw new Error('Main store has not been initialized!');
-    }
-
     const router = useRouter();
+
+    const isAccessTokenValid = isTokenValid(store.accessToken);
+    const isRefreshTokenValid = isTokenValid(store.refreshToken);
+
+    if (!isAccessTokenValid && isRefreshTokenValid) {
+        const { data, error } = getNewAccessToken(this.refreshToken);
+
+        if (error) {
+            store.accessToken = store.refreshToken = store.userName = null;
+            removeTokens();
+        }
+
+        const { accessToken, refreshToken } = data.tokens;
+        store.accessToken = accessToken.idToken;
+        store.refreshToken = refreshToken.idToken;
+    } else {
+        store.accessToken = store.refreshToken = store.userName = null;
+        removeTokens();
+    }
 
     watchEffect(() => {
         const currentRoutePath = router.currentRoute.value.path;
@@ -173,26 +165,39 @@ const authenticate = async (username, password, url) => {
         },
     });
 
-    // if (error) {
-    //     state.error = error;
-    //     state.isLoading = false;
-    //     return;
-    // }
-
-    // const { tokens } = data;
-
-    storeTokens('tokens.accessToken_'  + username, 'tokens.refreshToken');
-
-    //const tokenClaims = getTokenPayload(tokens.accessToken);
-
-    // set tokens to local storage with expiry (separate function)
-    // state.accessToken = 'tokens.accessToken_' + username;
-    //state.currentUser = tokenClaims.user;
-    // state.currentUser = username;
-    // state.isLoading = false;
-
     return {
         data,
         error
     }
 };
+
+const removeTokens = () => {
+    localStorage.removeItem("accessToken");
+    localStorage.removeItem("refreshToken");
+    localStorage.removeItem("userName");
+};
+
+const isTokenValid = (token) => {
+    
+    if (!token) {
+        return false;
+    }
+
+    const payload = jwt_decode(token);
+
+    if (Date.now() / 1000 >= payload.exp) {
+        return false;
+    }
+
+    return true;
+};
+
+const getNewAccessToken = async (refreshToken) => {
+    return await doRequest({
+        url: '/api/user/tokens',
+        method: 'POST',
+        data: {
+            refreshToken
+        },
+    });
+}
