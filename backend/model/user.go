@@ -10,7 +10,7 @@ type User struct {
 	Email         string `json:"email"`
 	Notifications bool   `json:"notifications"`
 	Avatar        string `json:"avatar"`
-	Password      string `json:"password"`
+	Password      string `json:"-"`
 }
 
 // it is used for validation and json marshalling

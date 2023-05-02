@@ -8,112 +8,69 @@ import { useStorage } from '@vueuse/core'
 import { defineStore, storeToRefs } from "pinia";
 
 export const useAuthStore = defineStore("auth", {
-  state: () => ({
-    userName: useStorage('userName', null),
-    userEmail: null,
-    userAvatar: null,
-    accessToken: useStorage('accessToken', null),
-    refreshToken: useStorage('refreshToken', null),
+    state: () => ({
+        userName: useStorage('userName', null),
+        userEmail: null,
+        userAvatar: null,
+        accessToken: useStorage('accessToken', null),
+        refreshToken: useStorage('refreshToken', null),
 
-    error: null,
+        error: null,
 
-    onAuthRoute: '/',
-    requireAuthRoute: '/login',
-    publicRoutePaths: ['/signup', '/login']
-  }),
-  actions: {
-    async logIn(username, password, router, redirectURL) {
-        const { data, error } = await authenticate(username, password, '/api/user/login')
+        onAuthRoute: '/',
+        requireAuthRoute: '/login',
+        publicRoutePaths: ['/signup', '/login']
+    }),
+    actions: {
+        async logIn(username, password, router, redirectURL) {
+            const { data, error } = await authenticate(username, password, '/api/user/login')
 
-        if (error) {
-            this.error = error;
-            return;
-        }
+            if (error) {
+                this.error = error;
+                return;
+            }
 
-        this.userName = username;
-        this.error = null;
-        const { accessToken, refreshToken } = data.tokens;
-        this.accessToken = accessToken.idToken;
-        this.refreshToken = refreshToken.idToken;
-        router.push(redirectURL);
-    },
-    async signUp(username, password, router, redirectURL) {
-        const { data, error } = await authenticate(username, password, '/api/user/signup');
-
-        if (error) {
-            this.error = error;
-            return;
-        }
-
-        this.userName = username;
-        this.error = null;
-        this.accessToken = data.idToken;
-        router.push(redirectURL);
-    },
-    async signOut() {
-        const { error } = await doRequest({
-            url: '/api/user/signout',
-            method: 'POST',
-            headers: {
-                Authorization: `${this.accessToken}`,
-            },
-        });
-    
-        if (error) {
-            this.error = error;
-            return;
-        }
-        
-        this.userName = this.accessToken = this.refreshToken = null;
-        removeTokens();
-    }
-  },
-});
-
-const initializeUser = async () => {
-    state.isLoading = true;
-    state.error = null;
-
-    const [accessToken, refreshToken] = getTokens();
-
-    const accessTokenClaims = isTokenValid(idToken);
-    const refreshTokenClaims = isTokenValid(refreshToken);
-
-    if (accessTokenClaims) {
-        state.accessToken = accessToken;
-        state.currentUser = accessTokenClaims.user;
-    }
-
-    state.isLoading = false;
-
-    // silently refresh tokens in local storage
-    // if we for some reason don't have refresh token (e.g., if the user deleted it manually)
-    // then we don't proceed
-    if (!refreshTokenClaims) {
-        return;
-    }
-
-    const { data, error } = await doRequest({
-        url: '/api/user/tokens',
-        method: 'POST',
-        data: {
-            refreshToken,
+            this.userName = username;
+            this.error = null;
+            const { accessToken, refreshToken } = data.tokens;
+            this.accessToken = accessToken.signedString;
+            this.refreshToken = refreshToken.signedString;
+            router.push(redirectURL);
         },
-    });
+        async signUp(username, password, router, redirectURL) {
+            const { data, error } = await authenticate(username, password, '/api/user/signup');
 
-    if (error) {
-        console.error('Error refreshing tokens\n', error);
-        return;
-    }
+            if (error) {
+                store.accessToken = store.refreshToken = store.userName = null;
+                removeTokens();
+                return;
+            }
 
-    const { tokens } = data;
-    storeTokens(tokens.accessToken, tokens.refreshToken);
+            const { accessToken, refreshToken } = data.tokens;
+            store.accessToken = accessToken.signedString;
+            store.refreshToken = refreshToken.signedString;
+            this.userName = username;
+            router.push(redirectURL);
+        },
+        async signOut() {
+            const { error } = await doRequest({
+                url: '/api/user/signout',
+                method: 'POST',
+                headers: {
+                    Authorization: `${this.accessToken}`,
+                },
+            });
 
-    const updatedaccessTokenClaims = isTokenValid(tokens.accessToken);
+            if (error) {
+                this.error = error;
+                return;
+            }
 
-    state.currentUser = updatedAccessTokenClaims.user;
-    state.accessToken = tokens.accessToken;
-};
+            this.userName = this.accessToken = this.refreshToken = null;
+            removeTokens();
+        }
+    },
+});
 
 export const useAuth = () => {
 
@@ -123,17 +80,20 @@ export const useAuth = () => {
     const isAccessTokenValid = isTokenValid(store.accessToken);
     const isRefreshTokenValid = isTokenValid(store.refreshToken);
 
-    if (!isAccessTokenValid && isRefreshTokenValid) {
-        const { data, error } = getNewAccessToken(this.refreshToken);
+    if (isRefreshTokenValid) {
+        if (!isAccessTokenValid) {
+            const { data, error } = getNewAccessToken(this.refreshToken);
 
-        if (error) {
-            store.accessToken = store.refreshToken = store.userName = null;
-            removeTokens();
+            if (error) {
+                store.accessToken = store.refreshToken = store.userName = null;
+                removeTokens();
+                return;
+            }
+
+            const { accessToken, refreshToken } = data.tokens;
+            store.accessToken = accessToken.signedString;
+            store.refreshToken = refreshToken.signedString;
         }
-
-        const { accessToken, refreshToken } = data.tokens;
-        store.accessToken = accessToken.idToken;
-        store.refreshToken = refreshToken.idToken;
     } else {
         store.accessToken = store.refreshToken = store.userName = null;
         removeTokens();
@@ -178,7 +138,7 @@ const removeTokens = () => {
 };
 
 const isTokenValid = (token) => {
-    
+
     if (!token) {
         return false;
     }

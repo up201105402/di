@@ -3,11 +3,11 @@ package model
 type RefreshToken struct {
 	ID           uint   `json:"-"`
 	UID          uint   `json:"-"`
-	SignedString string `json:"refreshToken"`
+	SignedString string `json:"signedString"`
 }
 
 type IDToken struct {
-	SignedString string `json:"idToken"`
+	SignedString string `json:"signedString"`
 }
 
 type TokenPair struct {
