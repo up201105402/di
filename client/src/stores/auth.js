@@ -1,4 +1,3 @@
-
 import { watchEffect } from 'vue';
 import jwt_decode from 'jwt-decode';
 import { doRequest } from '../util';
@@ -82,7 +81,7 @@ export const useAuth = () => {
 
     if (isRefreshTokenValid) {
         if (!isAccessTokenValid) {
-            const { data, error } = getNewAccessToken(this.refreshToken);
+            const { data, error } = getNewAccessToken(store.refreshToken);
 
             if (error) {
                 store.accessToken = store.refreshToken = store.userName = null;
@@ -158,6 +157,9 @@ const getNewAccessToken = async (refreshToken) => {
         method: 'POST',
         data: {
             refreshToken
+        },
+        headers: {
+            Authorization: `${refreshToken}`,
         },
     });
 }
