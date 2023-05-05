@@ -71,7 +71,7 @@ export const useAuthStore = defineStore("auth", {
     },
 });
 
-export const useAuth = () => {
+export const useAuth = async () => {
 
     const store = useAuthStore();
     const router = useRouter();
@@ -81,7 +81,7 @@ export const useAuth = () => {
 
     if (isRefreshTokenValid) {
         if (!isAccessTokenValid) {
-            const { data, error } = getNewAccessToken(store.refreshToken);
+            const { data, error } = await getNewAccessToken(store.accessToken, store.refreshToken);
 
             if (error) {
                 store.accessToken = store.refreshToken = store.userName = null;
@@ -151,15 +151,12 @@ const isTokenValid = (token) => {
     return true;
 };
 
-const getNewAccessToken = async (refreshToken) => {
-    return await doRequest({
+const getNewAccessToken = (accessToken, refreshToken) => {
+    return doRequest({
         url: '/api/user/tokens',
         method: 'POST',
         data: {
             refreshToken
-        },
-        headers: {
-            Authorization: `${refreshToken}`,
-        },
+        }
     });
 }

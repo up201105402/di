@@ -87,7 +87,7 @@ func setupRouter(services *service.Services) *gin.Engine {
 	userAPI := router.Group("/api/user")
 	userAPI.POST("/login", handlers.LogIn(services))
 	userAPI.POST("/signup", middleware.Auth(services.TokenService), handlers.SignUp(services))
-	userAPI.POST("/tokens", middleware.Auth(services.TokenService), handlers.NewAccessToken(services))
+	userAPI.POST("/tokens", handlers.NewAccessToken(services))
 	userAPI.POST("/signout", middleware.Auth(services.TokenService), handlers.SignOut(services))
 
 	pipelineAPI := router.Group("/api/pipeline")
