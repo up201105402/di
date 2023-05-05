@@ -4,7 +4,7 @@ import {
   mdiChartTimelineVariant,
   mdiPlus
 } from "@mdi/js";
-import { storeToRefs } from 'pinia';
+import { useRouter } from 'vue-router';
 import SectionMain from "@/components/SectionMain.vue";
 import LayoutAuthenticated from "@/layouts/LayoutAuthenticated.vue";
 import SectionTitleLineWithButton from "@/components/SectionTitleLineWithButton.vue";
@@ -18,8 +18,9 @@ import { doRequest } from "@/util";
 import { useAsyncState } from "@vueuse/core";
 import Loading from "vue-loading-overlay";
 import "vue-loading-overlay/dist/css/index.css";
+import router from "@/router";
 
-const { accessToken } = useAuthStore();
+const { accessToken, requireAuthRoute } = useAuthStore();
 
 // FETCH PIPELINES
 
@@ -118,6 +119,12 @@ const { isLoading: isDeleting, state: deleteResponse, isReady: deleteFinished, e
 watch(deleteFinished, () => {
   if (deleteFinished.value) {
     fetchPipelines();
+  }
+})
+
+watch(fetchResponse, () => {
+  if (fetchResponse.value.status === 401) {
+    router.push(requireAuthRoute);
   }
 })
 

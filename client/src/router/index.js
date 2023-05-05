@@ -1,5 +1,4 @@
 import { createRouter, createWebHashHistory } from "vue-router";
-import Style from "@/views/StyleView.vue";
 import Home from "@/views/HomeView.vue";
 import Pipelines from "@/views/PipelinesView.vue";
 import PipelineEditor from "@/views/PipelineEditorView.vue";

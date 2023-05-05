@@ -86,12 +86,12 @@ export const useAuth = async () => {
             if (error) {
                 store.accessToken = store.refreshToken = store.userName = null;
                 removeTokens();
-                return;
+                router.push(requireAuthRoute.value);
+            } else {
+                const { accessToken, refreshToken } = data.tokens;
+                store.accessToken = accessToken.signedString;
+                store.refreshToken = refreshToken.signedString;
             }
-
-            const { accessToken, refreshToken } = data.tokens;
-            store.accessToken = accessToken.signedString;
-            store.refreshToken = refreshToken.signedString;
         }
     } else {
         store.accessToken = store.refreshToken = store.userName = null;

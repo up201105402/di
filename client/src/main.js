@@ -27,11 +27,6 @@ const authStore = useAuthStore(pinia);
 const pipelinesStore = usePipelinesStore(pinia);
 const styleStore = useStyleStore(pinia);
 
-/* Fetch sample data */
-mainStore.fetch("clients");
-mainStore.fetch("history");
-pipelinesStore.fetch("pipelines");
-
 /* App style */
 styleStore.setStyle(localStorage[styleKey] ?? "basic");
 

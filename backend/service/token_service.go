@@ -192,7 +192,7 @@ func (service *tokenService) ValidateRefreshToken(tokenString string) (*model.Re
 
 	// Standard claims store ID as a string. I want "model" to be clear our string
 	// is a UUID. So we parse claims.Id as UUID
-	// tokenUUID, err := uuid.Parse(claims.Id)
+	tokenUUID, err := uuid.Parse(claims.Id)
 
 	if err != nil {
 		log.Printf("Claims ID could not be parsed as UUID: %s\n%v\n", claims.Id, err)
@@ -201,7 +201,7 @@ func (service *tokenService) ValidateRefreshToken(tokenString string) (*model.Re
 
 	return &model.RefreshToken{
 		SignedString: tokenString,
-		ID:           claims.UID,
+		ID:           uint(tokenUUID.ID()),
 		UID:          claims.UID,
 	}, nil
 }
