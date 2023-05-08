@@ -1,16 +1,17 @@
 import { createApp } from 'vue';
-import { createPinia } from "pinia";
+import { createPinia  } from "pinia";
 import { createI18n } from 'vue-i18n';
-import { useMainStore } from './stores/main';
 import { messages } from './i18n';
 import App from './App.vue';
 
 import router from "./router";
 import { useAuthStore } from "@/stores/auth";
-import { usePipelinesStore } from "@/stores/pipelines";
 import { useStyleStore } from "@/stores/style.js";
 import { darkModeKey, styleKey } from "@/config.js";
 import './css/main.css';
+
+import Vueform from '@vueform/vueform/plugin'
+import vueformConfig from './../vueform.config'
 
 const i18n = createI18n({
   legacy: false, // you must set `false`, to use Composition API
@@ -21,10 +22,7 @@ const i18n = createI18n({
 
 /* Init Pinia */
 const pinia = createPinia();
-
-const mainStore = useMainStore(pinia);
 const authStore = useAuthStore(pinia);
-const pipelinesStore = usePipelinesStore(pinia);
 const styleStore = useStyleStore(pinia);
 
 /* App style */
@@ -49,5 +47,5 @@ router.afterEach((to) => {
     : defaultDocumentTitle;
 });
 
-const spa = createApp(App).use(authStore).use(router).use(i18n);
+const spa = createApp(App).use(authStore).use(router).use(i18n).use(Vueform, vueformConfig);
 spa.mount('#app')
