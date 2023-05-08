@@ -1,10 +1,10 @@
 <script setup>
-    import { stepTypes } from '@/pipelines/steps'
-    const CheckoutRepositoryForm = stepTypes[0].definedComponent;
+import { stepTypes } from '@/pipelines/steps'
+const CheckoutRepositoryForm = stepTypes[0].definedComponent;
 </script>
 
 <template>
-    <Vueform>
+  <!-- <Vueform>
         <template #empty>
             <FormSteps>
                 <FormStep name="page0" label="Select Type" :elements="[
@@ -82,5 +82,10 @@
 
             <FormStepsControls />
         </template>
-    </Vueform>
+    </Vueform> -->
+  <FormKit type="multi-step">
+    <FormKit type="step" name="stepOne">
+      <!-- content for stepOne goes here! -->
+    </FormKit>
+  </FormKit>
 </template>

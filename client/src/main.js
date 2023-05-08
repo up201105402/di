@@ -13,6 +13,11 @@ import './css/main.css';
 import Vueform from '@vueform/vueform/plugin'
 import vueformConfig from './../vueform.config'
 
+import { plugin as formKitPlugin, defaultConfig } from '@formkit/vue'
+import { createMultiStepPlugin } from '@formkit/addons'
+import '@formkit/themes/genesis'
+import '@formkit/addons/css/multistep'
+
 const i18n = createI18n({
   legacy: false, // you must set `false`, to use Composition API
   locale: 'en', // set locale
