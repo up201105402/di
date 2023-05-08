@@ -1,4 +1,5 @@
 import { defineComponent } from "vue";
+import CheckoutRepositoryForm from "@/pipelines/steps/components/CheckoutRepositoryForm.vue"
 
 const stepTypes = [{
     id: 0,
@@ -16,12 +17,6 @@ const stepTypes = [{
             ],
         ],
     ],
-    component: defineComponent({
-        name: 'CheckoutRepositoryForm',
-        setup() {
-          useAuth();
-        }
-      })
 },
 {
     id: 1,

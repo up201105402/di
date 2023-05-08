@@ -1,5 +1,6 @@
 <script setup>
     import { stepTypes } from '@/pipelines/steps'
+    const CheckoutRepositoryForm = stepTypes[0].definedComponent;
 </script>
 
 <template>
@@ -37,6 +38,7 @@
                   'regex:((git|ssh|http(s)?)|(git@[\\w\\.]+))(:(//)?)([\\w\\.@\\:/\\-~]+)(\\.git)(/)?',
                 ]" />
                 </GroupElement>
+                <CheckoutRepositoryForm />
                 <GroupElement name="Load Training Dataset" :conditions="[
                 [
                   'Step  Type',

@@ -8,6 +8,9 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@formkit/addons": "^0.16.5",
+    "@formkit/themes": "^0.16.5",
+    "@formkit/vue": "^0.16.5",
     "@mdi/js": "^7.2.96",
     "@rushstack/eslint-patch": "^1.2.0",
     "@tailwindcss/forms": "^0.5.3",
