@@ -1,6 +1,7 @@
 import { createRouter, createWebHashHistory } from "vue-router";
 import Home from "@/views/HomeView.vue";
 import Pipelines from "@/views/PipelinesView.vue";
+import Runs from "@/views/RunsView.vue";
 import PipelineEditor from "@/views/PipelineEditorView.vue";
 
 const routes = [
@@ -32,6 +33,17 @@ const routes = [
     path: "/pipelines",
     name: "pipelines",
     component: Pipelines,
+    private: true,
+  },
+  {
+    // Document title tag
+    // We combine it with defaultDocumentTitle set in `src/main.js` on router.afterEach hook
+    meta: {
+      title: "Runs",
+    },
+    path: "/runs",
+    name: "runs",
+    component: Runs,
     private: true,
   },
   {
