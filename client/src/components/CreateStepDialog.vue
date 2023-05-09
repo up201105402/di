@@ -1,91 +1,41 @@
 <script setup>
-import { stepTypes } from '@/pipelines/steps'
-const CheckoutRepositoryForm = stepTypes[0].definedComponent;
+    import { ref } from 'vue';
+    import stepTypes from '@/pipelines/steps'
+    import CheckoutRepositoryForm from '@/pipelines/steps/components/CheckoutRepositoryForm.vue';
+    import LoadTrainingDatasetForm from '@/pipelines/steps/components/LoadTrainingDatasetForm.vue';
+    import TrainModelForm from '@/pipelines/steps/components/TrainModelForm.vue';
+
+    const data = ref(null);
+
+    const emit = defineEmits(["onSubmit"]);
+
+    const onCreate = (e) => {
+        emit("onSubmit", e.data)
+    }
 </script>
 
 <template>
-  <!-- <Vueform>
+    <Vueform v-model="data" sync @submit="onCreate">
         <template #empty>
             <FormSteps>
-                <FormStep name="page0" label="Select Type" :elements="[
-                'Step Name',
-                'Step Type',
-              ]" />
-                <FormStep name="page1" label="Configure" :elements="stepTypes.map(step => step.name)" :labels="{
-                next: 'Add',
-              }" />
+                <FormStep name="step1" label="Select Type" :elements="['stepName', 'stepType']" />
+                <FormStep name="step2" label="Configure" :elements="Object.values(stepTypes).map(stepType => stepType.name)" :labels="{next: 'Add'}" />
             </FormSteps>
 
             <FormElements>
-                <TextElement name="Step Name" label="Name" :rules="['required']" />
-                <SelectElement name="Step Type" :search="true" :native="false" label="Type" input-type="search"
-                    autocomplete="off" :items="stepTypes.map(stepType => ({
+                <TextElement name="stepName" label="Name" :rules="['required']" />
+                <SelectElement name="stepType" :search="true" :native="false" label="Type" input-type="search"
+                    autocomplete="off" 
+                    :items="Object.values(stepTypes).map(stepType => ({
                         'value': stepType.id,
-                        'label': stepType.name,
-                    }))" 
-                    :rules="['required']" />
-                <GroupElement name="Checkout repository" :conditions="[
-                [
-                  'Step Type',
-                  'in',
-                  [
-                    '0',
-                  ],
-                ],
-              ]" label="Checkout repository">
-                    <TextElement name="Repository URL" label="URL" :rules="[
-                  'required',
-                  'regex:((git|ssh|http(s)?)|(git@[\\w\\.]+))(:(//)?)([\\w\\.@\\:/\\-~]+)(\\.git)(/)?',
-                ]" />
-                </GroupElement>
+                        'label': stepType.label,
+                    }))" :rules="['required']" />
                 <CheckoutRepositoryForm />
-                <GroupElement name="Load Training Dataset" :conditions="[
-                [
-                  'Step  Type',
-                  'in',
-                  [
-                    '1',
-                  ],
-                ],
-              ]" label="Load Training Dataset">
-                    <TextElement name="Training Dataset Directory" label="Directory" :rules="[
-                  'required',
-                  'regex:^(.+)\\/([^\\/]+)$',
-                ]" />
-                    <TextElement name="Fraction of the training data" label="Fraction of the training data to use"
-                        :rules="[
-                  'required',
-                  'regex:^(.+)\\/([^\\/]+)$',
-                ]" input-type="number" />
-                </GroupElement>
-                <GroupElement name="Train Model" label="Train Model" :conditions="[
-                [
-                  'Step  Type',
-                  'in',
-                  [
-                    '2',
-                  ],
-                ],
-              ]">
-                    <TextElement name="Model Directory" label="Directory" :rules="[
-                  'required',
-                  'regex:^(.+)\\/([^\\/]+)$',
-                ]" />
-                    <TextElement name="Number of Epochs" input-type="number" :rules="[
-                  'nullable',
-                  'required',
-                  'min:1',
-                  'numeric',
-                ]" autocomplete="off" label="Epochs" />
-                </GroupElement>
+                <LoadTrainingDatasetForm />
+                <TrainModelForm />
             </FormElements>
 
             <FormStepsControls />
         </template>
-    </Vueform> -->
-  <FormKit type="multi-step">
-    <FormKit type="step" name="stepOne">
-      <!-- content for stepOne goes here! -->
-    </FormKit>
-  </FormKit>
+    </Vueform>
 </template>

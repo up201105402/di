@@ -3,11 +3,26 @@
     import { Background } from '@vue-flow/background'
     import { Controls } from '@vue-flow/controls'
     import { MiniMap } from '@vue-flow/minimap'
-    import { ref, reactive } from 'vue'
-    import { initialElements } from '@/flowChart.js'
+    import { ref, reactive, computed } from 'vue'
     import CardBoxModal from '@/components/CardBoxModal.vue'
     import FormControl from "@/components/FormControl.vue"
     import FormField from "@/components/FormField.vue"
+
+    const props = defineProps({
+        modelValue: {
+            type: [Array, String, Number, Boolean],
+            default: null,
+        },
+    })
+
+    const emit = defineEmits(["update:modelValue"]);
+
+    const elements = computed({
+        get: () => props.modelValue,
+        set: (value) => {
+            emit("update:modelValue", value);
+        },
+    });
 
     /**
      * useVueFlow provides all event handlers and store properties
@@ -16,11 +31,6 @@
     const { onPaneReady, onNodeDragStop, onConnect, addEdges, setTransform, toObject } = useVueFlow()
 
     const isNodeModalActive = ref(false);
-
-    /**
-     * Our elements
-     */
-    const elements = ref(initialElements)
 
     const form = reactive({
         username: "",
@@ -137,7 +147,8 @@
         </FormField>
 
         <FormField label="Password" help="Please enter your password">
-            <FormControl v-model="form.password" type="password" name="password" autocomplete="current-password" placeholder="Password" />
+            <FormControl v-model="form.password" type="password" name="password" autocomplete="current-password"
+                placeholder="Password" />
         </FormField>
     </CardBoxModal>
 </template>
