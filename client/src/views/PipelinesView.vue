@@ -129,7 +129,7 @@ watch(fetchResponse, () => {
 })
 
 const pipelines = computed(() => fetchResponse.value?.data ? fetchResponse.value.data.pipelines : []);
-const isLoading = computed(() => isFetching.value || isCreating.value || isDeleting.value)
+const isLoading = computed(() => isFetching.value || isCreating.value || isDeleting.value);
 
 </script>
 

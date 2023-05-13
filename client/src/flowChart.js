@@ -11,7 +11,7 @@ export const initialElements = [
   { id: '4', label: 'Node 4', position: { x: 150, y: 200 }, class: 'light' },
   { id: '5', type: 'output', label: 'Node 5', position: { x: 300, y: 300 }, class: 'light' },
   { id: '6', source: '1', target: '2', animated: true },
-  { id: '7', label: 'edge with arrowhead', source: '1', target: '3', markerEnd: MarkerType.ArrowClosed },
+  { id: '7', label: 'edge with arrowhead', source: '1', target: '3', markerEnd: 'arrowclosed' },
   {
     id: '8',
     type: 'step',

@@ -15,7 +15,7 @@
                 "REDIS_HOST": "redis",
                 "REDIS_PORT": "6379",
                 "TOKEN_REFRESH_SECRET": "areallynotsuperg00ds33cret",
-                "ID_TOKEN_DURATION": "1",
+                "ID_TOKEN_DURATION": "900",
                 "REFRESH_TOKEN_DURATION": "259200",
             }
         }
