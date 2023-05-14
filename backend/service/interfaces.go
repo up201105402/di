@@ -34,3 +34,11 @@ type PipelineService interface {
 	Update(pipeline *model.Pipeline) error
 	Delete(id uint) error
 }
+
+type RunService interface {
+	Get(id uint) (*model.Run, error)
+	GetByPipeline(pipelineId uint) ([]model.Run, error)
+	Create(pipelineId uint) error
+	Update(run *model.Run) error
+	Delete(id uint) error
+}

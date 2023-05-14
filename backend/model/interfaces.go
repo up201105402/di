@@ -18,3 +18,11 @@ type PipelineRepository interface {
 	Update(u *Pipeline) error
 	Delete(id uint) error
 }
+
+type RunRepository interface {
+	FindByID(id uint) (*Run, error)
+	FindByPipeline(pipelineId uint) ([]Run, error)
+	Create(u *Run) error
+	Update(u *Run) error
+	Delete(id uint) error
+}
