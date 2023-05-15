@@ -8,6 +8,7 @@ import (
 type Services struct {
 	UserService     UserService
 	PipelineService PipelineService
+	RunService      RunService
 	TokenService    TokenService
 }
 
@@ -39,6 +40,7 @@ type RunService interface {
 	Get(id uint) (*model.Run, error)
 	GetByPipeline(pipelineId uint) ([]model.Run, error)
 	Create(pipelineId uint) error
+	Execute(pipelineId uint) error
 	Update(run *model.Run) error
 	Delete(id uint) error
 }

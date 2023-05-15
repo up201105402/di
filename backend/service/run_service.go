@@ -36,6 +36,12 @@ func (service *runServiceImpl) Create(pipelineId uint) error {
 	return nil
 }
 
+func (service *runServiceImpl) Execute(pipelineId uint) error {
+	// TODO
+
+	return nil
+}
+
 func (service *runServiceImpl) Update(run *model.Run) error {
 	err := service.RunRepository.Update(run)
 

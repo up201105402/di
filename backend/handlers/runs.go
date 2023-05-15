@@ -78,7 +78,7 @@ func FindByPipeline(services *service.Services) gin.HandlerFunc {
 func CreateRun(services *service.Services) gin.HandlerFunc {
 	return func(context *gin.Context) {
 
-		var req model.PipelineReq
+		var req model.CreateRunReq
 
 		if ok := bindData(context, &req); !ok {
 			return
@@ -91,26 +91,45 @@ func CreateRun(services *service.Services) gin.HandlerFunc {
 			})
 		}
 
-		serviceError := services.PipelineService.Create(user.ID, req.Name, req.Definition)
+		pipeline, serviceError := services.PipelineService.Get(req.PipelineID)
 
-		if req.ID != 0 && req.Definition != "" {
-			pipeline, err := services.PipelineService.Get(req.ID)
+		if serviceError != nil {
+			err := errors.NewNotFound("pipeline", string(req.PipelineID))
+			log.Printf(err.Message)
+			context.JSON(err.Status(), gin.H{
+				"error": err.Message,
+			})
+			return
+		}
 
-			if err != nil {
-				log.Printf("Failed to get pipeline with id %d\n", req.ID)
-				err := errors.NewNotFound("pipeline", string(req.ID))
-				context.JSON(err.Status(), gin.H{
-					"error": err.Message,
-				})
-				return
-			}
+		if pipeline.User.ID != user.ID {
+			errorMessage := fmt.Sprint("Failed to create run for pipeline %d with user: %v\n", pipeline.ID, user.Username)
+			log.Printf(errorMessage)
+			err := errors.NewInternal()
+			context.JSON(err.Status(), gin.H{
+				"error": errorMessage,
+			})
+			return
+		}
 
-			pipeline.Definition = req.Definition
-			err = services.PipelineService.Update(pipeline)
+		serviceError = services.RunService.Create(req.PipelineID)
 
-			if err != nil {
-				log.Printf("Failed to update pipeline with id %d\n", req.ID)
-				errorMessage := fmt.Sprint("Failed to update pipeline with id &d: %v\n", req.ID, err.Error())
+		if serviceError != nil {
+			log.Printf("Failed to create run for pipeline: %v\n", err.Error())
+			errorMessage := fmt.Sprint("Failed to create run for pipeline: %v\n", err.Error())
+			err := errors.NewInternal()
+			context.JSON(err.Status(), gin.H{
+				"error": errorMessage,
+			})
+			return
+		}
+
+		if req.Execute {
+			serviceError := services.RunService.Execute(req.PipelineID)
+
+			if serviceError != nil {
+				log.Printf("Failed to execute run for pipeline: %v\n", err.Error())
+				errorMessage := fmt.Sprint("Failed to execute run for pipeline: %v\n", err.Error())
 				err := errors.NewInternal()
 				context.JSON(err.Status(), gin.H{
 					"error": errorMessage,
@@ -119,9 +138,52 @@ func CreateRun(services *service.Services) gin.HandlerFunc {
 			}
 		}
 
+		context.JSON(http.StatusOK, gin.H{})
+	}
+}
+
+func ExecuteRun(services *service.Services) gin.HandlerFunc {
+	return func(context *gin.Context) {
+
+		var req model.CreateRunReq
+
+		if ok := bindData(context, &req); !ok {
+			return
+		}
+
+		user, err := getUser(context)
+		if err != nil {
+			context.JSON(err.Status(), gin.H{
+				"error": err.Error(),
+			})
+		}
+
+		pipeline, serviceError := services.PipelineService.Get(req.PipelineID)
+
 		if serviceError != nil {
-			log.Printf("Failed to create in user: %v\n", err.Error())
-			errorMessage := fmt.Sprint("Failed to create pipeline for user: %v\n", err.Error())
+			err := errors.NewNotFound("pipeline", string(req.PipelineID))
+			log.Printf(err.Message)
+			context.JSON(err.Status(), gin.H{
+				"error": err.Message,
+			})
+			return
+		}
+
+		if pipeline.User.ID != user.ID {
+			errorMessage := fmt.Sprint("Failed to execute pipeline %d with user: %v\n", pipeline.ID, user.Username)
+			log.Printf(errorMessage)
+			err := errors.NewInternal()
+			context.JSON(err.Status(), gin.H{
+				"error": errorMessage,
+			})
+			return
+		}
+
+		serviceError = services.RunService.Execute(req.PipelineID)
+
+		if serviceError != nil {
+			log.Printf("Failed to execute run for pipeline: %v\n", err.Error())
+			errorMessage := fmt.Sprint("Failed to execute run for pipeline: %v\n", err.Error())
 			err := errors.NewInternal()
 			context.JSON(err.Status(), gin.H{
 				"error": errorMessage,

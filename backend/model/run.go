@@ -18,3 +18,13 @@ type Run struct {
 	Status      RunStatus
 	Description string
 }
+
+type CreateRunReq struct {
+	ID         uint `json:"id"`
+	PipelineID uint `json:"pipelineId"`
+	Execute    bool `json:"execute"`
+}
+
+type ExecuteRunReq struct {
+	ID uint `json:"id"`
+}

@@ -38,6 +38,7 @@ func main() {
 	services := &service.Services{
 		UserService:     service.NewUserService(dbConnection),
 		PipelineService: service.NewPipelineService(dbConnection),
+		RunService:      service.NewRunService(dbConnection),
 		TokenService:    service.NewTokenService(tokenServiceConfig),
 	}
 
