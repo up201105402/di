@@ -1,19 +1,20 @@
 <script setup>
-    import { Panel, PanelPosition, VueFlow, isNode, useVueFlow } from '@vue-flow/core'
-    import { Background } from '@vue-flow/background'
-    import { Controls } from '@vue-flow/controls'
-    import { MiniMap } from '@vue-flow/minimap'
-    import { ref, reactive, computed } from 'vue'
-    import CardBoxModal from '@/components/CardBoxModal.vue'
-    import FormControl from "@/components/FormControl.vue"
-    import FormField from "@/components/FormField.vue"
+    import { Panel, PanelPosition, VueFlow, isNode, useVueFlow } from '@vue-flow/core';
+    import { Background } from '@vue-flow/background';
+    import { Controls } from '@vue-flow/controls';
+    import { MiniMap } from '@vue-flow/minimap';
+    import { ref, reactive, computed } from 'vue';
+    import CardBoxModal from '@/components/CardBoxModal.vue';
+    import FormControl from "@/components/FormControl.vue";
+    import FormField from "@/components/FormField.vue";
+    import { nodeTypes } from "@/pipelines/steps";
 
     const props = defineProps({
         modelValue: {
             type: [Array, String, Number, Boolean],
             default: null,
         },
-    })
+    });
 
     const emit = defineEmits(["update:modelValue"]);
 
@@ -94,7 +95,11 @@
 </script>
 
 <template>
-    <VueFlow v-model="elements" :class="{ dark }" class="basicflow" @nodeDoubleClick="onNodeDoubleClick"
+    <VueFlow 
+        v-model="elements" 
+        :class="{ dark }" class="basicflow" 
+        :node-types="nodeTypes" 
+        @nodeDoubleClick="onNodeDoubleClick"
         :default-viewport="{ zoom: 1.5 }" :min-zoom="0.2" :max-zoom="4">
         <Background :pattern-color="dark ? '#FFFFFB' : '#aaa'" gap="8" />
         <MiniMap />

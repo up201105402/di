@@ -1,3 +1,6 @@
+import { markRaw } from 'vue';
+import CustomNode from '@/pipelines/steps/components/nodes/CustomNode.vue';
+
 export const checkoutRepo = {
     id: 0,
     name: 'checkoutRepo',
@@ -84,6 +87,10 @@ export const trainModel = {
             ]
         }
     }
+};
+
+export const nodeTypes = {
+    custom: markRaw(CustomNode)
 };
 
 export default {

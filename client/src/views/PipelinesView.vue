@@ -139,7 +139,7 @@ const isLoading = computed(() => isFetching.value || isCreating.value || isDelet
       <loading v-model:active="isLoading" :is-full-page="false" />
 
       <SectionTitleLineWithButton :icon="mdiChartTimelineVariant" :title="$t('pages.pipelines.name')" main>
-        <BaseButton :icon="mdiPlus" @click="onNewPipelineClicked" />
+        <BaseButton :icon="mdiPlus" color="success" @click="onNewPipelineClicked" />
       </SectionTitleLineWithButton>
 
       <PipelinesTable :items="pipelines" @deleteButtonClicked="onDeletePipelineClicked" checkable />

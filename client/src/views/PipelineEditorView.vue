@@ -124,7 +124,7 @@
   }
 
   const onStepCreate = (data) => {
-    elements.value.push({ id: getNextId(), type: 'input', label: data.stepName, position: { x: 0, y: 0 }, class: 'light' })
+    elements.value.push({ id: getNextId(), type: 'custom', label: data.stepName, position: { x: 0, y: 0 }, class: 'light' })
     isCreateStepActive.value = false;
     hasChanges.value = true;
     count++;
