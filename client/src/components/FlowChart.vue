@@ -16,13 +16,11 @@
         },
     });
 
-    const emit = defineEmits(["update:modelValue"]);
+    const emit = defineEmits(["onUpdate"]);
 
     const elements = computed({
         get: () => props.modelValue,
-        set: (value) => {
-            emit("update:modelValue", value);
-        },
+        set: (value) => {},
     });
 
     /**
@@ -52,11 +50,17 @@
 
     const onNodeDoubleClick = (e) => isNodeModalActive.value = !isNodeModalActive.value;
 
+    const onEdgeUpdate = (edge) => emit("onUpdate", elements.value);
+    
     /**
      * onConnect is called when a new connection is created.
      * You can add additional properties to your new edge (like a type or label) or block the creation altogether
      */
-    onConnect((params) => addEdges([params]))
+    onConnect((edge) => {
+        edge.updatable = true;
+        addEdges([edge]);
+        emit("onUpdate", elements.value);
+    })
 
     const dark = ref(false)
 
@@ -100,6 +104,7 @@
         :class="{ dark }" class="basicflow" 
         :node-types="nodeTypes" 
         @nodeDoubleClick="onNodeDoubleClick"
+        @edge-update="onEdgeUpdate"
         :default-viewport="{ zoom: 1.5 }" :min-zoom="0.2" :max-zoom="4">
         <Background :pattern-color="dark ? '#FFFFFB' : '#aaa'" gap="8" />
         <MiniMap />

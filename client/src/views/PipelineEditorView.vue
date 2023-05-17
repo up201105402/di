@@ -139,6 +139,10 @@
     router.push('/pipelines');
   }
 
+  const onFlowChartUpdate = () => {
+    hasChanges.value = true;
+  }
+
 </script>
 
 <template>
@@ -149,7 +153,7 @@
       <SectionTitleLineWithButton :icon="mdiChartTimelineVariant" :title="$t('pages.pipelines.name')" main>
         <BaseButton :icon="mdiPlus" color="success" @click="onCreateStepClick" />
       </SectionTitleLineWithButton>
-      <FlowChart v-if="$route.params.id" v-model="elements" />
+      <FlowChart v-if="$route.params.id" v-model="elements" @onUpdate="onFlowChartUpdate" />
       <CardBoxModal :key="'createDialog_' + count" v-model="isCreateStepActive" :has-submit="false" :has-cancel="true"
         title="Create Step" @cancel="count++">
         <CreateStepDialog @onSubmit="onStepCreate" />

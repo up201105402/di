@@ -32,14 +32,7 @@
     <template>
       <div>Select a color</div>
     
-      <div
-        style="display: flex; flex-direction: row; flex-wrap: wrap; justify-content: center; max-width: 90%; margin: auto; gap: 3px"
-      >
-        <button class="animated-bg-gradient" title="gradient" type="button" @click="onGradient"></button>
-      </div>
-    
       <Handle id="a" type="source" :position="Position.Right" :style="sourceHandleStyleA" />
-    
-      <Handle id="b" type="source" :position="Position.Right" :style="sourceHandleStyleB" />
+      <Handle id="b" type="target" :position="Position.Right" :style="sourceHandleStyleB" />
     </template>
     
