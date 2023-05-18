@@ -78,7 +78,7 @@
     transition: .25s all ease
 }
 
-.vue-flow__node-custom {
+.vue-flow__node {
     border: 1px solid #777;
     padding: 10px;
     border-radius: 10px;

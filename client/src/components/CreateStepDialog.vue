@@ -29,7 +29,7 @@ const onCreate = (e) => {
         <TextElement name="stepName" label="Name" :rules="['required']" />
         <SelectElement name="stepType" :search="true" :native="false" label="Type" input-type="search" autocomplete="off"
           :items="Object.values(stepTypes).map(stepType => ({
-            'value': stepType.id,
+            'value': stepType.name,
             'label': stepType.label,
           }))" :rules="['required']" />
         <CheckoutRepositoryForm />

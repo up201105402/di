@@ -9,8 +9,12 @@
         },
         label: {
             type: String,
-            required: false,
-        }
+            required: true,
+        },
+        isFirstStep: {
+            type: String,
+            required: true,
+        },
     })
 
     const emit = defineEmits(['change', 'gradient'])
@@ -37,6 +41,6 @@
 <template>
     <div>{{ props.label }}</div>
 
-    <Handle id="a" type="source" :position="Position.Left" :style="sourceHandleStyleA" />
+    <Handle v-if="isFirstStep === 'false'" id="a" type="source" :position="Position.Left" :style="sourceHandleStyleA" />
     <Handle id="b" type="target" :position="Position.Right" :style="sourceHandleStyleB" />
 </template>

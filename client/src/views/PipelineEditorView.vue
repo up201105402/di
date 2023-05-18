@@ -22,6 +22,8 @@
   const { accessToken, requireAuthRoute } = useAuthStore();
   const router = useRouter();
   const route = useRoute();
+  const elements = ref([]);
+  const pipelineTitle = ref('');
 
   // FETCH PIPELINE
 
@@ -74,8 +76,19 @@
     }
   })
 
+  const parsePipelineDefinition = (pipeline) => {
+    try {
+      return JSON.parse(fetchResponse.value.data.pipeline.definition)
+    } catch (e) {
+      return [];
+    }
+  }
+
   watch(isFetchFinished, () => {
-    elements.value = fetchResponse.value?.data ? JSON.parse(fetchResponse.value.data.pipeline.definition) : [];
+    elements.value = fetchResponse.value?.data ?
+      parsePipelineDefinition(fetchResponse.value.data.pipeline) :
+      [];
+    pipelineTitle.value = fetchResponse.value?.data ? fetchResponse.value.data.pipeline.name : 'Untitled';
   })
 
   watch(updateResponse, () => {
@@ -86,7 +99,6 @@
 
   const isLoading = computed(() => isFetching.value || isUpdating.value);
   const definition = computed(() => fetchResponse.value?.data ? fetchResponse.value.data.pipeline.definition : []);
-  const elements = ref([]);
 
   const hasChanges = ref(false);
   const isCreateStepActive = ref(false);
@@ -124,7 +136,14 @@
   }
 
   const onStepCreate = (data) => {
-    elements.value.push({ id: getNextId(), type: 'custom', label: data.stepName, position: { x: 0, y: 0 }, class: 'light' })
+    elements.value.push({
+      id: getNextId(),
+      type: data.stepType,
+      label: data.stepName,
+      isFirstStep: elements.value.length == 0,
+      position: { x: 0, y: 0 },
+      class: 'light'
+    });
     isCreateStepActive.value = false;
     hasChanges.value = true;
     count++;
@@ -150,7 +169,7 @@
     <SectionMain>
       <loading v-model:active="isLoading" :is-full-page="false" />
 
-      <SectionTitleLineWithButton :icon="mdiChartTimelineVariant" :title="$t('pages.pipelines.name')" main>
+      <SectionTitleLineWithButton :icon="mdiChartTimelineVariant" :title="pipelineTitle" main>
         <BaseButton :icon="mdiPlus" color="success" @click="onCreateStepClick" />
       </SectionTitleLineWithButton>
       <FlowChart v-if="$route.params.id" v-model="elements" @onUpdate="onFlowChartUpdate" />

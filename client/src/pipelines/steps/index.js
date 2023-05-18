@@ -1,5 +1,6 @@
 import { markRaw } from 'vue';
 import CustomNode from '@/pipelines/steps/components/nodes/CustomNode.vue';
+import CheckoutRepoNode from '@/pipelines/steps/components/nodes/CheckoutRepoNode.vue';
 
 export const checkoutRepo = {
     id: 0,
@@ -10,7 +11,7 @@ export const checkoutRepo = {
             'stepType',
             'in',
             [
-                '0',
+                'checkoutRepo',
             ],
         ],
     ],
@@ -32,10 +33,10 @@ export const loadTrainingDataset = {
     label: 'Load Training Dataset',
     conditions: [
         [
-            'Step  Type',
+            'stepType',
             'in',
             [
-                '1',
+                'loadTrainingDataset',
             ],
         ],
     ],
@@ -61,10 +62,10 @@ export const trainModel = {
     label: 'Train Model',
     conditions: [
         [
-            'Step  Type',
+            'stepType',
             'in',
             [
-                '2',
+                'trainModel',
             ],
         ],
     ],
@@ -90,6 +91,7 @@ export const trainModel = {
 };
 
 export const nodeTypes = {
+    checkoutRepo: markRaw(CheckoutRepoNode),
     custom: markRaw(CustomNode)
 };
 
