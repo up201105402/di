@@ -15,7 +15,7 @@
   import BaseButton from "@/components/BaseButton.vue";
   import FlowChart from "@/components/FlowChart.vue";
   import CardBoxModal from '@/components/CardBoxModal.vue';
-  import CreateStepDialog from '@/components/CreateStepDialog.vue';
+  import UpsertStepDialog from '@/components/UpsertStepDialog.vue';
   import Loading from "vue-loading-overlay";
   import { initialElements } from '@/flowChart.js';
 
@@ -132,17 +132,17 @@
   });
 
   const getNextId = () => {
-    return Math.max(...elements.value.map(element => parseInt(element.id))) + 1;
+    return (Math.max(...elements.value.map(element => parseInt(element.id))) + 1) + "";
   }
 
-  const onStepCreate = (data) => {
+  const onStepCreate = (e) => {
     elements.value.push({
       id: getNextId(),
-      type: data.stepType,
-      label: data.stepName,
-      isFirstStep: elements.value.length == 0,
+      type: e.data.stepType,
+      label: e.data.stepName,
       position: { x: 0, y: 0 },
-      class: 'light'
+      class: 'light',
+      data: { ...e.data, isFirstStep: elements.value.length == 0 },
     });
     isCreateStepActive.value = false;
     hasChanges.value = true;
@@ -158,7 +158,23 @@
     router.push('/pipelines');
   }
 
-  const onFlowChartUpdate = () => {
+  const onFlowChartUpdate = (updatedElements) => {
+    isCreateStepActive.value = false;
+    hasChanges.value = true;
+  }
+
+  const onStepEdited = (updatedElement) => {
+    const index = elements.value.findIndex(element => element.id === updatedElement.id);
+    elements.value.splice(index, 1);
+    elements.value.push({
+      id: getNextId(),
+      type: updatedElement.data.stepType,
+      label: updatedElement.data.stepName,
+      position: { x: 0, y: 0 },
+      class: 'light',
+      data: { ...updatedElement.data, isFirstStep: elements.value.length == 0 },
+    });
+    isCreateStepActive.value = false;
     hasChanges.value = true;
   }
 
@@ -172,10 +188,11 @@
       <SectionTitleLineWithButton :icon="mdiChartTimelineVariant" :title="pipelineTitle" main>
         <BaseButton :icon="mdiPlus" color="success" @click="onCreateStepClick" />
       </SectionTitleLineWithButton>
-      <FlowChart v-if="$route.params.id" v-model="elements" @onUpdate="onFlowChartUpdate" />
-      <CardBoxModal :key="'createDialog_' + count" v-model="isCreateStepActive" :has-submit="false" :has-cancel="true"
+      <FlowChart v-if="$route.params.id" v-model="elements" @onUpdate="onFlowChartUpdate"
+        @onStepEdited="onStepEdited" />
+      <CardBoxModal :key="'createDialog_' + count" v-model="isCreateStepActive" :has-submit="false" has-cancel
         title="Create Step" @cancel="count++">
-        <CreateStepDialog @onSubmit="onStepCreate" />
+        <UpsertStepDialog @onSubmit="onStepCreate" />
       </CardBoxModal>
       <BaseButtons style="float:right">
         <BaseButton :disabled="!hasChanges" :label="'Save'" color="success" @click="onPipelineSave" />

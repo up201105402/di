@@ -15,6 +15,7 @@ type Run struct {
 	gorm.Model
 	PipelineID  uint `json:"pipelineId"`
 	Pipeline    Pipeline
+	StatusID    uint
 	Status      RunStatus
 	Description string
 }

@@ -1,5 +1,5 @@
 <script setup>
-    import { Handle, Position } from '@vue-flow/core';
+    import { Handle, Position, NodeIdInjection } from '@vue-flow/core';
     import { computed } from 'vue';
 
     const props = defineProps({
@@ -8,10 +8,6 @@
             required: true,
         },
         label: {
-            type: String,
-            required: true,
-        },
-        isFirstStep: {
             type: String,
             required: true,
         },
@@ -27,8 +23,8 @@
         emit('gradient')
     }
 
-    const sourceHandleStyle = computed(() => ({ 
-        backgroundColor: props.data.color, 
+    const sourceHandleStyle = computed(() => ({
+        backgroundColor: props.data.color,
         filter: 'invert(100%)',
     }))
 
@@ -39,8 +35,11 @@
 </script>
 
 <template>
-    <div>{{ props.label }}</div>
+    <div>
+        <div>{{ props.data.stepName }}</div>
 
-    <Handle v-if="isFirstStep === 'false'" id="a" type="source" :position="Position.Left" :style="sourceHandleStyleA" />
-    <Handle id="b" type="target" :position="Position.Right" :style="sourceHandleStyleB" />
+        <Handle v-if="props.data.isFirstStep === 'false'" id="a" type="source" :position="Position.Left"
+            :style="sourceHandleStyleA" />
+        <Handle id="b" type="target" :position="Position.Right" :style="sourceHandleStyle" />
+    </div>
 </template>

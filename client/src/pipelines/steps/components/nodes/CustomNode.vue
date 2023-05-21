@@ -23,8 +23,8 @@
         emit('gradient')
     }
 
-    const sourceHandleStyle = computed(() => ({ 
-        backgroundColor: props.data.color, 
+    const sourceHandleStyle = computed(() => ({
+        backgroundColor: props.data.color,
         filter: 'invert(100%)',
     }))
 
@@ -35,8 +35,10 @@
 </script>
 
 <template>
-    <div>{{ props.label }}</div>
+    <div>
+        <div>{{ props.label }}</div>
 
-    <Handle id="a" type="source" :position="Position.Left" :style="sourceHandleStyleA" />
-    <Handle id="b" type="target" :position="Position.Right" :style="sourceHandleStyleB" />
+        <Handle id="a" type="source" :position="Position.Left" :style="sourceHandleStyle" />
+        <Handle id="b" type="target" :position="Position.Right" :style="outputHandleStyle" />
+    </div>
 </template>
