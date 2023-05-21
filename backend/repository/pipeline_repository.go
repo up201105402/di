@@ -37,7 +37,7 @@ func (repo *pipelineRepositoryImpl) FindByOwner(ownerId uint) ([]model.Pipeline,
 
 	var pipelines []model.Pipeline
 
-	result := repo.DB.Preload("User").Where("user_id = ?", ownerId).Find(&pipelines)
+	result := repo.DB.Preload("User").Where("user_id = ?", ownerId).Order("id").Find(&pipelines)
 
 	if errors.Is(result.Error, gorm.ErrRecordNotFound) {
 		log.Printf("Failed to get pipelines with username: %v. Reason: %v\n", ownerId, result.Error)

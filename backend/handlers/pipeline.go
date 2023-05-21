@@ -91,9 +91,7 @@ func UpsertPipeline(services *service.Services) gin.HandlerFunc {
 			})
 		}
 
-		serviceError := services.PipelineService.Create(user.ID, req.Name, req.Definition)
-
-		if req.ID != 0 && req.Definition != "" {
+		if req.ID != 0 {
 			pipeline, err := services.PipelineService.Get(req.ID)
 
 			if err != nil {
@@ -117,16 +115,18 @@ func UpsertPipeline(services *service.Services) gin.HandlerFunc {
 				})
 				return
 			}
-		}
+		} else {
+			serviceError := services.PipelineService.Create(user.ID, req.Name, req.Definition)
 
-		if serviceError != nil {
-			log.Printf("Failed to create in user: %v\n", err.Error())
-			errorMessage := fmt.Sprint("Failed to create pipeline for user: %v\n", err.Error())
-			err := errors.NewInternal()
-			context.JSON(err.Status(), gin.H{
-				"error": errorMessage,
-			})
-			return
+			if serviceError != nil {
+				log.Printf("Failed to create in user: %v\n", err.Error())
+				errorMessage := fmt.Sprint("Failed to create pipeline for user: %v\n", err.Error())
+				err := errors.NewInternal()
+				context.JSON(err.Status(), gin.H{
+					"error": errorMessage,
+				})
+				return
+			}
 		}
 
 		context.JSON(http.StatusOK, gin.H{})

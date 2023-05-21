@@ -9,6 +9,7 @@
     import FormField from "@/components/FormField.vue";
     import UpsertStepDialog from '@/components/UpsertStepDialog.vue';
     import { nodeTypes } from "@/pipelines/steps";
+    import deepEqual from 'deep-equal';
 
     const props = defineProps({
         modelValue: {
@@ -20,7 +21,10 @@
     const emit = defineEmits(["onUpdate", "onStepEdited"]);
     const elements = computed({
         get: () => props.modelValue,
-        set: (value) => emit("onUpdate", value)
+        set: (value) => {
+            console.error("set elements");
+            emit("onUpdate", value);
+        }
     });
     const stepData = ref({});
 
@@ -53,12 +57,17 @@
     const onNodeDoubleClick = (e) => {
         isEditStepModalActive.value = true;
         editStepNodeId = e.node.id;
-        stepData.value = e.node.data;
+        stepData.value = { ...e.node.data };
     }
 
     const onStepEdited = (step) => {
         isEditStepModalActive.value = false;
-        emit("onStepEdited", step);
+        const index = elements.value.findIndex(element => element.id === step.id);
+        const oldStepData = elements.value[index].data;
+        const newStepData = { ...step.data, isFirstStep: elements.value[index].data.isFirstStep };
+        if (!deepEqual(oldStepData, newStepData)) {
+            emit("onStepEdited", step);
+        }
     }
 
     const onEdgeUpdate = (edge) => emit("onUpdate", elements.value);

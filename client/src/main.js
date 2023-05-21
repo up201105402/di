@@ -13,8 +13,8 @@ import './css/main.css';
 import Vueform from '@vueform/vueform/plugin'
 import vueformConfig from './../vueform.config'
 
-import { plugin as formKitPlugin, defaultConfig } from '@formkit/vue'
-import { createMultiStepPlugin } from '@formkit/addons'
+import { plugin as formKitPlugin } from '@formkit/vue';
+import formkitConfig from './../formkit.config'
 import '@formkit/themes/genesis'
 import '@formkit/addons/css/multistep'
 
@@ -52,5 +52,7 @@ router.afterEach((to) => {
     : defaultDocumentTitle;
 });
 
-const spa = createApp(App).use(authStore).use(router).use(i18n).use(Vueform, vueformConfig);
+/* Formkit */
+
+const spa = createApp(App).use(authStore).use(router).use(i18n).use(Vueform, vueformConfig).use(formKitPlugin, formkitConfig);
 spa.mount('#app')

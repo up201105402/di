@@ -93,6 +93,7 @@
 
   watch(updateResponse, () => {
     if (updateResponse.value.status === 200) {
+      hasChanges.value = false;
       router.push("/pipelines");
     }
   })
@@ -125,11 +126,6 @@
   })
 
   const onCreateStepClick = (e) => isCreateStepActive.value = !isCreateStepActive.value;
-
-  const newStep = reactive({
-    name: "",
-    type: "",
-  });
 
   const getNextId = () => {
     return (Math.max(...elements.value.map(element => parseInt(element.id))) + 1) + "";
