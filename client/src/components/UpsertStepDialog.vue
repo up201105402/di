@@ -1,9 +1,11 @@
 <script setup>
-  import { ref, computed, reactive } from 'vue';
+  import { ref, computed, reactive, markRaw } from 'vue';
   import stepTypes from '@/pipelines/steps'
   import CheckoutRepositoryForm from '@/pipelines/steps/components/CheckoutRepositoryForm.vue';
   import LoadTrainingDatasetForm from '@/pipelines/steps/components/LoadTrainingDatasetForm.vue';
   import TrainModelForm from '@/pipelines/steps/components/TrainModelForm.vue';
+  import BaseButton from "@/components/BaseButton.vue";
+  import BaseButtons from "@/components/BaseButtons.vue";
   import { watch } from 'vue';
   import { cleanObject } from '@/util';
   import { camel2title, customAxios } from '@/util'
@@ -36,6 +38,10 @@
     emit("onSubmit", { id: props.nodeId, data: e.data })
   }
 
+  const library = markRaw({
+    SubmitButton: BaseButton
+  });
+
   const formkitData = reactive({
     steps,
     visitedSteps,
@@ -57,7 +63,7 @@
     },
     submitApp: async (formData, node) => {
       try {
-        const res = await customaxios.post(formData)
+        const res = await customAxios.post(formData)
         node.clearErrors()
         alert('Your application was submitted successfully!')
       } catch (err) {
@@ -121,38 +127,33 @@
               $el: 'section',
               attrs: {
                 style: {
-                  if: '$activeStep !== "contactInfo"',
+                  if: '$activeStep !== "nameAndType"',
                   then: 'display: none;'
                 }
               },
               children: [
                 {
                   $formkit: 'group',
-                  id: 'contactInfo',
-                  name: 'contactInfo',
+                  id: 'nameAndType',
+                  name: 'nameAndType',
                   children: [
                     {
                       $formkit: 'text',
-                      name: 'full_name',
-                      label: '*Full Name',
-                      placeholder: 'First Last',
+                      name: 'nodeName',
+                      label: 'Step Name',
+                      placeholder: 'Step Name',
                       validation: 'required'
                     },
                     {
-                      $formkit: 'email',
-                      name: 'email',
-                      label: '*Email address',
-                      placeholder: 'email@domain.com',
-                      validation: 'required|email'
+                      $formkit: 'select',
+                      name: 'nodeType',
+                      label: 'Node Type',
+                      options: [
+                        'Checkout Repo',
+                        'Train Model'
+                      ],
+                      validation: 'required'
                     },
-                    {
-                      $formkit: 'tel',
-                      name: 'tel',
-                      label: '*Telephone',
-                      placeholder: 'xxx-xxx-xxxx',
-                      help: 'Phone number must be in the xxx-xxx-xxxx format.',
-                      validation: 'required|matches:/^[0-9]{3}-[0-9]{3}-[0-9]{4}$/'
-                    }
                   ]
                 }
               ]
@@ -190,42 +191,6 @@
               ]
             },
             {
-              $el: 'section',
-              attrs: {
-                style: {
-                  if: '$activeStep !== "application"',
-                  then: 'display: none;'
-                }
-              },
-              children: [
-                {
-                  $formkit: 'group',
-                  id: 'application',
-                  name: 'application',
-                  children: [
-                    {
-                      $formkit: 'checkbox',
-                      label: '*I\'m not a previous grant recipient',
-                      help: 'Have you received a grant from us before?',
-                      name: 'not_previous_recipient',
-                      validation: 'required|accepted',
-                      validationMessages: {
-                        accepted: 'We can only give one grant per organization.'
-                      }
-                    },
-                    {
-                      $formkit: 'textarea',
-                      label: '*How will you use the money?',
-                      name: 'how_money',
-                      help: 'Must be between 20 and 500 characters.',
-                      placeholder: 'Describe how the grant will accelerate your efforts.',
-                      validation: 'required|length:20,500'
-                    }
-                  ]
-                }
-              ]
-            },
-            {
               $el: 'div',
               attrs: {
                 class: 'step-nav'
@@ -233,7 +198,7 @@
               children: [
                 {
                   $formkit: 'button',
-                  disabled: '$activeStep === "contactInfo"',
+                  disabled: '$activeStep === "nameAndType"',
                   onClick: '$setStep(-1)',
                   children: 'Previous Step'
                 },
@@ -245,25 +210,23 @@
                 }
               ]
             },
-            {
-              $el: 'details',
-              children: [
-                {
-                  $el: 'summary',
-                  children: 'Form data'
-                },
-                {
-                  $el: 'pre',
-                  children: '$stringify( $get(form).value )'
-                }
-              ]
-            },
           ]
         },
         {
-          $formkit: 'submit',
-          label: 'Submit Application',
-          disabled: '$get(form).state.valid !== true'
+          $formKit: 'submit',
+          label: 'Submit',
+          disabled: '$get(form).state.valid !== true',
+          children: [
+            {
+              $cmp: 'SubmitButton',
+              props: {
+                label: 'Submit',
+                disabled: '$get(form).state.valid !== true',
+                color: 'success',
+                onClick: '$submitApp'
+              }
+            }
+          ],
         }
       ]
     },
@@ -294,7 +257,7 @@
       <FormStepsControls />
     </template>
   </Vueform> -->
-  <FormKitSchema :schema="schema" :data="formkitData" />
+  <FormKitSchema :library="library" :schema="schema" :data="formkitData" />
 </template>
 
 <style>
