@@ -95,12 +95,6 @@ export const nodeTypes = {
     custom: markRaw(CustomNode)
 };
 
-// export default {
-//     checkoutRepo,
-//     loadTrainingDataset,
-//     trainModel
-// }
-
 import { reactive, toRef, ref, watch } from 'vue';
 import { getNode, createMessage } from '@formkit/core';
 
@@ -137,6 +131,7 @@ export default function useSteps () {
     activeStep.value = stepNames[currentIndex + delta]
   }
 
+  // pushes the steps (group nodes - $formkit: 'group') into the steps object
   const stepPlugin = (node) => {
     if (node.props.type == "group") {
       // builds an object of the top-level groups

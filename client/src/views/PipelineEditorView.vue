@@ -186,9 +186,8 @@
       </SectionTitleLineWithButton>
       <FlowChart v-if="$route.params.id" v-model="elements" @onUpdate="onFlowChartUpdate"
         @onStepEdited="onStepEdited" />
-      <CardBoxModal :key="'createDialog_' + count" v-model="isCreateStepActive" :has-submit="false" has-cancel
-        title="Create Step" @cancel="count++">
-        <UpsertStepDialog @onSubmit="onStepCreate" />
+      <CardBoxModal v-model="isCreateStepActive" :has-submit="false" :has-cancel="false" title="Create Step" @cancel="count++">
+        <UpsertStepDialog :key="'createStepDialog_' + count" @onSubmit="onStepCreate" />
       </CardBoxModal>
       <BaseButtons style="float:right">
         <BaseButton :disabled="!hasChanges" :label="'Save'" color="success" @click="onPipelineSave" />

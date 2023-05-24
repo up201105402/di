@@ -4,8 +4,6 @@
   import CheckoutRepositoryForm from '@/pipelines/steps/components/CheckoutRepositoryForm.vue';
   import LoadTrainingDatasetForm from '@/pipelines/steps/components/LoadTrainingDatasetForm.vue';
   import TrainModelForm from '@/pipelines/steps/components/TrainModelForm.vue';
-  import BaseButton from "@/components/BaseButton.vue";
-  import BaseButtons from "@/components/BaseButtons.vue";
   import { watch } from 'vue';
   import { cleanObject } from '@/util';
   import { camel2title, customAxios } from '@/util'
@@ -19,7 +17,7 @@
       required: false,
       default: null
     },
-    nodeData: {
+    data: {
       type: Object,
       required: false,
       default: null,
@@ -38,10 +36,6 @@
     emit("onSubmit", { id: props.nodeId, data: e.data })
   }
 
-  const library = markRaw({
-    SubmitButton: BaseButton
-  });
-
   const formkitData = reactive({
     steps,
     visitedSteps,
@@ -53,7 +47,7 @@
       setStep(target)
     },
     setActiveStep: stepName => () => {
-      data.activeStep = stepName
+      formkitData.activeStep = stepName
     },
     showStepErrors: stepName => {
       return (steps[stepName].errorCount > 0 || steps[stepName].blockingCount > 0) && (visitedSteps.value && visitedSteps.value.includes(stepName))
@@ -65,6 +59,7 @@
       try {
         const res = await customAxios.post(formData)
         node.clearErrors()
+        emit("onSubmit", { id: props.nodeId, data: formData })
         alert('Your application was submitted successfully!')
       } catch (err) {
         node.setErrors(err.formErrors, err.fieldErrors)
@@ -83,6 +78,7 @@
         onSubmit: '$submitApp',
         plugins: '$plugins',
         actions: false,
+        value: { ...props.data }
       },
       children: [
         {
@@ -148,10 +144,10 @@
                       $formkit: 'select',
                       name: 'nodeType',
                       label: 'Node Type',
-                      options: [
-                        'Checkout Repo',
-                        'Train Model'
-                      ],
+                      options: {
+                        checkoutRepo: 'Checkout Repo',
+                        trainModel: 'Train Model'
+                      },
                       validation: 'required'
                     },
                   ]
@@ -162,29 +158,27 @@
               $el: 'section',
               attrs: {
                 style: {
-                  if: '$activeStep !== "organizationInfo"',
+                  if: '$activeStep !== "stepConfig"',
                   then: 'display: none;'
                 }
               },
               children: [
                 {
                   $formkit: 'group',
-                  id: 'organizationInfo',
-                  name: 'organizationInfo',
+                  id: 'stepConfig',
+                  name: 'stepConfig',
                   children: [
-                    {
-                      $formkit: 'text',
-                      label: '*Organization name',
-                      name: 'org_name',
-                      placeholder: 'MyOrg, Inc.',
-                      help: 'Enter your official organization name.',
-                      validation: 'required|length:3'
-                    },
                     {
                       $formkit: 'date',
                       label: 'Date of incorporation',
                       name: 'date_inc',
-                      validation: 'required'
+                      validation: 'required',
+                      attrs: {
+                        style: {
+                          if: '$nameAndType !== "stepConfig"',
+                          then: 'display: none;'
+                        }
+                      },
                     }
                   ]
                 }
@@ -204,7 +198,7 @@
                 },
                 {
                   $formkit: 'button',
-                  disabled: '$activeStep === "application"',
+                  disabled: '$activeStep === "stepConfig"',
                   onClick: '$setStep(1)',
                   children: 'Next Step'
                 }
@@ -213,24 +207,13 @@
           ]
         },
         {
-          $formKit: 'submit',
+          $formkit: 'submit',
           label: 'Submit',
           disabled: '$get(form).state.valid !== true',
-          children: [
-            {
-              $cmp: 'SubmitButton',
-              props: {
-                label: 'Submit',
-                disabled: '$get(form).state.valid !== true',
-                color: 'success',
-                onClick: '$submitApp'
-              }
-            }
-          ],
         }
       ]
     },
-  ]
+  ];
 
 </script>
 
@@ -257,7 +240,7 @@
       <FormStepsControls />
     </template>
   </Vueform> -->
-  <FormKitSchema :library="library" :schema="schema" :data="formkitData" />
+  <FormKitSchema :schema="schema" :data="formkitData" />
 </template>
 
 <style>

@@ -167,7 +167,7 @@
         </Panel>
     </VueFlow>
 
-    <CardBoxModal v-model="isEditStepModalActive" title="Please confirm" :has-submit="false" has-cancel>
-        <UpsertStepDialog :nodeId="editStepNodeId" :nodeData="stepData" @onSubmit="onStepEdited" />
+    <CardBoxModal v-model="isEditStepModalActive" title="Please confirm" :has-submit="false" :has-cancel="false">
+        <UpsertStepDialog :nodeId="editStepNodeId" :data="stepData" @onSubmit="onStepEdited" />
     </CardBoxModal>
 </template>
