@@ -36,9 +36,9 @@
 
 <template>
     <div>
-        <div>{{ props.data.stepName }}</div>
+        <div>{{ props.data.nameAndType.nodeName }}</div>
 
-        <Handle v-if="props.data.isFirstStep === 'false'" id="a" type="source" :position="Position.Left"
+        <Handle v-if="props.data.isFirstStep === false" id="a" type="source" :position="Position.Left"
             :style="sourceHandleStyleA" />
         <Handle id="b" type="target" :position="Position.Right" :style="sourceHandleStyle" />
     </div>

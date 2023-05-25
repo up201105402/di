@@ -27,21 +27,15 @@
         }
     });
     const stepData = ref({});
+    
+    const isEditStepModalActive = ref(false);
+    let editStepNodeId = null;
 
     /**
      * useVueFlow provides all event handlers and store properties
      * You can pass the composable an object that has the same properties as the VueFlow component props
      */
     const { onPaneReady, onNodeDragStop, onConnect, addEdges, setTransform, toObject } = useVueFlow()
-
-    const isEditStepModalActive = ref(false);
-    let editStepNodeId = null;
-
-    const form = reactive({
-        username: "",
-        password: "",
-        remember: true,
-    });
 
     /**
      * This is a Vue Flow event-hook which can be listened to from anywhere you call the composable, instead of only on the main component
@@ -168,6 +162,7 @@
     </VueFlow>
 
     <CardBoxModal v-model="isEditStepModalActive" title="Please confirm" :has-submit="false" :has-cancel="false">
-        <UpsertStepDialog :nodeId="editStepNodeId" :data="stepData" @onSubmit="onStepEdited" />
+        <UpsertStepDialog :key="'createStepDialog_' + count" :nodeId="editStepNodeId" :nodeData="stepData"
+            @onSubmit="onStepEdited" />
     </CardBoxModal>
 </template>

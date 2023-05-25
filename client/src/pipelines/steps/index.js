@@ -1,107 +1,69 @@
 import { markRaw } from 'vue';
 import CustomNode from '@/pipelines/steps/components/nodes/CustomNode.vue';
 import CheckoutRepoNode from '@/pipelines/steps/components/nodes/CheckoutRepoNode.vue';
+import { camel2title, customDelay } from '@/util';
 
-export const checkoutRepo = {
-    id: 0,
-    name: 'checkoutRepo',
-    label: 'Checkout repository',
-    conditions: [
-        [
-            'stepType',
-            'in',
-            [
-                'checkoutRepo',
-            ],
-        ],
-    ],
-    fields: {
-        repoURL: {
-            name: "repoURL",
-            label: "URL",
-            rules: [
-                'required',
-                'regex:((git|ssh|http(s)?)|(git@[\\w\\.]+))(:(//)?)([\\w\\.@\\:/\\-~]+)(\\.git)(/)?/',
-            ]
-        }
-    }
-};
+const stepConfigFields = [
+  {
+    $formkit: 'text',
+    label: 'URL',
+    name: 'repoURL',
+    validation: 'required|url',
+    if: '$isActiveNodeType("checkoutRepo")',
+  },
+  {
+    $formkit: 'text',
+    label: 'Directory',
+    name: 'trainingSetDirectory',
+    validation: 'required|isDirectoryPath',
+    if: '$isActiveNodeType("trainModel")',
+  },
+  {
+    $formkit: 'number',
+    name: "fraction",
+    label: "Fraction of the training data to use",
+    min: 0,
+    max: 100,
+    validation: 'required',
+    if: '$isActiveNodeType("trainModel")',
+  },
+  {
+    $formkit: 'text',
+    name: "modelDirectory",
+    label: "Model Directory",
+    validation: 'required|isDirectoryPath',
+    if: '$isActiveNodeType("trainModel")',
+  },
+  {
+    $formkit: 'number',
+    name: "epochs",
+    label: "Number of Epochs",
+    validation: 'required',
+    min: 1,
+    if: '$isActiveNodeType("trainModel")',
+  }
+]
 
-export const loadTrainingDataset = {
-    id: 1,
-    name: 'loadTrainingDataset',
-    label: 'Load Training Dataset',
-    conditions: [
-        [
-            'stepType',
-            'in',
-            [
-                'loadTrainingDataset',
-            ],
-        ],
-    ],
-    fields: {
-        trainingDatasetDirectory: {
-            name: "trainingSetDirectory",
-            label: "Directory",
-            rules: [
-                'required',
-                'regex:^(.+)\\/([^\\/]+)$/',
-            ]
-        },
-        fraction: {
-            name: "fraction",
-            label: "Fraction of the training data to use",
-        }
-    }
-};
-
-export const trainModel = {
-    id: 2,
-    name: 'trainModel',
-    label: 'Train Model',
-    conditions: [
-        [
-            'stepType',
-            'in',
-            [
-                'trainModel',
-            ],
-        ],
-    ],
-    fields: {
-        modelDirectory: {
-            name: "modelDirectory",
-            label: "Model Directory",
-            rules: [
-                'required',
-                'regex:^(.+)\\/([^\\/]+)$/',
-            ]
-        },
-        epochs: {
-            name: "epochs",
-            label: "Number of Epochs",
-            rules: [
-                'required',
-                'min:1',
-                'numeric',
-            ]
-        }
-    }
-};
+const nodeTypesOptions = [
+  { id: 0, value: "checkoutRepo", label: "Checkout Repository" },
+  { id: 1, value: "trainModel", label: "Train Model" },
+];
 
 export const nodeTypes = {
-    checkoutRepo: markRaw(CheckoutRepoNode),
-    custom: markRaw(CustomNode)
+  checkoutRepo: markRaw(CheckoutRepoNode),
+  custom: markRaw(CustomNode)
 };
 
 import { reactive, toRef, ref, watch } from 'vue';
 import { getNode, createMessage } from '@formkit/core';
 
-export default function useSteps () {
-  const activeStep = ref('')
-  const steps = reactive({})
-  const visitedSteps = ref([]) // track visited steps
+export default function useSteps(data, onSubmit) {
+  const activeStep = ref('');
+
+  const activeNodeType = ref(nodeTypesOptions[0].value);
+
+  const steps = reactive({});
+  const visitedSteps = ref([]); // track visited steps
 
   // NEW: watch our activeStep and store visited steps
   // to know when to show errors
@@ -126,9 +88,11 @@ export default function useSteps () {
   })
 
   const setStep = (delta) => {
-    const stepNames = Object.keys(steps)
-    const currentIndex = stepNames.indexOf(activeStep.value)
-    activeStep.value = stepNames[currentIndex + delta]
+    if (activeNodeType.value !== "") {
+      const stepNames = Object.keys(steps)
+      const currentIndex = stepNames.indexOf(activeStep.value)
+      activeStep.value = stepNames[currentIndex + delta]
+    }
   }
 
   // pushes the steps (group nodes - $formkit: 'group') into the steps object
@@ -162,6 +126,181 @@ export default function useSteps () {
     }
   }
 
+  const formkitData = reactive({
+    steps,
+    visitedSteps,
+    activeStep,
+    activeNodeType,
+    plugins: [
+      stepPlugin
+    ],
+    isActiveNodeType: (nodeType) => {
+      return nodeType === activeNodeType.value;
+    },
+    setStep: target => () => {
+      setStep(target)
+    },
+    setActiveNodeType: changeEvent => {
+      activeNodeType.value = changeEvent.target.value;
+    },
+    setActiveStep: stepName => () => {
+      activeStep.value = stepName
+    },
+    showStepErrors: stepName => {
+      return (steps[stepName].errorCount > 0 || steps[stepName].blockingCount > 0) && (visitedSteps.value && visitedSteps.value.includes(stepName))
+    },
+    stepIsValid: stepName => {
+      return steps[stepName].valid && steps[stepName].errorCount === 0
+    },
+    submitForm: async (formData, node) => {
+      try {
+        await customDelay(formData);
+        node.clearErrors()
+        onSubmit(formData);
+      } catch (err) {
+        node.setErrors(err.formErrors, err.fieldErrors)
+      }
+    },
+    stringify: (value) => JSON.stringify(value, null, 2),
+    camel2title
+  })
+
+  const formSchema = [
+    {
+      $cmp: 'FormKit',
+      props: {
+        type: 'form',
+        id: 'form',
+        onSubmit: '$submitForm',
+        plugins: '$plugins',
+        actions: false,
+        value: { ...data }
+      },
+      children: [
+        {
+          $el: 'ul',
+          attrs: {
+            class: "steps"
+          },
+          children: [
+            {
+              $el: 'li',
+              for: ['step', 'stepName', '$steps'],
+              attrs: {
+                class: {
+                  'step': true,
+                  'has-errors': '$showStepErrors($stepName)'
+                },
+                style: {
+                  if: '$activeNodeType == ""',
+                  then: 'display: none;'
+                },
+                onClick: '$setActiveStep($stepName)',
+                'data-step-active': '$activeStep === $stepName',
+                'data-step-valid': '$stepIsValid($stepName)'
+              },
+              children: [
+                {
+                  $el: 'span',
+                  if: '$showStepErrors($stepName)',
+                  attrs: {
+                    class: 'step--errors'
+                  },
+                  children: '$step.errorCount + $step.blockingCount'
+                },
+                '$camel2title($stepName)'
+              ]
+            }
+          ]
+        },
+        {
+          $el: 'div',
+          attrs: {
+            class: 'form-body'
+          },
+          children: [
+            {
+              $el: 'section',
+              attrs: {
+                style: {
+                  if: '$activeStep !== "nameAndType"',
+                  then: 'display: none;'
+                }
+              },
+              children: [
+                {
+                  $formkit: 'group',
+                  id: 'nameAndType',
+                  name: 'nameAndType',
+                  children: [
+                    {
+                      $formkit: 'text',
+                      name: 'nodeName',
+                      label: 'Step Name',
+                      placeholder: 'Step Name',
+                      validation: 'required'
+                    },
+                    {
+                      $formkit: 'select',
+                      name: 'nodeType',
+                      label: 'Node Type',
+                      placeholder: "",
+                      options: nodeTypesOptions,
+                      validation: 'required',
+                      onChange: "$setActiveNodeType",
+                    },
+                  ]
+                }
+              ]
+            },
+            {
+              $el: 'section',
+              attrs: {
+                style: {
+                  if: '$activeStep !== "stepConfig"',
+                  then: 'display: none;'
+                }
+              },
+              children: [
+                {
+                  $formkit: 'group',
+                  id: 'stepConfig',
+                  name: 'stepConfig',
+                  children: stepConfigFields,
+                }
+              ]
+            },
+            {
+              $el: 'div',
+              attrs: {
+                class: 'step-nav'
+              },
+              children: [
+                {
+                  $formkit: 'button',
+                  disabled: '$activeStep === "nameAndType"',
+                  onClick: '$setStep(-1)',
+                  children: 'Back'
+                },
+                {
+                  $formkit: 'button',
+                  disabled: '$activeStep === "stepConfig"',
+                  onClick: '$setStep(1)',
+                  children: 'Next'
+                }
+              ]
+            },
+          ]
+        },
+        {
+          $formkit: 'submit',
+          label: 'Submit',
+          disabled: '$get(form).state.valid !== true',
+        }
+      ]
+    },
+  ];
+
   // NEW: include visitedSteps in our return
-  return { activeStep, visitedSteps, steps, stepPlugin, setStep }
+  return { formSchema, formkitData, activeStep, nodeTypesOptions, activeNodeType, stepConfigFields, visitedSteps, steps, stepPlugin, setStep }
 }
