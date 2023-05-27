@@ -184,7 +184,7 @@
           label: formData.data.nameAndType.nodeName,
           position: { x: 0, y: 0 },
           class: 'light',
-          data: { ...formData.data, isFirstStep: elements.value.length == 0 },
+          data: { ...formData.data, isFirstStep: newStepData.isFirstStep },
         });
       }
       
