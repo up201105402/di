@@ -96,7 +96,6 @@
 
 .vue-flow__node {
     border: 1px solid #777;
-    padding: 10px;
     border-radius: 10px;
     background: whitesmoke;
     display: flex;

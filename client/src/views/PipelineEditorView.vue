@@ -22,7 +22,6 @@
   import UpsertStepDialog from '@/components/UpsertStepDialog.vue';
   import Loading from "vue-loading-overlay";
   import { nodeTypes } from "@/pipelines/steps";
-  import { initialElements } from '@/flowChart.js';
   import deepEqual from 'deep-equal';
 
   const { accessToken, requireAuthRoute } = useAuthStore();
@@ -35,7 +34,7 @@
 
   // FETCH PIPELINE
 
-  const { isLoading: isFetching, state: fetchResponse, isReady: isFetchFinished, execute: fetchPipelines } = useAsyncState(
+  const { isLoading: isFetching, state: fetchResponse, isReady: isFetchFinished, execute: fetchPipeline } = useAsyncState(
     () => {
       return doRequest({
         url: `/api/pipeline/${route.params.id}`,
@@ -93,9 +92,7 @@
   }
 
   watch(isFetchFinished, () => {
-    elements.value = fetchResponse.value?.data ?
-      parsePipelineDefinition(fetchResponse.value.data.pipeline) :
-      [];
+    elements.value = fetchResponse.value?.data ? parsePipelineDefinition(fetchResponse.value.data.pipeline) : [];
     pipelineTitle.value = fetchResponse.value?.data ? fetchResponse.value.data.pipeline.name : 'Untitled';
   })
 
@@ -211,7 +208,7 @@
      * useVueFlow provides all event handlers and store properties
      * You can pass the composable an object that has the same properties as the VueFlow component props
      */
-  const { onPaneReady, onNodeDragStop, onConnect, addEdges, setTransform, toObject } = useVueFlow()
+  const { onPaneReady, onNodeDragStop, onConnect, addEdges, setTransform, toObject } = useVueFlow();
 
   /**
    * This is a Vue Flow event-hook which can be listened to from anywhere you call the composable, instead of only on the main component
@@ -232,6 +229,7 @@
    */
   onConnect((edge) => {
     edge.updatable = true;
+    edge.type = 'smoothstep',
     addEdges([edge]);
     emit("onUpdate", elements.value);
   })

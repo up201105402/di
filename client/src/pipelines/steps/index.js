@@ -1,5 +1,5 @@
 import { markRaw } from 'vue';
-import CustomNode from '@/pipelines/steps/components/nodes/CustomNode.vue';
+import TrainModelNode from './components/nodes/TrainModelNode.vue';
 import CheckoutRepoNode from '@/pipelines/steps/components/nodes/CheckoutRepoNode.vue';
 import { camel2title, customDelay } from '@/util';
 
@@ -51,7 +51,7 @@ const nodeTypesOptions = [
 
 export const nodeTypes = {
   checkoutRepo: markRaw(CheckoutRepoNode),
-  custom: markRaw(CustomNode)
+  trainModel: markRaw(TrainModelNode),
 };
 
 import { reactive, toRef, ref, watch } from 'vue';

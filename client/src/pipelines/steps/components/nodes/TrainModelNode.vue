@@ -1,5 +1,5 @@
 <script setup>
-    import { Handle, Position } from '@vue-flow/core';
+    import { Handle, Position, NodeIdInjection } from '@vue-flow/core';
     import { computed } from 'vue';
 
     const props = defineProps({
@@ -9,8 +9,8 @@
         },
         label: {
             type: String,
-            required: false,
-        }
+            required: true,
+        },
     })
 
     const emit = defineEmits(['change', 'gradient'])
@@ -38,7 +38,8 @@
     <div>
         <div>{{ props.label }}</div>
 
-        <Handle id="a" type="source" :position="Position.Left" :style="sourceHandleStyle" />
-        <Handle id="b" type="target" :position="Position.Right" :style="outputHandleStyle" />
+        <Handle v-if="props.data.isFirstStep === false" id="a" type="source" :position="Position.Left"
+            :style="sourceHandleStyleA" />
+        <Handle id="b" type="target" :position="Position.Right" :style="sourceHandleStyle" />
     </div>
 </template>
