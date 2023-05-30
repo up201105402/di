@@ -21,8 +21,10 @@
   import CardBoxModal from '@/components/CardBoxModal.vue';
   import UpsertStepDialog from '@/components/UpsertStepDialog.vue';
   import Loading from "vue-loading-overlay";
+  import CheckoutRepoNode from "@/pipelines/steps/components/nodes/CheckoutRepoNode.vue";
   import { nodeTypes } from "@/pipelines/steps";
   import deepEqual from 'deep-equal';
+  import $ from 'jquery';
 
   const { accessToken, requireAuthRoute } = useAuthStore();
   const router = useRouter();
@@ -144,6 +146,20 @@
     editStepNodeId.value = e.node.id;
     stepData.value = { ...e.node.data };
     count++;
+  }
+
+  $(document).on("onNodeDelete", function (e, details) {
+    onNodeDelete(details.id);
+  })
+
+  const onNodeDelete = (id) => {
+    const index = elements.value.findIndex(element => element.id === id);
+
+    if (index > -1) {
+      elements.value.splice(index, 1);
+      hasChanges.value = true;
+      count++;
+    }
   }
 
   const getNextId = () => {

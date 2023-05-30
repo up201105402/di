@@ -1,7 +1,10 @@
 <script setup>
     import { Handle, Position } from '@vue-flow/core';
     import { NodeToolbar } from '@vue-flow/node-toolbar';
+    import { mdiLogout, mdiCloseCircle  } from "@mdi/js";
     import { computed } from 'vue';
+    import BaseIcon from "@/components/BaseIcon.vue";
+    import $ from 'jquery';
 
     const props = defineProps({
         id: {
@@ -12,6 +15,10 @@
             type: String,
             required: true,
         },
+        events: {
+            type: Object,
+            required: true,
+        },
         data: {
             type: Object,
             required: true,
@@ -20,12 +27,9 @@
 
     const emit = defineEmits(['change', 'gradient'])
 
-    function onSelect(color) {
-        emit('change', color);
-    }
-
-    function onGradient() {
-        emit('gradient');
+    const onDeleteClick = (e) => {
+        $(document).trigger('onNodeDelete', { id: props.id });
+        //props.events.onNodeDelete(props.id);
     }
 
     const sourceHandleStyle = computed(() => ({
@@ -40,10 +44,11 @@
 </script>
 
 <template>
-    <NodeToolbar style="display: flex; gap: 0.5rem; align-items: center" :is-visible="data.toolbarVisible" :position="Position.Top">
-        <button>Action1</button>
-        <button>Action2</button>
-        <button>Action3</button>
+    <NodeToolbar style="display: flex; gap: 0.5rem; align-items: center" :is-visible="data.toolbarVisible"
+        :position="Position.Top">
+        <button class="lg" @click.prevent="onDeleteClick">
+            <BaseIcon :path="mdiCloseCircle " />
+        </button>
     </NodeToolbar>
 
     <div class="nodeType">
