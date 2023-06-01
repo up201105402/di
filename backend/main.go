@@ -35,10 +35,13 @@ func main() {
 		panic("Failed to get Token Configuration")
 	}
 
+	client := util.ConnectToAsynq()
+	defer client.Close()
+
 	services := &service.Services{
 		UserService:     service.NewUserService(dbConnection),
 		PipelineService: service.NewPipelineService(dbConnection),
-		RunService:      service.NewRunService(dbConnection),
+		RunService:      service.NewRunService(dbConnection, client),
 		TokenService:    service.NewTokenService(tokenServiceConfig),
 	}
 

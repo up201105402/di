@@ -4,16 +4,19 @@ import (
 	"di/model"
 	"di/repository"
 
+	"github.com/hibiken/asynq"
 	"gorm.io/gorm"
 )
 
 type runServiceImpl struct {
-	RunRepository model.RunRepository
+	RunRepository    model.RunRepository
+	TasksQueueClient asynq.Client
 }
 
-func NewRunService(gormDB *gorm.DB) RunService {
+func NewRunService(gormDB *gorm.DB, client *asynq.Client) RunService {
 	return &runServiceImpl{
-		RunRepository: repository.NewRunRepository(gormDB),
+		RunRepository:    repository.NewRunRepository(gormDB),
+		TasksQueueClient: *client,
 	}
 }
 
