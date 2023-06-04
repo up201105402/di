@@ -13,8 +13,8 @@ const stepConfigFields = [
   },
   {
     $formkit: 'text',
-    label: 'Directory',
     name: 'trainingSetDirectory',
+    label: 'Directory',
     validation: 'required|isDirectoryPath',
     if: '$isActiveNodeType("trainModel")',
   },

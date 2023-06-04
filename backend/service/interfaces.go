@@ -44,3 +44,7 @@ type RunService interface {
 	Update(run *model.Run) error
 	Delete(id uint) error
 }
+
+type StepTypeService interface {
+	NewStepInstance(stepType string) (*model.Step, error)
+}

@@ -38,10 +38,12 @@ func main() {
 	client := util.ConnectToAsynq()
 	defer client.Close()
 
+	pipelineService := service.NewPipelineService(dbConnection)
+
 	services := &service.Services{
 		UserService:     service.NewUserService(dbConnection),
-		PipelineService: service.NewPipelineService(dbConnection),
-		RunService:      service.NewRunService(dbConnection, client),
+		PipelineService: pipelineService,
+		RunService:      service.NewRunService(dbConnection, client, &pipelineService),
 		TokenService:    service.NewTokenService(tokenServiceConfig),
 	}
 
