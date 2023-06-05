@@ -25,23 +25,29 @@ type PipelineReq struct {
 	Definition string `json:"definition"`
 }
 
+type StepDataNameAndType struct {
+	NodeName string `json:"nodeName"`
+	NodeType string `json:"nodeType"`
+}
+
+type StepDataConfig struct {
+	// CheckoutRepo
+	RepoURL string `json:"repoURL"`
+	// TrainModel
+	TrainingSetDirectory string `json:"trainingSetDirectory"`
+	Fraction             string `json:"fraction"`
+	ModelDirectory       string `json:"modelDirectory"`
+	Epochs               string `json:"epochs"`
+}
+
 type StepDescription struct {
 	ID    string `json:"id"`
 	Label string `json:"label"`
 	Type  string `json:"type"`
 	Data  struct {
-		NameAndType struct {
-			NodeName string `json:"nodeName"`
-			NodeType string `json:"nodeType"`
-		} `json:"nameAndType"`
-		StepConfig struct {
-			RepoURL        string `json:"repoURL"`
-			Directory      string `json:"trainingSetDirectory"`
-			Fraction       string `json:"fraction"`
-			ModelDirectory string `json:"modelDirectory"`
-			Epochs         string `json:"epochs"`
-		} `json:"stepConfig"`
-		IsFirstStep bool `json:"isFirstStep"`
+		NameAndType StepDataNameAndType `json:"nameAndType"`
+		StepConfig  StepDataConfig      `json:"stepConfig"`
+		IsFirstStep bool                `json:"isFirstStep"`
 	} `json:"data"`
 }
 

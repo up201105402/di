@@ -4,6 +4,7 @@ import (
 	"di/model"
 	"di/repository"
 	"encoding/json"
+	"log"
 
 	"github.com/hibiken/asynq"
 	"gorm.io/gorm"
@@ -48,6 +49,11 @@ func (service *runServiceImpl) Execute(pipelineId uint) error {
 
 	pipeline, err := service.PipelineService.Get(pipelineId)
 
+	if err != nil {
+		log.Printf("Could not retrieve pipeline with id %v\n", pipelineId)
+		return err
+	}
+
 	// s := "[{\"type\":\"checkoutRepo\",\"dimensions\":{\"width\":135,\"height\":52},\"handleBounds\":{\"target\":[{\"id\":\"0_output\",\"position\":\"right\",\"x\":132.15625,\"y\":23,\"width\":6,\"height\":6}]},\"computedPosition\":{\"x\":-92.47021757726134,\"y\":-27.568760519928844,\"z\":1000},\"selected\":true,\"dragging\":false,\"resizing\":false,\"initialized\":true,\"data\":{\"nameAndType\":{\"nodeName\":\"Step 1\",\"nodeType\":\"checkoutRepo\"},\"stepConfig\":{\"repoURL\":\"http://dafdfds.com/dskfajdsf.git\"},\"isFirstStep\":true},\"events\":{},\"id\":\"0\",\"label\":\"Step 1\",\"position\":{\"x\":-92.47021757726134,\"y\":-27.568760519928844},\"class\":\"light\"}]"
 	// var val []Step // <---- This must be an array to match input
 	// if err := json.Unmarshal([]byte(s), &val); err != nil {
@@ -58,7 +64,8 @@ func (service *runServiceImpl) Execute(pipelineId uint) error {
 	var steps []model.StepDescription
 
 	if err := json.Unmarshal([]byte(pipeline.Definition), &steps); err != nil {
-		panic(err)
+		log.Printf("Unable to unmarshal pipeline %v definition\n", pipelineId)
+		return err
 	}
 
 	return nil

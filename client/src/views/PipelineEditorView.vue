@@ -163,8 +163,8 @@
   }
 
   const getNextId = () => {
-    const ids = elements.value.map(element => parseInt(element.id));
-    return ids.length == 0 ? '0' : (Math.max(ids) + 1) + '';
+    const ids = elements.value.filter(element => isNode(element)).map(element => parseInt(element.id));
+    return ids.length == 0 ? '0' : (Math.max.apply(Math, ids) + 1) + '';
   }
 
   const onStepCreate = (formData) => {
@@ -224,7 +224,7 @@
      * useVueFlow provides all event handlers and store properties
      * You can pass the composable an object that has the same properties as the VueFlow component props
      */
-  const { onPaneReady, onNodeDragStop, onConnect, addEdges, setTransform, toObject } = useVueFlow();
+  const { onPaneReady, onNodeDragStop, onConnect, addEdges, isEdge, setTransform, toObject } = useVueFlow();
 
   /**
    * This is a Vue Flow event-hook which can be listened to from anywhere you call the composable, instead of only on the main component
@@ -247,6 +247,7 @@
     edge.updatable = true;
     edge.type = 'smoothstep',
     addEdges([edge]);
+    hasChanges.value = true;
     emit("onUpdate", elements.value);
   })
 

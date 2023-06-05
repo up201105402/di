@@ -46,5 +46,5 @@ type RunService interface {
 }
 
 type StepTypeService interface {
-	NewStepInstance(stepType string) (*model.Step, error)
+	NewStepInstance(stepType string, stepConfig model.StepDataConfig) (*model.Step, error)
 }
