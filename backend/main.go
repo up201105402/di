@@ -5,11 +5,14 @@ import (
 	"di/middleware"
 	"di/model"
 	"di/service"
+	"di/tasks"
 	"di/util"
 	"log"
 	"net/http"
+	"os"
 
 	"github.com/gin-gonic/gin"
+	"github.com/hibiken/asynq"
 )
 
 func main() {
@@ -50,6 +53,33 @@ func main() {
 	r := setupRouter(services)
 
 	r.Run(":8001")
+}
+
+func setupAsynqWorker() {
+
+	redisHost := os.Getenv("REDIS_HOST")
+	redisPort := os.Getenv("REDIS_PORT")
+	redisConnection := asynq.RedisClientOpt{
+		Addr: redisHost + ":" + redisPort,
+	}
+
+	worker := asynq.NewServer(redisConnection, asynq.Config{
+		Concurrency: 10,
+		Queues: map[string]int{
+			"runs": 1,
+		},
+	})
+
+	mux := asynq.NewServeMux()
+
+	mux.HandleFunc(
+		tasks.RunPipelineTask,
+		tasks.HandleRunPipelineTask,
+	)
+
+	if err := worker.Run(mux); err != nil {
+		panic(err)
+	}
 }
 
 func setupRouter(services *service.Services) *gin.Engine {

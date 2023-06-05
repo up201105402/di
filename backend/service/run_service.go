@@ -3,6 +3,7 @@ package service
 import (
 	"di/model"
 	"di/repository"
+	"di/tasks"
 	"encoding/json"
 	"log"
 
@@ -37,7 +38,21 @@ func (service *runServiceImpl) GetByPipeline(pipelineId uint) ([]model.Run, erro
 
 func (service *runServiceImpl) Create(pipelineId uint) error {
 	// Add Initial Status
-	if err := service.RunRepository.Create(&model.Run{PipelineID: pipelineId}); err != nil {
+	newRun := &model.Run{PipelineID: pipelineId}
+	if err := service.RunRepository.Create(newRun); err != nil {
+		return err
+	}
+
+	runTask, err := tasks.NewRunPipelineTask(newRun.ID, 0)
+
+	if err != nil {
+		return err
+	}
+
+	if _, err := service.TasksQueueClient.Enqueue(
+		runTask,
+		asynq.Queue("runs"),
+	); err != nil {
 		return err
 	}
 

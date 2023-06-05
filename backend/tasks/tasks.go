@@ -9,7 +9,7 @@ import (
 )
 
 const (
-	RunPipeline = "pipeline:run"
+	RunPipelineTask = "pipeline:run"
 )
 
 type RunPipelinePayload struct {
@@ -22,14 +22,10 @@ func NewRunPipelineTask(runID uint, stepIndex uint) (*asynq.Task, error) {
 	if err != nil {
 		return nil, err
 	}
-	return asynq.NewTask(RunPipeline, payload), nil
+	return asynq.NewTask(RunPipelineTask, payload), nil
 }
 
-type RunPipelineProcessor struct {
-	// ... fields for struct
-}
-
-func (processor *RunPipelineProcessor) ProcessTask(ctx context.Context, t *asynq.Task) error {
+func HandleRunPipelineTask(ctx context.Context, t *asynq.Task) error {
 	var p RunPipelinePayload
 	if err := json.Unmarshal(t.Payload(), &p); err != nil {
 		return fmt.Errorf("json.Unmarshal failed: %v: %w", err, asynq.SkipRetry)
