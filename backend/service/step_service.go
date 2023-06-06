@@ -20,7 +20,7 @@ func NewStepService() StepTypeService {
 	}
 }
 
-func (stepService *stepServiceImpl) NewStepInstance(stepType string, stepConfig model.StepDataConfig) (*model.Step, error) {
+func (stepService *stepServiceImpl) NewStepInstance(pipelineID uint, stepType string, stepConfig model.StepDataConfig) (*model.Step, error) {
 	stepTypeStructName := stepService.StepTypeRegistry[stepType]
 
 	if stepTypeStructName == nil {
@@ -28,8 +28,19 @@ func (stepService *stepServiceImpl) NewStepInstance(stepType string, stepConfig 
 		return nil, errors.NewNotFound("stepType", stepType)
 	}
 
-	step := reflect.New(stepTypeStructName).Elem().Interface().(model.Step)
+	step := reflect.New(stepTypeStructName).Elem()
 
+	pipelineIDField := step.FieldByName("PipelineID")
+
+	if pipelineIDField.IsValid() {
+		if pipelineIDField.CanSet() {
+			if pipelineIDField.Kind() == reflect.Uint {
+				pipelineIDField.SetUint(uint64(pipelineID))
+			}
+		}
+	}
+
+	setupStep := step.Interface().(model.Step)
 	marshalledStepDataConfig, err := json.Marshal(stepConfig)
 
 	if err != nil {
@@ -37,12 +48,12 @@ func (stepService *stepServiceImpl) NewStepInstance(stepType string, stepConfig 
 		return nil, err
 	}
 
-	if err = json.Unmarshal(marshalledStepDataConfig, &step); err != nil {
+	if err = json.Unmarshal(marshalledStepDataConfig, &setupStep); err != nil {
 		log.Printf("Unable to create new step of type %v\n", stepType)
 		return nil, err
 	}
 
-	return &step, nil
+	return &setupStep, nil
 }
 
 func initStepTypeRegistry() map[string]reflect.Type {

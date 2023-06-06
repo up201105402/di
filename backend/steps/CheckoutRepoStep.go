@@ -8,20 +8,24 @@ import (
 )
 
 type CheckoutRepoStep struct {
-	RepoURL string `json:"repoURL"`
+	PipelineID uint
+	RepoURL    string `json:"repoURL"`
 }
 
-func (step *CheckoutRepoStep) Execute() {
+func (step *CheckoutRepoStep) Execute() error {
 
 	pipelinesWorkDir := os.Getenv("PIPELINES_WORK_DIR")
-	if err := os.MkdirAll(pipelinesWorkDir, os.ModePerm); err != nil {
-
+	currentPipelineWorkDir := pipelinesWorkDir + "/" + fmt.Sprint(step.PipelineID)
+	if err := os.MkdirAll(currentPipelineWorkDir, os.ModePerm); err != nil {
+		return err
 	}
 
-	_, err := git.PlainClone(pipelinesWorkDir, false, &git.CloneOptions{
+	if _, err := git.PlainClone(pipelinesWorkDir, false, &git.CloneOptions{
 		URL:      step.RepoURL,
 		Progress: os.Stdout,
-	})
+	}); err != nil {
+		return err
+	}
 
-	fmt.Printf("\x1b[31;1m%s\x1b[0m\n", fmt.Sprintf("error: %s", err))
+	return nil
 }

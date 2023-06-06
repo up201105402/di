@@ -224,7 +224,7 @@
      * useVueFlow provides all event handlers and store properties
      * You can pass the composable an object that has the same properties as the VueFlow component props
      */
-  const { onPaneReady, onNodeDragStop, onConnect, addEdges, isEdge, setTransform, toObject } = useVueFlow();
+  const { findNode, onPaneReady, onNodesChange, onEdgesChange, onConnect, addEdges, isEdge, setTransform, toObject } = useVueFlow();
 
   /**
    * This is a Vue Flow event-hook which can be listened to from anywhere you call the composable, instead of only on the main component
@@ -234,8 +234,6 @@
   onPaneReady(({ fitView }) => {
     fitView();
   })
-
-  // onNodeDragStop((e) => console.log('drag stop', e));
 
   const onEdgeUpdate = (edge) => emit("onUpdate", elements.value);
 
@@ -249,6 +247,20 @@
     addEdges([edge]);
     hasChanges.value = true;
     emit("onUpdate", elements.value);
+  })
+
+  onNodesChange(events => {
+    const removedNodeOrEdge = events.find(event => event.type == 'remove');
+    if (removedNodeOrEdge != null) {
+      hasChanges.value = true;
+    }
+  })
+
+  onEdgesChange(events => {
+    const removedNodeOrEdge = events.find(event => event.type == 'remove');
+    if (removedNodeOrEdge != null) {
+      hasChanges.value = true;
+    }
   })
 
   const dark = ref(false)
@@ -349,7 +361,7 @@
       </CardBoxModal>
       <BaseButtons style="float:right">
         <BaseButton :disabled="!hasChanges" :label="'Save'" color="success" @click="onPipelineSave" />
-        <BaseButton :disabled="!hasChanges" :label="'Cancel'" color="danger" @click="onPipelineCancel" />
+        <BaseButton :label="'Cancel'" color="danger" @click="onPipelineCancel" />
       </BaseButtons>
     </SectionMain>
   </LayoutAuthenticated>
