@@ -4,9 +4,11 @@ import (
 	"di/model"
 	"di/repository"
 	"di/tasks"
+	"di/util"
 	"encoding/json"
 	"log"
 
+	"github.com/dominikbraun/graph"
 	"github.com/hibiken/asynq"
 	"gorm.io/gorm"
 )
@@ -14,14 +16,15 @@ import (
 type runServiceImpl struct {
 	RunRepository    model.RunRepository
 	PipelineService  PipelineService
+	StepTypeService  StepTypeService
 	TasksQueueClient asynq.Client
 }
 
-func NewRunService(gormDB *gorm.DB, client *asynq.Client, pipelineService *PipelineService) RunService {
-
+func NewRunService(gormDB *gorm.DB, client *asynq.Client, pipelineService *PipelineService, stepTypeService *StepTypeService) RunService {
 	return &runServiceImpl{
 		RunRepository:    repository.NewRunRepository(gormDB),
 		PipelineService:  *pipelineService,
+		StepTypeService:  *stepTypeService,
 		TasksQueueClient: *client,
 	}
 }
@@ -59,13 +62,14 @@ func (service *runServiceImpl) Create(pipelineId uint) error {
 	return nil
 }
 
-func (service *runServiceImpl) Execute(pipelineId uint) error {
+func (service *runServiceImpl) Execute(runID uint) error {
 	// demarshal stringified pipeline definition json
 
-	pipeline, err := service.PipelineService.Get(pipelineId)
+	run, err := service.RunRepository.FindByID(runID)
+	pipeline, err := service.PipelineService.Get(run.PipelineID)
 
 	if err != nil {
-		log.Printf("Could not retrieve pipeline with id %v\n", pipelineId)
+		log.Printf("Could not retrieve run with id %v\n", runID)
 		return err
 	}
 
@@ -76,12 +80,39 @@ func (service *runServiceImpl) Execute(pipelineId uint) error {
 	// }
 	// fmt.Println(val[0].ID)
 
-	var steps []model.StepDescription
+	var stepDescriptions []model.StepDescription
 
-	if err := json.Unmarshal([]byte(pipeline.Definition), &steps); err != nil {
-		log.Printf("Unable to unmarshal pipeline %v definition\n", pipelineId)
+	if err := json.Unmarshal([]byte(pipeline.Definition), &stepDescriptions); err != nil {
+		log.Printf("Unable to unmarshal pipeline %v definition\n", pipeline.ID)
 		return err
 	}
+
+	steps := util.Map(stepDescriptions, func(stepDescription model.StepDescription) model.Step {
+		step, _ := service.StepTypeService.NewStepInstance(pipeline.ID, stepDescription.Type, stepDescription.Data.StepConfig)
+		return *step
+	})
+
+	steps = util.Filter(steps, func(step model.Step) bool {
+		return step != nil
+	})
+
+	pipelineGraph := graph.New(stepHash, graph.Directed())
+
+	for _, step := range steps {
+
+		if step.IsVertex() {
+			pipelineGraph.AddVertex(step)
+		}
+
+		if step.IsEdge() {
+			// TODO
+			pipelineGraph.AddEdge()
+		}
+	}
+
+	pipelineGraph.AddEdge()
+
+	runPipelineTask, err := tasks.NewRunPipelineTask(pipelineGraph, 0)
 
 	return nil
 }
@@ -104,4 +135,8 @@ func (service *runServiceImpl) Delete(id uint) error {
 	}
 
 	return nil
+}
+
+func stepHash(step model.Step) int {
+	return graph.IntHash(int(step.GetID()))
 }

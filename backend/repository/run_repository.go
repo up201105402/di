@@ -21,16 +21,16 @@ func NewRunRepository(gormDB *gorm.DB) model.RunRepository {
 
 func (repo *runRepositoryImpl) FindByID(id uint) (*model.Run, error) {
 
-	var pipeline = model.Run{}
+	var run = model.Run{}
 
-	result := repo.DB.First(&pipeline, id)
+	result := repo.DB.First(&run, id)
 
 	if errors.Is(result.Error, gorm.ErrRecordNotFound) {
 		log.Printf("Failed to get pipeline with id: %v. Reason: %v\n", id, result.Error)
 		return nil, result.Error
 	}
 
-	return &pipeline, nil
+	return &run, nil
 }
 
 func (repo *runRepositoryImpl) FindByPipeline(pipelineId uint) ([]model.Run, error) {

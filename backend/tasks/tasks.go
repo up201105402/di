@@ -2,9 +2,11 @@ package tasks
 
 import (
 	"context"
+	"di/model"
 	"encoding/json"
 	"fmt"
 
+	"github.com/dominikbraun/graph"
 	"github.com/hibiken/asynq"
 )
 
@@ -13,12 +15,12 @@ const (
 )
 
 type RunPipelinePayload struct {
-	RunID     uint
+	Graph     graph.Graph[int, model.Step]
 	StepIndex uint
 }
 
-func NewRunPipelineTask(runID uint, stepIndex uint) (*asynq.Task, error) {
-	payload, err := json.Marshal(RunPipelinePayload{RunID: runID, StepIndex: stepIndex})
+func NewRunPipelineTask(graph graph.Graph[int, model.Step], stepIndex uint) (*asynq.Task, error) {
+	payload, err := json.Marshal(RunPipelinePayload{Graph: graph, StepIndex: stepIndex})
 	if err != nil {
 		return nil, err
 	}
@@ -31,6 +33,5 @@ func HandleRunPipelineTask(ctx context.Context, t *asynq.Task) error {
 		return fmt.Errorf("json.Unmarshal failed: %v: %w", err, asynq.SkipRetry)
 	}
 
-	// Image resizing code ...
 	return nil
 }

@@ -52,5 +52,8 @@ type StepDescription struct {
 }
 
 type Step interface {
+	GetID() uint
+	IsVertex() bool
+	IsEdge() bool
 	Execute() error
 }

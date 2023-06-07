@@ -12,6 +12,10 @@ type CheckoutRepoStep struct {
 	RepoURL    string `json:"repoURL"`
 }
 
+func (step *CheckoutRepoStep) GetID() error {
+
+}
+
 func (step *CheckoutRepoStep) Execute() error {
 
 	pipelinesWorkDir := os.Getenv("PIPELINES_WORK_DIR")
