@@ -46,19 +46,6 @@ func (service *runServiceImpl) Create(pipelineId uint) error {
 		return err
 	}
 
-	runTask, err := tasks.NewRunPipelineTask(newRun.ID, 0)
-
-	if err != nil {
-		return err
-	}
-
-	if _, err := service.TasksQueueClient.Enqueue(
-		runTask,
-		asynq.Queue("runs"),
-	); err != nil {
-		return err
-	}
-
 	return nil
 }
 
@@ -66,10 +53,16 @@ func (service *runServiceImpl) Execute(runID uint) error {
 	// demarshal stringified pipeline definition json
 
 	run, err := service.RunRepository.FindByID(runID)
-	pipeline, err := service.PipelineService.Get(run.PipelineID)
 
 	if err != nil {
 		log.Printf("Could not retrieve run with id %v\n", runID)
+		return err
+	}
+
+	pipeline, err := service.PipelineService.Get(run.PipelineID)
+
+	if err != nil {
+		log.Printf("Could not retrieve pipeline with id %v\n", run.PipelineID)
 		return err
 	}
 
@@ -104,15 +97,26 @@ func (service *runServiceImpl) Execute(runID uint) error {
 			pipelineGraph.AddVertex(step)
 		}
 
-		if step.IsEdge() {
-			// TODO
-			pipelineGraph.AddEdge()
-		}
+		//if step.IsEdge() {
+		// TODO
+		//pipelineGraph.AddEdge()
+		//}
 	}
 
-	pipelineGraph.AddEdge()
+	//pipelineGraph.AddEdge()
 
 	runPipelineTask, err := tasks.NewRunPipelineTask(pipelineGraph, 0)
+
+	if err != nil {
+		return err
+	}
+
+	if _, err := service.TasksQueueClient.Enqueue(
+		runPipelineTask,
+		asynq.Queue("runs"),
+	); err != nil {
+		return err
+	}
 
 	return nil
 }

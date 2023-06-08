@@ -8,12 +8,13 @@ import (
 )
 
 type CheckoutRepoStep struct {
+	ID         uint
 	PipelineID uint
 	RepoURL    string `json:"repoURL"`
 }
 
-func (step *CheckoutRepoStep) GetID() error {
-
+func (step *CheckoutRepoStep) GetID() uint {
+	return step.ID
 }
 
 func (step *CheckoutRepoStep) Execute() error {

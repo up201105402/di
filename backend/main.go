@@ -42,15 +42,17 @@ func main() {
 	defer client.Close()
 
 	pipelineService := service.NewPipelineService(dbConnection)
+	stepTypeService := service.NewStepService()
 
 	services := &service.Services{
 		UserService:     service.NewUserService(dbConnection),
 		PipelineService: pipelineService,
-		RunService:      service.NewRunService(dbConnection, client, &pipelineService),
+		RunService:      service.NewRunService(dbConnection, client, &pipelineService, &stepTypeService),
 		TokenService:    service.NewTokenService(tokenServiceConfig),
 	}
 
 	r := setupRouter(services)
+	setupAsynqWorker()
 
 	r.Run(":8001")
 }
