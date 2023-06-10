@@ -16,15 +16,15 @@ import (
 type runServiceImpl struct {
 	RunRepository    model.RunRepository
 	PipelineService  PipelineService
-	StepTypeService  StepTypeService
+	NodeTypeService  NodeTypeService
 	TasksQueueClient asynq.Client
 }
 
-func NewRunService(gormDB *gorm.DB, client *asynq.Client, pipelineService *PipelineService, stepTypeService *StepTypeService) RunService {
+func NewRunService(gormDB *gorm.DB, client *asynq.Client, pipelineService *PipelineService, stepTypeService *NodeTypeService) RunService {
 	return &runServiceImpl{
 		RunRepository:    repository.NewRunRepository(gormDB),
 		PipelineService:  *pipelineService,
-		StepTypeService:  *stepTypeService,
+		NodeTypeService:  *stepTypeService,
 		TasksQueueClient: *client,
 	}
 }
@@ -73,37 +73,42 @@ func (service *runServiceImpl) Execute(runID uint) error {
 	// }
 	// fmt.Println(val[0].ID)
 
-	var stepDescriptions []model.StepDescription
+	var stepDescriptions []model.NodeDescription
 
 	if err := json.Unmarshal([]byte(pipeline.Definition), &stepDescriptions); err != nil {
 		log.Printf("Unable to unmarshal pipeline %v definition\n", pipeline.ID)
 		return err
 	}
 
-	steps := util.Map(stepDescriptions, func(stepDescription model.StepDescription) model.Step {
-		step, _ := service.StepTypeService.NewStepInstance(pipeline.ID, stepDescription.Type, stepDescription.Data.StepConfig)
+	pipelineGraph := graph.New(stepHash, graph.Directed())
+
+	steps := util.Map(stepDescriptions, func(stepDescription model.NodeDescription) model.Step {
+		step, _ := service.NodeTypeService.NewStepInstance(pipeline.ID, stepDescription.Type, stepDescription.Data.StepConfig)
 		return *step
+	})
+
+	edges := util.Map(stepDescriptions, func(stepDescription model.NodeDescription) model.Edge {
+		edge, _ := service.NodeTypeService.NewEdgeInstance(pipeline.ID, stepDescription.Type, stepDescription.Data.StepConfig)
+		return *edge
 	})
 
 	steps = util.Filter(steps, func(step model.Step) bool {
 		return step != nil
 	})
 
-	pipelineGraph := graph.New(stepHash, graph.Directed())
+	edges = util.Filter(edges, func(edge model.Edge) bool {
+		return edge != nil
+	})
 
 	for _, step := range steps {
-
-		if step.IsVertex() {
-			pipelineGraph.AddVertex(step)
-		}
-
-		//if step.IsEdge() {
-		// TODO
-		//pipelineGraph.AddEdge()
-		//}
+		pipelineGraph.AddVertex(step)
 	}
 
-	//pipelineGraph.AddEdge()
+	for _, edge := range edges {
+		previousStepID := (*edge.GetPreviousStep()).GetID()
+		nextStepID := (*edge.GetNextStep()).GetID()
+		pipelineGraph.AddEdge(previousStepID, nextStepID)
+	}
 
 	runPipelineTask, err := tasks.NewRunPipelineTask(pipelineGraph, 0)
 

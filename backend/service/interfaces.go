@@ -45,6 +45,7 @@ type RunService interface {
 	Delete(id uint) error
 }
 
-type StepTypeService interface {
-	NewStepInstance(pipelineID uint, stepType string, stepConfig model.StepDataConfig) (*model.Step, error)
+type NodeTypeService interface {
+	NewStepInstance(pipelineID uint, nodeType string, stepConfig model.StepDataConfig) (*model.Step, error)
+	NewEdgeInstance(pipelineID uint, nodeType string, stepConfig model.StepDataConfig) (*model.Edge, error)
 }

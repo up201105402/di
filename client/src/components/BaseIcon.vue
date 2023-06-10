@@ -2,6 +2,10 @@
 import { computed } from "vue";
 
 const props = defineProps({
+  id: {
+    type: Number,
+    required: false,
+  },
   path: {
     type: String,
     required: true,

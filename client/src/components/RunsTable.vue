@@ -1,76 +1,158 @@
 <script setup>
-import { computed, ref } from "vue";
-import { mdiRefresh } from "@mdi/js";
-import TableCheckboxCell from "@/components/TableCheckboxCell.vue";
-import BaseLevel from "@/components/BaseLevel.vue";
-import BaseButtons from "@/components/BaseButtons.vue";
-import BaseButton from "@/components/BaseButton.vue";
-import UserAvatar from "@/components/UserAvatar.vue";
+    import { computed, ref } from "vue";
+    import { useAsyncState } from "@vueuse/core";
+    import { doRequest } from "@/util";
+    import { useAuthStore } from "@/stores/auth";
+    import { mdiRefresh, mdiPlus, mdiChevronRight, mdiChevronDown } from "@mdi/js";
+    import CardBoxModal from "@/components/CardBoxModal.vue";
+    import TableCheckboxCell from "@/components/TableCheckboxCell.vue";
+    import BaseLevel from "@/components/BaseLevel.vue";
+    import BaseButtons from "@/components/BaseButtons.vue";
+    import BaseButton from "@/components/BaseButton.vue";
+    import UserAvatar from "@/components/UserAvatar.vue";
+    import BaseIcon from "@/components/BaseIcon.vue";
 
-const props = defineProps({
-    items: Array,
-    checkable: Boolean,
-});
+    const { accessToken, requireAuthRoute } = useAuthStore();
 
-// EMITS
-
-const emit = defineEmits(["deleteButtonClicked"]);
-
-const deleteButtonClicked = (id) => {
-    emit("deleteButtonClicked", id);
-}
-
-// ITEMS PROCESSING
-
-const perPage = ref(5);
-
-const currentPage = ref(0);
-
-const checkedRows = ref([]);
-
-const itemsPaginated = computed(() => {
-    return props.items ? props.items.slice(
-        perPage.value * currentPage.value,
-        perPage.value * (currentPage.value + 1)
-    ) : [];
-});
-
-const numPages = computed(() => Math.ceil(props.items?.length / perPage.value));
-
-const currentPageHuman = computed(() => currentPage.value + 1);
-
-const pagesList = computed(() => {
-    const pagesList = [];
-
-    for (let i = 0; i < numPages.value; i++) {
-        pagesList.push(i);
-    }
-
-    return pagesList;
-});
-
-const remove = (arr, cb) => {
-    const newArr = [];
-
-    arr.forEach((item) => {
-        if (!cb(item)) {
-            newArr.push(item);
-        }
+    const props = defineProps({
+        items: Array,
+        checkable: Boolean,
     });
 
-    return newArr;
-};
+    // FETCH RUNS
 
-const checked = (isChecked, pipeline) => {
-    if (isChecked) {
-        checkedRows.value.push(pipeline);
-    } else {
-        checkedRows.value = remove(
-            checkedRows.value,
-            (row) => row.id === pipeline.id
-        );
+    const {
+        isLoading: isFetchingPipelineRuns,
+        state: fetchPipelineRunsResponse,
+        isReady: isFetchPipelineRunsFinished,
+        execute: fetchPipelineRuns
+    } = useAsyncState(
+        (pipelineID) => {
+            return doRequest({
+                url: `/api/run/${pipelineID}`,
+                method: 'GET',
+                headers: {
+                    Authorization: `${accessToken}`
+                },
+            })
+        },
+        {},
+        {
+            delay: 500,
+            resetOnExecute: false,
+            immediate: false,
+        },
+    );
+
+    const {
+        isLoading: isCreatingPipelineRun,
+        state: createPipelineRunResponse,
+        isReady: createPipelineRunFinished,
+        execute: createPipelineRun
+    } = useAsyncState(
+        (pipelineID) => {
+            return doRequest({
+                url: `/api/run/${pipelineID}`,
+                method: 'POST',
+                headers: {
+                    Authorization: `${accessToken}`,
+                },
+            });
+        },
+        {},
+        {
+            delay: 500,
+            resetOnExecute: false,
+            immediate: false,
+        },
+    )
+
+
+    // EMITS
+
+    const emit = defineEmits(["deleteButtonClicked"]);
+
+    const deleteButtonClicked = (id) => {
+        emit("deleteButtonClicked", id);
     }
-};
+
+    // ITEMS PROCESSING
+
+    const perPage = ref(5);
+
+    const currentPage = ref(0);
+
+    const checkedRows = ref([]);
+
+    const openedPipelines = ref([]);
+
+    const runsByPipeline = ref({});
+
+    const itemsPaginated = computed(() => {
+        return props.items ? props.items.slice(
+            perPage.value * currentPage.value,
+            perPage.value * (currentPage.value + 1)
+        ) : [];
+    });
+
+    const numPages = computed(() => Math.ceil(props.items?.length / perPage.value));
+
+    const currentPageHuman = computed(() => currentPage.value + 1);
+
+    const pagesList = computed(() => {
+        const pagesList = [];
+
+        for (let i = 0; i < numPages.value; i++) {
+            pagesList.push(i);
+        }
+
+        return pagesList;
+    });
+
+    const remove = (arr, cb) => {
+        const newArr = [];
+
+        arr.forEach((item) => {
+            if (!cb(item)) {
+                newArr.push(item);
+            }
+        });
+
+        return newArr;
+    };
+
+    const checked = (isChecked, pipeline) => {
+        if (isChecked) {
+            checkedRows.value.push(pipeline);
+        } else {
+            checkedRows.value = remove(
+                checkedRows.value,
+                (row) => row.id === pipeline.id
+            );
+        }
+    };
+
+    const expandRow = (e, pipelineID) => {
+        if (isPipelineOpen(pipelineID)) {
+            const index = openedPipelines.value.findIndex(elem => elem == pipelineID);
+            openedPipelines.value.splice(index, 1);
+        } else {
+            openedPipelines.value.push(pipelineID);
+            fetchPipelineRuns(500, pipelineID);
+        }
+    }
+
+    const isPipelineOpen = (id) => {
+        return openedPipelines.value.find(elem => elem == id) != null;
+    }
+
+    const isCreateModalActive = ref(false);
+    const createPipelineID = ref(null);
+
+    const onNewPipelineRunClicked = (e, pipelineID) => {
+        isCreateModalActive.value = true;
+        createPipelineID.value = pipelineID;
+    }
 
 </script>
 
@@ -85,7 +167,6 @@ const checked = (isChecked, pipeline) => {
     <table>
         <thead>
             <tr>
-                <th v-if="checkable" />
                 <th />
                 <th>Name</th>
                 <th>Status</th>
@@ -95,7 +176,10 @@ const checked = (isChecked, pipeline) => {
         </thead>
         <tbody>
             <tr v-for="pipeline in itemsPaginated" :key="pipeline.id">
-                <TableCheckboxCell v-if="checkable" @checked="checked($event, pipeline)" />
+                <td class="border-b-0 lg:w-6 before:hidden">
+                    <BaseIcon :path="isPipelineOpen(pipeline.ID) ? mdiChevronDown : mdiChevronRight"
+                        @click.prevent="(e) => expandRow(e, pipeline.ID)" />
+                </td>
                 <td class="border-b-0 lg:w-6 before:hidden">
                     <UserAvatar :username="pipeline.name" class="w-24 h-24 mx-auto lg:w-6 lg:h-6" />
                 </td>
@@ -109,13 +193,16 @@ const checked = (isChecked, pipeline) => {
                 </td>
                 <td data-label="Created" class="lg:w-1 whitespace-nowrap">
                     <small class="text-gray-500 dark:text-slate-400" :title="pipeline.CreatedAt">{{ pipeline.CreatedAt
-                    }}</small>
+                        }}</small>
                 </td>
                 <td class="before:hidden lg:w-1 whitespace-nowrap">
                     <BaseButtons type="justify-start lg:justify-end" no-wrap>
+                        <BaseButton color="success" :icon="mdiPlus" small
+                            @click.prevent="(e) => onNewPipelineRunClicked(e, pipeline.ID)" />
                         <BaseButton color="success" :icon="mdiRefresh" small />
                     </BaseButtons>
                 </td>
+                <td v-for="run in runsByPipeline[pipeline.ID]" :key="run.ID" />
             </tr>
         </tbody>
     </table>
@@ -128,4 +215,7 @@ const checked = (isChecked, pipeline) => {
             <small>Page {{ currentPageHuman }} of {{ numPages }}</small>
         </BaseLevel>
     </div>
+
+    <CardBoxModal v-model="isCreateModalActive" @confirm="createPipelineRun(500, createPipelineID)"
+        :title="'Create Run for Pipeline ' + createPipelineID" button="success" has-cancel />
 </template>

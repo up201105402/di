@@ -40,7 +40,7 @@ type StepDataConfig struct {
 	Epochs               string `json:"epochs"`
 }
 
-type StepDescription struct {
+type NodeDescription struct {
 	ID    string `json:"id"`
 	Label string `json:"label"`
 	Type  string `json:"type"`
@@ -52,8 +52,12 @@ type StepDescription struct {
 }
 
 type Step interface {
-	GetID() uint
-	IsVertex() bool
-	IsEdge() bool
+	GetID() int
 	Execute() error
+}
+
+type Edge interface {
+	GetID() int
+	GetNextStep() *Step
+	GetPreviousStep() *Step
 }
