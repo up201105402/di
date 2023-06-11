@@ -11,6 +11,7 @@
     import BaseButton from "@/components/BaseButton.vue";
     import UserAvatar from "@/components/UserAvatar.vue";
     import BaseIcon from "@/components/BaseIcon.vue";
+    import RunsTableRow from "@/components/RunsTableRow.vue";
 
     const { accessToken, requireAuthRoute } = useAuthStore();
 
@@ -43,38 +44,6 @@
             immediate: false,
         },
     );
-
-    const {
-        isLoading: isCreatingPipelineRun,
-        state: createPipelineRunResponse,
-        isReady: createPipelineRunFinished,
-        execute: createPipelineRun
-    } = useAsyncState(
-        (pipelineID) => {
-            return doRequest({
-                url: `/api/run/${pipelineID}`,
-                method: 'POST',
-                headers: {
-                    Authorization: `${accessToken}`,
-                },
-            });
-        },
-        {},
-        {
-            delay: 500,
-            resetOnExecute: false,
-            immediate: false,
-        },
-    )
-
-
-    // EMITS
-
-    const emit = defineEmits(["deleteButtonClicked"]);
-
-    const deleteButtonClicked = (id) => {
-        emit("deleteButtonClicked", id);
-    }
 
     // ITEMS PROCESSING
 
@@ -132,13 +101,13 @@
         }
     };
 
-    const expandRow = (e, pipelineID) => {
-        if (isPipelineOpen(pipelineID)) {
+    const expandOrCollapseRow = (pipelineID, isOpen) => {
+        if (!isOpen) {
             const index = openedPipelines.value.findIndex(elem => elem == pipelineID);
             openedPipelines.value.splice(index, 1);
         } else {
             openedPipelines.value.push(pipelineID);
-            fetchPipelineRuns(500, pipelineID);
+            // fetchPipelineRuns(500, pipelineID);
         }
     }
 
@@ -148,11 +117,6 @@
 
     const isCreateModalActive = ref(false);
     const createPipelineID = ref(null);
-
-    const onNewPipelineRunClicked = (e, pipelineID) => {
-        isCreateModalActive.value = true;
-        createPipelineID.value = pipelineID;
-    }
 
 </script>
 
@@ -175,35 +139,10 @@
             </tr>
         </thead>
         <tbody>
-            <tr v-for="pipeline in itemsPaginated" :key="pipeline.id">
-                <td class="border-b-0 lg:w-6 before:hidden">
-                    <BaseIcon :path="isPipelineOpen(pipeline.ID) ? mdiChevronDown : mdiChevronRight"
-                        @click.prevent="(e) => expandRow(e, pipeline.ID)" />
-                </td>
-                <td class="border-b-0 lg:w-6 before:hidden">
-                    <UserAvatar :username="pipeline.name" class="w-24 h-24 mx-auto lg:w-6 lg:h-6" />
-                </td>
-                <td data-label="Name">
-                    {{ pipeline.name }}
-                </td>
-                <td data-label="Progress" class="lg:w-32">
-                    <progress class="flex w-2/5 self-center lg:w-full" max="100" :value="pipeline.progress">
-                        {{ pipeline.progress }}
-                    </progress>
-                </td>
-                <td data-label="Created" class="lg:w-1 whitespace-nowrap">
-                    <small class="text-gray-500 dark:text-slate-400" :title="pipeline.CreatedAt">{{ pipeline.CreatedAt
-                        }}</small>
-                </td>
-                <td class="before:hidden lg:w-1 whitespace-nowrap">
-                    <BaseButtons type="justify-start lg:justify-end" no-wrap>
-                        <BaseButton color="success" :icon="mdiPlus" small
-                            @click.prevent="(e) => onNewPipelineRunClicked(e, pipeline.ID)" />
-                        <BaseButton color="success" :icon="mdiRefresh" small />
-                    </BaseButtons>
-                </td>
-                <td v-for="run in runsByPipeline[pipeline.ID]" :key="run.ID" />
-            </tr>
+            <RunsTableRow v-for="pipeline in itemsPaginated" 
+                                :parentRow="pipeline" 
+                                subrowsFetchBaseURL="/api/run/" 
+                                @expand-collapse-row="expandOrCollapseRow" />
         </tbody>
     </table>
     <div class="p-3 lg:px-6 border-t border-gray-100 dark:border-slate-800">
@@ -215,7 +154,4 @@
             <small>Page {{ currentPageHuman }} of {{ numPages }}</small>
         </BaseLevel>
     </div>
-
-    <CardBoxModal v-model="isCreateModalActive" @confirm="createPipelineRun(500, createPipelineID)"
-        :title="'Create Run for Pipeline ' + createPipelineID" button="success" has-cancel />
 </template>

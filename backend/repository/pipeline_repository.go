@@ -23,7 +23,7 @@ func (repo *pipelineRepositoryImpl) FindByID(id uint) (*model.Pipeline, error) {
 
 	var pipeline = model.Pipeline{}
 
-	result := repo.DB.First(&pipeline, id)
+	result := repo.DB.Preload("User").First(&pipeline, id)
 
 	if errors.Is(result.Error, gorm.ErrRecordNotFound) {
 		log.Printf("Failed to get pipeline with id: %v. Reason: %v\n", id, result.Error)

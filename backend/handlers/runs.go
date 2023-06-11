@@ -43,9 +43,9 @@ func GetRuns(services *service.Services) gin.HandlerFunc {
 func FindByPipeline(services *service.Services) gin.HandlerFunc {
 	return func(context *gin.Context) {
 
-		pipelineId := context.Param("id")
+		id := context.Param("id")
 
-		id, parseError := strconv.ParseUint(pipelineId, 10, 64)
+		pipelineID, parseError := strconv.ParseUint(id, 10, 64)
 
 		if parseError != nil {
 			log.Printf("Failed to convert pipelineId into uint: %v\n", parseError)
@@ -57,11 +57,23 @@ func FindByPipeline(services *service.Services) gin.HandlerFunc {
 			return
 		}
 
-		pipeline, getError := services.PipelineService.Get(uint(id))
+		pipeline, serviceError := services.PipelineService.Get(uint(pipelineID))
 
-		if getError != nil {
-			log.Printf("Failed to get pipeline with id %v: %v\n", pipelineId, getError)
-			errorMessage := fmt.Sprint("Failed to get pipeline with id %v: %v\n", pipelineId, getError)
+		if serviceError != nil {
+			log.Printf("Failed to get pipeline with id %v: %v\n", pipelineID, serviceError)
+			errorMessage := fmt.Sprint("Failed to get pipeline with id %v: %v\n", pipelineID, serviceError)
+			err := errors.NewInternal()
+			context.JSON(err.Status(), gin.H{
+				"error": errorMessage,
+			})
+			return
+		}
+
+		runs, getError := services.RunService.GetByPipeline(pipeline.ID)
+
+		if serviceError != nil {
+			log.Printf("Failed to get runs for pipeline with id %v: %v\n", pipelineID, getError)
+			errorMessage := fmt.Sprint("Failed to get runs for pipeline with id %v: %v\n", pipelineID, getError)
 			err := errors.NewInternal()
 			context.JSON(err.Status(), gin.H{
 				"error": errorMessage,
@@ -70,13 +82,27 @@ func FindByPipeline(services *service.Services) gin.HandlerFunc {
 		}
 
 		context.JSON(http.StatusOK, gin.H{
-			"pipeline": pipeline,
+			"runs": runs,
 		})
 	}
 }
 
 func CreateRun(services *service.Services) gin.HandlerFunc {
 	return func(context *gin.Context) {
+
+		id := context.Param("id")
+
+		pipelineID, parseError := strconv.ParseUint(id, 10, 64)
+
+		if parseError != nil {
+			log.Printf("Failed to convert pipelineId into uint: %v\n", parseError)
+			errorMessage := fmt.Sprint("Failed to convert pipelineId into uint: %v\n", parseError)
+			err := errors.NewInternal()
+			context.JSON(err.Status(), gin.H{
+				"error": errorMessage,
+			})
+			return
+		}
 
 		var req model.CreateRunReq
 
@@ -91,10 +117,10 @@ func CreateRun(services *service.Services) gin.HandlerFunc {
 			})
 		}
 
-		pipeline, serviceError := services.PipelineService.Get(req.PipelineID)
+		pipeline, serviceError := services.PipelineService.Get(uint(pipelineID))
 
 		if serviceError != nil {
-			err := errors.NewNotFound("pipeline", string(req.PipelineID))
+			err := errors.NewNotFound("pipeline", string(pipelineID))
 			log.Printf(err.Message)
 			context.JSON(err.Status(), gin.H{
 				"error": err.Message,
@@ -112,7 +138,7 @@ func CreateRun(services *service.Services) gin.HandlerFunc {
 			return
 		}
 
-		serviceError = services.RunService.Create(req.PipelineID)
+		serviceError = services.RunService.Create(pipeline.ID)
 
 		if serviceError != nil {
 			log.Printf("Failed to create run for pipeline: %v\n", err.Error())
@@ -125,7 +151,7 @@ func CreateRun(services *service.Services) gin.HandlerFunc {
 		}
 
 		if req.Execute {
-			serviceError := services.RunService.Execute(req.PipelineID)
+			serviceError := services.RunService.Execute(pipeline.ID)
 
 			if serviceError != nil {
 				log.Printf("Failed to execute run for pipeline: %v\n", err.Error())
@@ -145,6 +171,20 @@ func CreateRun(services *service.Services) gin.HandlerFunc {
 func ExecuteRun(services *service.Services) gin.HandlerFunc {
 	return func(context *gin.Context) {
 
+		id := context.Param("id")
+
+		pipelineID, parseError := strconv.ParseUint(id, 10, 64)
+
+		if parseError != nil {
+			log.Printf("Failed to convert pipelineId into uint: %v\n", parseError)
+			errorMessage := fmt.Sprint("Failed to convert pipelineId into uint: %v\n", parseError)
+			err := errors.NewInternal()
+			context.JSON(err.Status(), gin.H{
+				"error": errorMessage,
+			})
+			return
+		}
+
 		var req model.CreateRunReq
 
 		if ok := bindData(context, &req); !ok {
@@ -158,10 +198,10 @@ func ExecuteRun(services *service.Services) gin.HandlerFunc {
 			})
 		}
 
-		pipeline, serviceError := services.PipelineService.Get(req.PipelineID)
+		pipeline, serviceError := services.PipelineService.Get(uint(pipelineID))
 
 		if serviceError != nil {
-			err := errors.NewNotFound("pipeline", string(req.PipelineID))
+			err := errors.NewNotFound("pipeline", string(pipelineID))
 			log.Printf(err.Message)
 			context.JSON(err.Status(), gin.H{
 				"error": err.Message,
@@ -179,7 +219,7 @@ func ExecuteRun(services *service.Services) gin.HandlerFunc {
 			return
 		}
 
-		serviceError = services.RunService.Execute(req.PipelineID)
+		serviceError = services.RunService.Execute(pipeline.ID)
 
 		if serviceError != nil {
 			log.Printf("Failed to execute run for pipeline: %v\n", err.Error())

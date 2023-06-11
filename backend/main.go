@@ -5,7 +5,6 @@ import (
 	"di/middleware"
 	"di/model"
 	"di/service"
-	"di/tasks"
 	"di/util"
 	"log"
 	"net/http"
@@ -52,7 +51,7 @@ func main() {
 	}
 
 	r := setupRouter(services)
-	setupAsynqWorker()
+	//setupAsynqWorker()
 
 	r.Run(":8001")
 }
@@ -74,10 +73,10 @@ func setupAsynqWorker() {
 
 	mux := asynq.NewServeMux()
 
-	mux.HandleFunc(
-		tasks.RunPipelineTask,
-		tasks.HandleRunPipelineTask,
-	)
+	// mux.HandleFunc(
+	// 	tasks.RunPipelineTask,
+	// 	tasks.HandleRunPipelineTask,
+	// )
 
 	if err := worker.Run(mux); err != nil {
 		panic(err)

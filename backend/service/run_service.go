@@ -41,7 +41,7 @@ func (service *runServiceImpl) GetByPipeline(pipelineId uint) ([]model.Run, erro
 
 func (service *runServiceImpl) Create(pipelineId uint) error {
 	// Add Initial Status
-	newRun := &model.Run{PipelineID: pipelineId}
+	newRun := &model.Run{PipelineID: pipelineId, StatusID: 0}
 	if err := service.RunRepository.Create(newRun); err != nil {
 		return err
 	}

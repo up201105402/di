@@ -21,9 +21,7 @@ type Run struct {
 }
 
 type CreateRunReq struct {
-	ID         uint `json:"id"`
-	PipelineID uint `json:"pipelineId"`
-	Execute    bool `json:"execute"`
+	Execute bool `json:"execute"`
 }
 
 type ExecuteRunReq struct {
