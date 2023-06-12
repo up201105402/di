@@ -23,7 +23,7 @@ func (repo *runRepositoryImpl) FindByID(id uint) (*model.Run, error) {
 
 	var run = model.Run{}
 
-	result := repo.DB.First(&run, id)
+	result := repo.DB.Preload("Pipeline").Preload("Status").First(&run, id)
 
 	if errors.Is(result.Error, gorm.ErrRecordNotFound) {
 		log.Printf("Failed to get pipeline with id: %v. Reason: %v\n", id, result.Error)
@@ -37,7 +37,7 @@ func (repo *runRepositoryImpl) FindByPipeline(pipelineId uint) ([]model.Run, err
 
 	var runs []model.Run
 
-	result := repo.DB.Preload("Pipeline").Where("pipeline_id = ?", pipelineId).Find(&runs)
+	result := repo.DB.Preload("Pipeline").Preload("Status").Where("pipeline_id = ?", pipelineId).Find(&runs)
 
 	if errors.Is(result.Error, gorm.ErrRecordNotFound) {
 		log.Printf("Failed to get runs for pipeline %v. Reason: %v\n", pipelineId, result.Error)

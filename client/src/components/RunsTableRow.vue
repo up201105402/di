@@ -89,18 +89,18 @@
 
     const isCreateModalActive = ref(false);
 
-    const isRowOpened = ref(props.isRowOpened);
+    const isRowOpen = ref(props.isRowOpened);
 
     const emit = defineEmits(["expand-collapse-row", "create-subrow"]);
 
     const expandOrCollapseRow = (e) => {
-        isRowOpened.value = !isRowOpened.value;
+        isRowOpen.value = !isRowOpen.value;
 
-        if (isRowOpened.value) {
+        if (isRowOpen.value) {
             fetchSubrows(null, props.parentRow.ID)
         }
 
-        emit("expand-collapse-row", props.parentRow.ID, isRowOpened.value)
+        emit("expand-collapse-row", props.parentRow.ID, isRowOpen.value)
     }
 
     const onSubRowCreateButtonClicked = (e) => {
@@ -121,7 +121,7 @@
 
     <tr :key="parentRow.ID">
         <td class="border-b-0 lg:w-6 before:hidden">
-            <BaseIcon :path="isRowOpened ? mdiChevronDown : mdiChevronRight" @click.prevent="(e) => expandOrCollapseRow(e, parentRow.ID)" />
+            <BaseIcon :path="isRowOpen ? mdiChevronDown : mdiChevronRight" @click.prevent="(e) => expandOrCollapseRow(e, parentRow.ID)" />
         </td>
         <td class="border-b-0 lg:w-6 before:hidden">
             <UserAvatar :username="parentRow.name" class="w-24 h-24 mx-auto lg:w-6 lg:h-6" />
@@ -145,7 +145,7 @@
             </BaseButtons>
         </td>
     </tr>
-    <tr v-for="subRow in subRows" :key="subRow.ID">
+    <tr v-if="isRowOpen" v-for="subRow in subRows" :key="subRow.ID">
         <td class="border-b-0 lg:w-6 before:hidden">
             <BaseIcon :path="mdiRunFast" />
         </td>
