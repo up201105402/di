@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"reflect"
 
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
@@ -49,9 +50,45 @@ func CreateOrUpdateSchema(db *gorm.DB) error {
 		return err
 	}
 
+	if err := createDefaultRunStatuses(db); err != nil {
+		log.Fatalln(err)
+		return err
+	}
+
 	if err := db.AutoMigrate(&model.Run{}); err != nil {
 		log.Fatalln(err)
 		return err
+	}
+
+	return nil
+}
+
+func createDefaultRunStatuses(db *gorm.DB) error {
+	defaultRunStatuses := []*model.RunStatus{
+		{Name: "Not Run", IsFinal: false},
+		{Name: "Executing", IsFinal: false},
+		{Name: "Error", IsFinal: true},
+		{Name: "Success", IsFinal: true},
+	}
+
+	for index, status := range defaultRunStatuses {
+		str := reflect.ValueOf(status).Elem()
+
+		if str.Kind() == reflect.Struct {
+			pipelineIDField := str.FieldByName("ID")
+			if pipelineIDField.IsValid() {
+				if pipelineIDField.CanSet() {
+					if pipelineIDField.Kind() == reflect.Uint {
+						pipelineIDField.SetUint(uint64(index + 1))
+					}
+				}
+			}
+		}
+
+		if result := db.FirstOrCreate(status, status); result.Error != nil {
+			log.Fatalln(result.Error)
+			return result.Error
+		}
 	}
 
 	return nil

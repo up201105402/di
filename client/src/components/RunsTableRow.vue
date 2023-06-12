@@ -85,12 +85,11 @@
     );
 
     const isLoading = computed(() => isFetchingSubrows.value || isCreatingSubrow.value);
+    const subRows = computed(() => fetchSubrowsResponse.value?.data ? fetchSubrowsResponse.value.data.runs : []);
 
     const isCreateModalActive = ref(false);
 
     const isRowOpened = ref(props.isRowOpened);
-
-    const subRows = ref([]);
 
     const emit = defineEmits(["expand-collapse-row", "create-subrow"]);
 
@@ -111,7 +110,7 @@
 
     const onCreateSubrow = (e) => {
         createSubrow(null, props.parentRow.ID);
-        subRows.value = fetchSubrows(null, props.parentRow.ID);
+        fetchSubrows(null, props.parentRow.ID);
     }
 
 </script>
@@ -151,14 +150,14 @@
             <BaseIcon :path="mdiRunFast" />
         </td>
         <td class="border-b-0 lg:w-6 before:hidden">
-            <UserAvatar :username="parentRow.name" class="w-24 h-24 mx-auto lg:w-6 lg:h-6" />
+            {{ subRow.Status.Name }}
         </td>
         <td data-label="Name">
-            {{ parentRow.name }}
+            {{ subRow.ID }}
         </td>
         <td data-label="Progress" class="lg:w-32">
             <progress class="flex w-2/5 self-center lg:w-full" max="100" :value="parentRow.progress">
-                {{ parentRow.progress }}
+                {{ subRow.progress }}
             </progress>
         </td>
         <td data-label="Created" class="lg:w-1 whitespace-nowrap">
