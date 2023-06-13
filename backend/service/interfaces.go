@@ -40,7 +40,7 @@ type RunService interface {
 	Get(id uint) (*model.Run, error)
 	GetByPipeline(pipelineId uint) ([]model.Run, error)
 	Create(pipelineId uint) error
-	Execute(pipelineId uint) error
+	Execute(runID uint) error
 	Update(run *model.Run) error
 	Delete(id uint) error
 }

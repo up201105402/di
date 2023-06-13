@@ -145,6 +145,7 @@ func setupRouter(services *service.Services) *gin.Engine {
 	runAPI.GET("", middleware.Auth(services.TokenService), handlers.GetRuns(services))
 	runAPI.GET("/:id", middleware.Auth(services.TokenService), handlers.FindByPipeline(services))
 	runAPI.POST("/:id", middleware.Auth(services.TokenService), handlers.CreateRun(services))
+	runAPI.POST("/execute/:runID", middleware.Auth(services.TokenService), handlers.ExecuteRun(services))
 
 	return router
 }

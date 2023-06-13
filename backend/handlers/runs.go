@@ -171,23 +171,17 @@ func CreateRun(services *service.Services) gin.HandlerFunc {
 func ExecuteRun(services *service.Services) gin.HandlerFunc {
 	return func(context *gin.Context) {
 
-		id := context.Param("id")
+		id := context.Param("runID")
 
-		pipelineID, parseError := strconv.ParseUint(id, 10, 64)
+		runID, parseError := strconv.ParseUint(id, 10, 64)
 
 		if parseError != nil {
-			log.Printf("Failed to convert pipelineId into uint: %v\n", parseError)
-			errorMessage := fmt.Sprint("Failed to convert pipelineId into uint: %v\n", parseError)
+			log.Printf("Failed to convert runID into uint: %v\n", parseError)
+			errorMessage := fmt.Sprint("Failed to convert runID into uint: %v\n", parseError)
 			err := errors.NewInternal()
 			context.JSON(err.Status(), gin.H{
 				"error": errorMessage,
 			})
-			return
-		}
-
-		var req model.CreateRunReq
-
-		if ok := bindData(context, &req); !ok {
 			return
 		}
 
@@ -198,10 +192,10 @@ func ExecuteRun(services *service.Services) gin.HandlerFunc {
 			})
 		}
 
-		pipeline, serviceError := services.PipelineService.Get(uint(pipelineID))
+		run, serviceError := services.RunService.Get(uint(runID))
 
 		if serviceError != nil {
-			err := errors.NewNotFound("pipeline", string(pipelineID))
+			err := errors.NewNotFound("pipeline", string(runID))
 			log.Printf(err.Message)
 			context.JSON(err.Status(), gin.H{
 				"error": err.Message,
@@ -209,8 +203,8 @@ func ExecuteRun(services *service.Services) gin.HandlerFunc {
 			return
 		}
 
-		if pipeline.User.ID != user.ID {
-			errorMessage := fmt.Sprint("Failed to execute pipeline %d with user: %v\n", pipeline.ID, user.Username)
+		if run.Pipeline.User.ID != user.ID {
+			errorMessage := fmt.Sprint("Failed to execute pipeline %d with user: %v\n", run.Pipeline.ID, user.Username)
 			log.Printf(errorMessage)
 			err := errors.NewInternal()
 			context.JSON(err.Status(), gin.H{
@@ -219,7 +213,7 @@ func ExecuteRun(services *service.Services) gin.HandlerFunc {
 			return
 		}
 
-		serviceError = services.RunService.Execute(pipeline.ID)
+		serviceError = services.RunService.Execute(run.ID)
 
 		if serviceError != nil {
 			log.Printf("Failed to execute run for pipeline: %v\n", err.Error())

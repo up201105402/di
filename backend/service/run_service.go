@@ -66,13 +66,6 @@ func (service *runServiceImpl) Execute(runID uint) error {
 		return err
 	}
 
-	// s := "[{\"type\":\"checkoutRepo\",\"dimensions\":{\"width\":135,\"height\":52},\"handleBounds\":{\"target\":[{\"id\":\"0_output\",\"position\":\"right\",\"x\":132.15625,\"y\":23,\"width\":6,\"height\":6}]},\"computedPosition\":{\"x\":-92.47021757726134,\"y\":-27.568760519928844,\"z\":1000},\"selected\":true,\"dragging\":false,\"resizing\":false,\"initialized\":true,\"data\":{\"nameAndType\":{\"nodeName\":\"Step 1\",\"nodeType\":\"checkoutRepo\"},\"stepConfig\":{\"repoURL\":\"http://dafdfds.com/dskfajdsf.git\"},\"isFirstStep\":true},\"events\":{},\"id\":\"0\",\"label\":\"Step 1\",\"position\":{\"x\":-92.47021757726134,\"y\":-27.568760519928844},\"class\":\"light\"}]"
-	// var val []Step // <---- This must be an array to match input
-	// if err := json.Unmarshal([]byte(s), &val); err != nil {
-	// 	panic(err)
-	// }
-	// fmt.Println(val[0].ID)
-
 	var stepDescriptions []model.NodeDescription
 
 	if err := json.Unmarshal([]byte(pipeline.Definition), &stepDescriptions); err != nil {

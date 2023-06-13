@@ -88,6 +88,32 @@
         },
     );
 
+    // EXECUTE RUN
+
+    const {
+        isLoading: isExecutingSubrow,
+        state: executeSubrowResponse,
+        isReady: executeSubrowFinished,
+        error: executeError,
+        execute: executeSubrow
+    } = useAsyncState(
+        (subRowID) => {
+            return doRequest({
+                url: `/api/run/execute/${subRowID}`,
+                method: 'POST',
+                headers: {
+                    Authorization: `${accessToken.value}`,
+                },
+            });
+        },
+        {},
+        {
+            delay: 500,
+            resetOnExecute: false,
+            immediate: false,
+        },
+    );
+
     const isLoading = computed(() => isFetchingSubrows.value || isCreatingSubrow.value);
     const isRequestError = ref(false);
     const requestError = ref("");
@@ -128,8 +154,8 @@
         emit("create-subrow", props.parentRow.ID);
     }
 
-    const onSubRowButtonClicked = (e) => {
-        
+    const onSubRowButtonClicked = (e, subRowID) => {
+        executeSubrow(subRowID);
     }
 
     const onCreateSubrow = (e) => {
