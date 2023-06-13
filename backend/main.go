@@ -5,6 +5,7 @@ import (
 	"di/middleware"
 	"di/model"
 	"di/service"
+	"di/tasks"
 	"di/util"
 	"log"
 	"net/http"
@@ -51,12 +52,17 @@ func main() {
 	}
 
 	r := setupRouter(services)
-	//setupAsynqWorker()
+
+	go setupAsynqWorker()
+
+	if err != nil {
+		panic("Failed to config Asynq")
+	}
 
 	r.Run(":8001")
 }
 
-func setupAsynqWorker() {
+func setupAsynqWorker() error {
 
 	redisHost := os.Getenv("REDIS_HOST")
 	redisPort := os.Getenv("REDIS_PORT")
@@ -73,14 +79,16 @@ func setupAsynqWorker() {
 
 	mux := asynq.NewServeMux()
 
-	// mux.HandleFunc(
-	// 	tasks.RunPipelineTask,
-	// 	tasks.HandleRunPipelineTask,
-	// )
+	mux.HandleFunc(
+		tasks.RunPipelineTask,
+		tasks.HandleRunPipelineTask,
+	)
 
 	if err := worker.Run(mux); err != nil {
-		panic(err)
+		return err
 	}
+
+	return nil
 }
 
 func setupRouter(services *service.Services) *gin.Engine {

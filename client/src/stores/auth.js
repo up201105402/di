@@ -1,6 +1,6 @@
 import { watchEffect } from 'vue';
 import jwt_decode from 'jwt-decode';
-import { doRequest } from '../util';
+import { doRequest } from '@/util';
 import { useRouter } from 'vue-router';
 import { useStorage } from '@vueuse/core'
 
@@ -81,7 +81,7 @@ export const useAuth = async () => {
 
     if (isRefreshTokenValid) {
         if (!isAccessTokenValid) {
-            const { data, error } = await getNewAccessToken(store.accessToken, store.refreshToken);
+            const { data, error } = await getNewAccessToken(store.refreshToken);
 
             if (error) {
                 store.accessToken = store.refreshToken = store.userName = null;
@@ -151,12 +151,12 @@ const isTokenValid = (token) => {
     return true;
 };
 
-const getNewAccessToken = (accessToken, refreshToken) => {
-    return doRequest({
+export const getNewAccessToken = async (refreshToken) => {
+    return await doRequest({
         url: '/api/user/tokens',
         method: 'POST',
         data: {
             refreshToken
-        }
+        },
     });
 }

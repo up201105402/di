@@ -1,5 +1,6 @@
 <script setup>
 import { ref, reactive, computed, watch } from "vue";
+import { storeToRefs } from "pinia";
 import {
   mdiChartTimelineVariant,
   mdiPlus
@@ -17,7 +18,7 @@ import Loading from "vue-loading-overlay";
 import "vue-loading-overlay/dist/css/index.css";
 import router from "@/router";
 
-const { accessToken, requireAuthRoute } = useAuthStore();
+const { accessToken, requireAuthRoute } = storeToRefs(useAuthStore());
 
 // FETCH PIPELINES
 
@@ -27,7 +28,7 @@ const { isLoading: isFetching, state: fetchResponse, isReady: isFetchFinished, e
       url: '/api/pipeline',
       method: 'GET',
       headers: {
-        Authorization: `${accessToken}`
+        Authorization: `${accessToken.value}`
       },
     })
   },
@@ -54,7 +55,7 @@ const { isLoading: isCreating, state: createResponse, isReady: createFinished, e
         url: '/api/pipeline',
         method: 'POST',
         headers: {
-          Authorization: `${accessToken}`,
+          Authorization: `${accessToken.value}`,
         },
         data: {
           name: createPipelineForm.name
@@ -95,7 +96,7 @@ const { isLoading: isDeleting, state: deleteResponse, isReady: deleteFinished, e
         url: '/api/pipeline',
         method: 'DELETE',
         headers: {
-          Authorization: `${accessToken}`,
+          Authorization: `${accessToken.value}`,
         },
         data: {
           ID: pipelineID

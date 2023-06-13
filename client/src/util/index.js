@@ -1,7 +1,5 @@
 import axios from 'axios';
 
-// doRequest is a helper function for
-// handling axios responses - reqOptions follow axios req config
 export const doRequest = async (reqOptions) => {
   let status;
   let error;

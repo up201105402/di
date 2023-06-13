@@ -1,5 +1,6 @@
 <script setup>
     import { computed, ref } from "vue";
+    import { storeToRefs } from "pinia";
     import { useAsyncState } from "@vueuse/core";
     import { doRequest } from "@/util";
     import { useAuthStore } from "@/stores/auth";
@@ -13,7 +14,7 @@
     import BaseIcon from "@/components/BaseIcon.vue";
     import RunsTableRow from "@/components/RunsTableRow.vue";
 
-    const { accessToken, requireAuthRoute } = useAuthStore();
+    const { accessToken, requireAuthRoute } = storeToRefs(useAuthStore());
 
     const props = defineProps({
         items: Array,
@@ -33,7 +34,7 @@
                 url: `/api/run/${pipelineID}`,
                 method: 'GET',
                 headers: {
-                    Authorization: `${accessToken}`
+                    Authorization: `${accessToken.value}`
                 },
             })
         },

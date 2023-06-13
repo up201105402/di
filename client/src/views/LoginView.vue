@@ -1,5 +1,6 @@
 <script setup>
   import { reactive, computed } from "vue";
+  import { storeToRefs } from "pinia";
   import { useRouter } from "vue-router";
   import { mdiAccount, mdiAsterisk, mdiClose } from "@mdi/js";
   import SectionFullScreen from "@/components/SectionFullScreen.vue";

@@ -1,9 +1,10 @@
 <script setup>
-    import { computed, ref } from "vue";
+    import { computed, ref, watch } from "vue";
+    import { storeToRefs } from "pinia";
     import { useAsyncState } from "@vueuse/core";
     import { doRequest } from "@/util";
     import { useAuthStore } from "@/stores/auth";
-    import { mdiRefresh, mdiPlus, mdiChevronRight, mdiChevronDown, mdiRunFast } from "@mdi/js";
+    import { mdiRefresh, mdiEye, mdiPlus, mdiPlayOutline, mdiChevronRight, mdiChevronDown, mdiRunFast } from "@mdi/js";
     import CardBoxModal from "@/components/CardBoxModal.vue";
     import TableCheckboxCell from "@/components/TableCheckboxCell.vue";
     import BaseLevel from "@/components/BaseLevel.vue";
@@ -12,8 +13,9 @@
     import UserAvatar from "@/components/UserAvatar.vue";
     import BaseIcon from "@/components/BaseIcon.vue";
     import Loading from "vue-loading-overlay";
+    import ErrorModal from '@/components/ErrorModal.vue';
 
-    const { accessToken, requireAuthRoute } = useAuthStore();
+    const { accessToken, requireAuthRoute } = storeToRefs(useAuthStore());
 
     const props = defineProps({
         parentRow: {
@@ -37,6 +39,7 @@
         isLoading: isFetchingSubrows,
         state: fetchSubrowsResponse,
         isReady: isFetchSubrowsFinished,
+        error: fetchError,
         execute: fetchSubrows
     } = useAsyncState(
         (rowID) => {
@@ -44,7 +47,7 @@
                 url: `${props.subrowsFetchBaseURL}${rowID}`,
                 method: 'GET',
                 headers: {
-                    Authorization: `${accessToken}`
+                    Authorization: `${accessToken.value}`
                 },
             })
         },
@@ -62,6 +65,7 @@
         isLoading: isCreatingSubrow,
         state: createSubrowResponse,
         isReady: createSubrowFinished,
+        error: createError,
         execute: createSubrow
     } = useAsyncState(
         (pipelineID) => {
@@ -69,11 +73,11 @@
                 url: `/api/run/${pipelineID}`,
                 method: 'POST',
                 headers: {
-                    Authorization: `${accessToken}`,
+                    Authorization: `${accessToken.value}`,
                 },
                 data: {
                     Execute: false
-                }
+                },
             });
         },
         {},
@@ -85,7 +89,23 @@
     );
 
     const isLoading = computed(() => isFetchingSubrows.value || isCreatingSubrow.value);
+    const isRequestError = ref(false);
+    const requestError = ref("");
     const subRows = computed(() => fetchSubrowsResponse.value?.data ? fetchSubrowsResponse.value.data.runs : []);
+
+    watch(fetchSubrowsResponse, (newVal) => {
+        if (newVal.error) {
+            isRequestError.value = true;
+            requestError.value = newVal.error.message;
+        }
+    })
+
+    watch(createSubrowResponse, (newVal) => {
+        if (newVal.error) {
+            isRequestError.value = true;
+            requestError.value = newVal.error.message;
+        }
+    })
 
     const isCreateModalActive = ref(false);
 
@@ -97,20 +117,28 @@
         isRowOpen.value = !isRowOpen.value;
 
         if (isRowOpen.value) {
-            fetchSubrows(null, props.parentRow.ID)
+            const fetch = fetchSubrows(null, props.parentRow.ID)
         }
 
         emit("expand-collapse-row", props.parentRow.ID, isRowOpen.value)
     }
 
-    const onSubRowCreateButtonClicked = (e) => {
+    const onRowCreateButtonClicked = (e) => {
         isCreateModalActive.value = true;
         emit("create-subrow", props.parentRow.ID);
+    }
+
+    const onSubRowButtonClicked = (e) => {
+        
     }
 
     const onCreateSubrow = (e) => {
         createSubrow(null, props.parentRow.ID);
         fetchSubrows(null, props.parentRow.ID);
+    }
+
+    const acknowledgeError = (e) => {
+        isRequestError.value = null
     }
 
 </script>
@@ -140,20 +168,20 @@
         </td>
         <td class="before:hidden lg:w-1 whitespace-nowrap">
             <BaseButtons type="justify-start lg:justify-end" no-wrap>
-                <BaseButton color="success" :icon="mdiPlus" small @click.prevent="onSubRowCreateButtonClicked" />
-                <BaseButton color="success" :icon="mdiRefresh" small />
+                <BaseButton color="info" :icon="mdiEye" small :to="'/run/' + parentRow.ID" />
+                <BaseButton color="success" :icon="mdiPlus" small @click.prevent="onRowCreateButtonClicked" />
             </BaseButtons>
         </td>
     </tr>
     <tr v-if="isRowOpen" v-for="subRow in subRows" :key="subRow.ID">
-        <td class="border-b-0 lg:w-6 before:hidden">
+        <td class="border-b-0 text-center lg:w-6 before:hidden">
+            {{ subRow.ID }}
+        </td>
+        <td class="border-b-0 text-center lg:w-6 before:hidden">
             <BaseIcon :path="mdiRunFast" />
         </td>
         <td class="border-b-0 lg:w-6 before:hidden">
             {{ subRow.Status.Name }}
-        </td>
-        <td data-label="Name">
-            {{ subRow.ID }}
         </td>
         <td data-label="Progress" class="lg:w-32">
             <progress class="flex w-2/5 self-center lg:w-full" max="100" :value="parentRow.progress">
@@ -165,14 +193,12 @@
         </td>
         <td class="before:hidden lg:w-1 whitespace-nowrap">
             <BaseButtons type="justify-start lg:justify-end" no-wrap>
-                <BaseButton color="success" :icon="mdiPlus" small
-                    @click.prevent="(e) => onSubRowCreateButtonClicked(e, parentRow.ID)" />
-                <BaseButton color="success" :icon="mdiRefresh" small />
+                <BaseButton color="success" :icon="mdiPlayOutline" small @click.prevent="(e) => onSubRowButtonClicked(e, subRow.ID)" />
             </BaseButtons>
         </td>
     </tr>
 
-    <CardBoxModal v-model="isCreateModalActive" @confirm="onCreateSubrow"
-        :title="`Create Run for Pipeline ${props.parentRow.ID}?`" button="success" has-cancel />
+    <CardBoxModal v-model="isCreateModalActive" @confirm="onCreateSubrow" :title="`Create Run for Pipeline ${props.parentRow.ID}?`" button="success" has-cancel />
+    <ErrorModal :title="'Error'" v-model="isRequestError" :errorMessage="requestError" @acknowledge="acknowledgeError"></ErrorModal>
 
 </template>

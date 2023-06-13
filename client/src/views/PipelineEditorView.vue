@@ -1,5 +1,6 @@
 <script setup>
   import { Panel, PanelPosition, VueFlow, isNode, useVueFlow } from '@vue-flow/core';
+  import { storeToRefs } from "pinia";
   import { Background } from '@vue-flow/background';
   import { Controls } from '@vue-flow/controls';
   import { MiniMap } from '@vue-flow/minimap';
@@ -26,7 +27,7 @@
   import deepEqual from 'deep-equal';
   import $ from 'jquery';
 
-  const { accessToken, requireAuthRoute } = useAuthStore();
+  const { accessToken, requireAuthRoute } = storeToRefs(useAuthStore());
   const router = useRouter();
   const route = useRoute();
   const elements = ref([]);
@@ -42,7 +43,7 @@
         url: `/api/pipeline/${route.params.id}`,
         method: 'GET',
         headers: {
-          Authorization: `${accessToken}`
+          Authorization: `${accessToken.value}`
         },
       })
     },
@@ -65,7 +66,7 @@
           definition: JSON.stringify(elements.value)
         },
         headers: {
-          Authorization: `${accessToken}`
+          Authorization: `${accessToken.value}`
         },
       })
     },
