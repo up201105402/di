@@ -6,6 +6,7 @@ import (
 	"log"
 
 	"gorm.io/gorm"
+	"gorm.io/gorm/clause"
 )
 
 type runRepositoryImpl struct {
@@ -23,7 +24,7 @@ func (repo *runRepositoryImpl) FindByID(id uint) (*model.Run, error) {
 
 	var run = model.Run{}
 
-	result := repo.DB.Preload("Pipeline").Preload("Status").First(&run, id)
+	result := repo.DB.Preload("Pipeline.User").Preload(clause.Associations).First(&run, id)
 
 	if errors.Is(result.Error, gorm.ErrRecordNotFound) {
 		log.Printf("Failed to get pipeline with id: %v. Reason: %v\n", id, result.Error)

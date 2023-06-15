@@ -155,7 +155,7 @@
     }
 
     const onSubRowButtonClicked = (e, subRowID) => {
-        executeSubrow(subRowID);
+        executeSubrow(null, subRowID);
     }
 
     const onCreateSubrow = (e) => {
@@ -215,7 +215,7 @@
             </progress>
         </td>
         <td data-label="Created" class="lg:w-1 whitespace-nowrap">
-            <small class="text-gray-500 dark:text-slate-400" :title="parentRow.CreatedAt">{{ parentRow.CreatedAt}}</small>
+            <small class="text-gray-500 dark:text-slate-400" :title="parentRow.CreatedAt">{{ parentRow.CreatedAt }}</small>
         </td>
         <td class="before:hidden lg:w-1 whitespace-nowrap">
             <BaseButtons type="justify-start lg:justify-end" no-wrap>

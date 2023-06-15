@@ -54,11 +54,7 @@ const isLoading = computed(() => isFetching.value)
   <LayoutAuthenticated>
     <SectionMain>
       <loading v-model:active="isLoading" :is-full-page="false" />
-
-      <SectionTitleLineWithButton :icon="mdiChartTimelineVariant" :title="'Runs'" main>
-        <BaseButton :icon="mdiPlus" @click="onNewPipelineClicked" />
-      </SectionTitleLineWithButton>
-
+      <SectionTitleLineWithButton :icon="mdiChartTimelineVariant" :title="'Runs'" main />
       <RunsTable :items="pipelines" checkable />
     </SectionMain>
   </LayoutAuthenticated>
