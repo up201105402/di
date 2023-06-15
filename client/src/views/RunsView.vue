@@ -11,7 +11,7 @@ import SectionTitleLineWithButton from "@/components/SectionTitleLineWithButton.
 import RunsTable from "@/components/RunsTable.vue";
 import CardBoxModal from "@/components/CardBoxModal.vue";
 import BaseButton from "@/components/BaseButton.vue";
-import { useAuthStore } from "@/stores/auth";
+import { useAuth, useAuthStore } from "@/stores/auth";
 import { doRequest } from "@/util";
 import { useAsyncState } from "@vueuse/core";
 import Loading from "vue-loading-overlay";
@@ -39,87 +39,6 @@ const { isLoading: isFetching, state: fetchResponse, isReady: isFetchFinished, e
   },
 )
 
-// CREATE PIPELINE
-
-const isCreateModalActive = ref(false);
-const onNewPipelineClicked = (e) => isCreateModalActive.value = true;
-
-const createPipelineForm = reactive({
-  name: "",
-});
-
-const { isLoading: isCreating, state: createResponse, isReady: createFinished, execute: createPipeline } = useAsyncState(
-  (name) => {
-    if (name && name != "") {
-      return doRequest({
-        url: '/api/pipeline',
-        method: 'POST',
-        headers: {
-          Authorization: `${accessToken.value}`,
-        },
-        data: {
-          name: createPipelineForm.name
-        },
-      });
-    }
-
-    return {};
-  },
-  {},
-  {
-    delay: 500,
-    resetOnExecute: false,
-    immediate: false,
-  },
-)
-
-watch(createFinished, () => {
-  if (createFinished.value) {
-    fetchPipelines();
-  }
-})
-
-// DELETE PIPELINE
-
-const isDeleteModalActive = ref(false);
-const pipelineIdToDelete = ref(null);
-
-const onDeletePipelineClicked = (id) => {
-  isDeleteModalActive.value = true;
-  pipelineIdToDelete.value = id;
-}
-
-const { isLoading: isDeleting, state: deleteResponse, isReady: deleteFinished, execute: deletePipeline } = useAsyncState(
-  (pipelineID) => {
-    if (pipelineID) {
-      return doRequest({
-        url: '/api/pipeline',
-        method: 'DELETE',
-        headers: {
-          Authorization: `${accessToken.value}`,
-        },
-        data: {
-          ID: pipelineID
-        },
-      });
-    }
-
-    return {};
-  },
-  {},
-  {
-    delay: 500,
-    resetOnExecute: false,
-    immediate: false,
-  },
-)
-
-watch(deleteFinished, () => {
-  if (deleteFinished.value) {
-    fetchPipelines();
-  }
-})
-
 watch(fetchResponse, () => {
   if (fetchResponse.value.status === 401) {
     router.push(requireAuthRoute);
@@ -127,7 +46,7 @@ watch(fetchResponse, () => {
 })
 
 const pipelines = computed(() => fetchResponse.value?.data ? fetchResponse.value.data.pipelines : []);
-const isLoading = computed(() => isFetching.value || isCreating.value || isDeleting.value)
+const isLoading = computed(() => isFetching.value)
 
 </script>
 
@@ -142,11 +61,5 @@ const isLoading = computed(() => isFetching.value || isCreating.value || isDelet
 
       <RunsTable :items="pipelines" checkable />
     </SectionMain>
-
-    <CardBoxModal v-model="isDeleteModalActive" title="Confirm Delete" :target-id="pipelineIdToDelete"
-      @confirm="deletePipeline(200, pipelineIdToDelete)" button="danger" has-cancel>
-      <p>This will permanently delete this pipeline.</p>
-    </CardBoxModal>
-
   </LayoutAuthenticated>
 </template>

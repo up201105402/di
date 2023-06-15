@@ -15,7 +15,6 @@
   import SectionTitle from "@/components/SectionTitle.vue";
   import CardBoxComponentTitle from "@/components/CardBoxComponentTitle.vue";
   import ErrorModal from '@/components/ErrorModal.vue';
-  import { storeToRefs } from "pinia";
 
   import { useAuthStore } from '@/stores/auth.js';
 

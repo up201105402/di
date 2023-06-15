@@ -1,6 +1,7 @@
 import axios from 'axios';
+import { getNewAccessToken } from '@/stores/auth';
 
-export const doRequest = async (reqOptions) => {
+export const doRequest = async (reqOptions, requestNewToken = true) => {
   let status;
   let error;
   let data;
@@ -18,6 +19,14 @@ export const doRequest = async (reqOptions) => {
       status = e.request.status;
     } else {
       error = e;
+    }
+
+    if (requestNewToken) {
+      const result = await getNewAccessToken();
+
+      if (result) {
+        return await doRequest(reqOptions, false);
+      }
     }
   }
 

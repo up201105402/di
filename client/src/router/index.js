@@ -122,6 +122,10 @@ const routes = [
     name: "error",
     component: () => import("@/views/ErrorView.vue"),
   },
+  {
+    path: '/:pathMatch(.*)*',
+    redirect: '/pipelines'
+  }
 ];
 
 const router = createRouter({

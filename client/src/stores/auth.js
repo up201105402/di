@@ -73,44 +73,39 @@ export const useAuthStore = defineStore("auth", {
 
 export const useAuth = async () => {
 
-    const store = useAuthStore();
+    const store = storeToRefs(useAuthStore());
     const router = useRouter();
 
-    const isAccessTokenValid = isTokenValid(store.accessToken);
-    const isRefreshTokenValid = isTokenValid(store.refreshToken);
+    const isAccessTokenValid = isTokenValid(store.accessToken.value);
+    const isRefreshTokenValid = isTokenValid(store.refreshToken.value);
 
     if (isRefreshTokenValid) {
         if (!isAccessTokenValid) {
-            const { data, error } = await getNewAccessToken(store.refreshToken);
+            const result = await getNewAccessToken();
 
-            if (error) {
-                store.accessToken = store.refreshToken = store.userName = null;
-                removeTokens();
-                router.push(requireAuthRoute.value);
-            } else {
-                const { accessToken, refreshToken } = data.tokens;
-                store.accessToken = accessToken.signedString;
-                store.refreshToken = refreshToken.signedString;
+            if (!result) {
+                redirectToAuthPage(router);
             }
         }
     } else {
-        store.accessToken = store.refreshToken = store.userName = null;
-        removeTokens();
+        redirectToAuthPage(router);
     }
 
-    watchEffect(() => {
-        const currentRoutePath = router.currentRoute.value.path;
-
-        const { userName, requireAuthRoute } = storeToRefs(store)
-
-        if (!store.publicRoutePaths.find(elem => elem === currentRoutePath)) {
-            if (!userName.value && requireAuthRoute.value) {
-                router.push(requireAuthRoute.value);
-            }
-        }
-    });
-
     return store;
+}
+
+const redirectToAuthPage = async (router) => {
+
+    const store = storeToRefs(useAuthStore());
+
+    store.accessToken.value = store.refreshToken.value = store.userName.value = null;
+    removeTokens();
+
+    const currentRoutePath = router.currentRoute.value.path;
+
+    if (!store.publicRoutePaths.value.find(elem => elem === currentRoutePath)) {
+        router.push(store.requireAuthRoute.value);
+    }
 }
 
 const authenticate = async (username, password, url) => {
@@ -151,12 +146,29 @@ const isTokenValid = (token) => {
     return true;
 };
 
-export const getNewAccessToken = async (refreshToken) => {
-    return await doRequest({
+export const getNewAccessToken = async () => {
+
+    const store = storeToRefs(useAuthStore());
+    const router = useRouter();
+
+    const { data, status, error } = await doRequest({
         url: '/api/user/tokens',
         method: 'POST',
         data: {
-            refreshToken
+            refreshToken: store.refreshToken.value,
         },
-    });
+    }, false);
+
+    if (error) {
+        store.accessToken.value = store.refreshToken = store.userName = null;
+        removeTokens();
+        router.push(store.requireAuthRoute.value);
+        return false;
+    } else {
+        const { accessToken, refreshToken } = data.tokens;
+        store.accessToken.value = accessToken.signedString;
+        store.refreshToken = refreshToken.signedString;
+    }
+
+    return true;
 }

@@ -15,7 +15,7 @@
                 "REDIS_HOST": "redis",
                 "REDIS_PORT": "6379",
                 "TOKEN_REFRESH_SECRET": "areallynotsuperg00ds33cret",
-                "ID_TOKEN_DURATION": "10",
+                "ID_TOKEN_DURATION": "60",
                 "REFRESH_TOKEN_DURATION": "259200",
                 "PIPELINES_WORK_DIR": "/usr/src/di/work/pipelines"
             }
