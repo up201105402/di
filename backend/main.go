@@ -5,14 +5,11 @@ import (
 	"di/middleware"
 	"di/model"
 	"di/service"
-	"di/tasks"
 	"di/util"
 	"log"
 	"net/http"
-	"os"
 
 	"github.com/gin-gonic/gin"
-	"github.com/hibiken/asynq"
 )
 
 func main() {
@@ -42,53 +39,21 @@ func main() {
 	defer client.Close()
 
 	pipelineService := service.NewPipelineService(dbConnection)
-	stepTypeService := service.NewStepService()
+	stepTypeService := service.NewNodeService()
+	taskService := service.NewTaskService(&stepTypeService)
 
 	services := &service.Services{
 		UserService:     service.NewUserService(dbConnection),
 		PipelineService: pipelineService,
-		RunService:      service.NewRunService(dbConnection, client, &pipelineService, &stepTypeService),
+		RunService:      service.NewRunService(dbConnection, client, &pipelineService, &stepTypeService, &taskService),
 		TokenService:    service.NewTokenService(tokenServiceConfig),
 	}
 
 	r := setupRouter(services)
 
-	go setupAsynqWorker()
-
-	if err != nil {
-		panic("Failed to config Asynq")
-	}
+	go taskService.SetupAsynqWorker()
 
 	r.Run(":8001")
-}
-
-func setupAsynqWorker() error {
-
-	redisHost := os.Getenv("REDIS_HOST")
-	redisPort := os.Getenv("REDIS_PORT")
-	redisConnection := asynq.RedisClientOpt{
-		Addr: redisHost + ":" + redisPort,
-	}
-
-	worker := asynq.NewServer(redisConnection, asynq.Config{
-		Concurrency: 10,
-		Queues: map[string]int{
-			"runs": 1,
-		},
-	})
-
-	mux := asynq.NewServeMux()
-
-	mux.HandleFunc(
-		tasks.RunPipelineTask,
-		tasks.HandleRunPipelineTask,
-	)
-
-	if err := worker.Run(mux); err != nil {
-		return err
-	}
-
-	return nil
 }
 
 func setupRouter(services *service.Services) *gin.Engine {

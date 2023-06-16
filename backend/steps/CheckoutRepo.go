@@ -1,6 +1,7 @@
 package steps
 
 import (
+	"di/model"
 	"fmt"
 	"os"
 
@@ -15,6 +16,18 @@ type CheckoutRepo struct {
 
 func (step CheckoutRepo) GetID() int {
 	return int(step.ID)
+}
+
+func (step *CheckoutRepo) SetConfig(stepConfig model.StepDataConfig) error {
+	step.RepoURL = stepConfig.RepoURL
+
+	return nil
+}
+
+func (step *CheckoutRepo) SetPipelineID(pipelineID uint) error {
+	step.PipelineID = pipelineID
+
+	return nil
 }
 
 func (step CheckoutRepo) Execute() error {

@@ -4,6 +4,8 @@ import (
 	"context"
 	"di/model"
 	"di/steps"
+
+	"github.com/hibiken/asynq"
 )
 
 type Services struct {
@@ -48,5 +50,11 @@ type RunService interface {
 
 type NodeTypeService interface {
 	NewStepInstance(pipelineID uint, nodeType string, stepConfig model.StepDataConfig) (*steps.Step, error)
-	NewEdgeInstance(pipelineID uint, nodeType string, stepConfig model.StepDataConfig) (*steps.Edge, error)
+	NewEdgeInstance(pipelineID uint, edgeType string, stepConfig model.StepDataConfig) (*steps.Edge, error)
+}
+
+type TaskService interface {
+	SetupAsynqWorker()
+	NewRunPipelineTask(pipelineID uint, graph string, stepIndex uint) (*asynq.Task, error)
+	HandleRunPipelineTask(ctx context.Context, t *asynq.Task) error
 }
