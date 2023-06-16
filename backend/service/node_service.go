@@ -2,12 +2,13 @@ package service
 
 import (
 	"di/model"
-	"di/model/steps"
+	"di/steps"
 	"di/util/errors"
 	"encoding/json"
 	"fmt"
 	"log"
 	"reflect"
+	"strings"
 )
 
 type stepServiceImpl struct {
@@ -22,7 +23,7 @@ func NewStepService() NodeTypeService {
 	}
 }
 
-func (stepService *stepServiceImpl) NewStepInstance(pipelineID uint, stepType string, stepConfig model.StepDataConfig) (*model.Step, error) {
+func (stepService *stepServiceImpl) NewStepInstance(pipelineID uint, stepType string, stepConfig model.StepDataConfig) (*steps.Step, error) {
 	stepTypeStructName := stepService.StepTypeRegistry[stepType]
 
 	if stepTypeStructName == nil {
@@ -32,17 +33,10 @@ func (stepService *stepServiceImpl) NewStepInstance(pipelineID uint, stepType st
 
 	step := reflect.New(stepTypeStructName).Elem()
 
-	pipelineIDField := step.FieldByName("PipelineID")
+	setStepPipelineID(step, pipelineID)
+	setStepFields(step, stepConfig)
 
-	if pipelineIDField.IsValid() {
-		if pipelineIDField.CanSet() {
-			if pipelineIDField.Kind() == reflect.Uint {
-				pipelineIDField.SetUint(uint64(pipelineID))
-			}
-		}
-	}
-
-	setupStep := step.Interface().(model.Step)
+	setupStep := step.Interface().(steps.Step)
 	marshalledStepDataConfig, err := json.Marshal(stepConfig)
 
 	if err != nil {
@@ -58,7 +52,40 @@ func (stepService *stepServiceImpl) NewStepInstance(pipelineID uint, stepType st
 	return &setupStep, nil
 }
 
-func (stepService *stepServiceImpl) NewEdgeInstance(pipelineID uint, stepType string, stepConfig model.StepDataConfig) (*model.Edge, error) {
+func setStepPipelineID(stp reflect.Value, pipelineID uint) {
+	t := reflect.ValueOf(stp)
+	pipelineIDField := t.FieldByName("PipelineID")
+
+	if pipelineIDField.IsValid() {
+		if pipelineIDField.CanSet() {
+			if pipelineIDField.Kind() == reflect.Uint {
+				pipelineIDField.SetUint(uint64(pipelineID))
+			}
+		}
+	}
+}
+
+func setStepFields(stp reflect.Value, stepConfig model.StepDataConfig) {
+	t := reflect.TypeOf(stp)
+	d := reflect.ValueOf(stepConfig)
+
+	for i := 0; i < t.NumField(); i++ {
+		for j := 0; j < d.NumField(); j++ {
+			if t.Field(i).Name == d.Field(j).Type().Name() {
+				v := reflect.ValueOf(stp).Elem()
+				field := v.Field(i)
+
+				if field.IsValid() {
+					if field.CanSet() {
+						field.Set(reflect.ValueOf(d.Field(j)))
+					}
+				}
+			}
+		}
+	}
+}
+
+func (stepService *stepServiceImpl) NewEdgeInstance(pipelineID uint, stepType string, stepConfig model.StepDataConfig) (*steps.Edge, error) {
 	stepTypeStructName := stepService.StepTypeRegistry[stepType]
 
 	if stepTypeStructName == nil {
@@ -78,7 +105,7 @@ func (stepService *stepServiceImpl) NewEdgeInstance(pipelineID uint, stepType st
 		}
 	}
 
-	setupEdge := step.Interface().(model.Edge)
+	setupEdge := step.Interface().(steps.Edge)
 	marshalledStepDataConfig, err := json.Marshal(stepConfig)
 
 	if err != nil {
@@ -97,10 +124,11 @@ func (stepService *stepServiceImpl) NewEdgeInstance(pipelineID uint, stepType st
 func initStepTypeRegistry() map[string]reflect.Type {
 	var stepTypeRegistry = make(map[string]reflect.Type)
 
-	stepTypes := []interface{}{steps.CheckoutRepoStep{}}
+	stepTypes := []interface{}{steps.CheckoutRepo{}}
 
 	for _, v := range stepTypes {
-		stepTypeRegistry[fmt.Sprintf("%T", v)] = reflect.TypeOf(v)
+		splitString := strings.SplitAfter(fmt.Sprintf("%T", v), ".")
+		stepTypeRegistry[splitString[len(splitString)-1]] = reflect.TypeOf(v)
 	}
 
 	return stepTypeRegistry
@@ -109,7 +137,7 @@ func initStepTypeRegistry() map[string]reflect.Type {
 func initEdgeTypeRegistry() map[string]reflect.Type {
 	var stepTypeRegistry = make(map[string]reflect.Type)
 
-	stepTypes := []interface{}{steps.SmoothStepStep{}}
+	stepTypes := []interface{}{steps.SmoothStep{}}
 
 	for _, v := range stepTypes {
 		stepTypeRegistry[fmt.Sprintf("%T", v)] = reflect.TypeOf(v)

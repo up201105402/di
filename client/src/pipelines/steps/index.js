@@ -9,14 +9,14 @@ const stepConfigFields = [
     label: 'URL',
     name: 'repoURL',
     validation: 'required|url',
-    if: '$isActiveNodeType("checkoutRepo")',
+    if: '$isActiveNodeType("CheckoutRepo")',
   },
   {
     $formkit: 'text',
     name: 'trainingSetDirectory',
     label: 'Directory',
     validation: 'required|isDirectoryPath',
-    if: '$isActiveNodeType("trainModel")',
+    if: '$isActiveNodeType("TrainModel")',
   },
   {
     $formkit: 'number',
@@ -25,14 +25,14 @@ const stepConfigFields = [
     min: 0,
     max: 100,
     validation: 'required',
-    if: '$isActiveNodeType("trainModel")',
+    if: '$isActiveNodeType("TrainModel")',
   },
   {
     $formkit: 'text',
     name: "modelDirectory",
     label: "Model Directory",
     validation: 'required|isDirectoryPath',
-    if: '$isActiveNodeType("trainModel")',
+    if: '$isActiveNodeType("TrainModel")',
   },
   {
     $formkit: 'number',
@@ -40,18 +40,18 @@ const stepConfigFields = [
     label: "Number of Epochs",
     validation: 'required',
     min: 1,
-    if: '$isActiveNodeType("trainModel")',
+    if: '$isActiveNodeType("TrainModel")',
   }
 ]
 
 const nodeTypesOptions = [
-  { id: 0, value: "checkoutRepo", label: "Checkout Repository" },
-  { id: 1, value: "trainModel", label: "Train Model" },
+  { id: 0, value: "CheckoutRepo", label: "Checkout Repository" },
+  { id: 1, value: "TrainModel", label: "Train Model" },
 ];
 
 export const nodeTypes = {
-  checkoutRepo: markRaw(CheckoutRepoNode),
-  trainModel: markRaw(TrainModelNode),
+  CheckoutRepo: markRaw(CheckoutRepoNode),
+  TrainModel: markRaw(TrainModelNode),
 };
 
 import { reactive, toRef, ref, watch } from 'vue';

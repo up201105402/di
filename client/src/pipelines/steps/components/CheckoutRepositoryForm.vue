@@ -1,12 +1,12 @@
 <script setup>
-    import { checkoutRepo } from '@/pipelines/steps';
+    import { CheckoutRepo } from '@/pipelines/steps';
 </script>
 
 <template>
-    <GroupElement :name="checkoutRepo.name" :conditions="checkoutRepo.conditions" :label="checkoutRepo.label">
+    <GroupElement :name="CheckoutRepo.name" :conditions="CheckoutRepo.conditions" :label="CheckoutRepo.label">
         <TextElement 
-            :name="checkoutRepo.fields.repoURL.name" 
-            :label="checkoutRepo.fields.repoURL.label" 
-            :rules="checkoutRepo.fields.repoURL.rules" />
+            :name="CheckoutRepo.fields.repoURL.name" 
+            :label="CheckoutRepo.fields.repoURL.label" 
+            :rules="CheckoutRepo.fields.repoURL.rules" />
     </GroupElement>
 </template>

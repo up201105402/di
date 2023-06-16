@@ -3,6 +3,7 @@ package service
 import (
 	"context"
 	"di/model"
+	"di/steps"
 )
 
 type Services struct {
@@ -46,6 +47,6 @@ type RunService interface {
 }
 
 type NodeTypeService interface {
-	NewStepInstance(pipelineID uint, nodeType string, stepConfig model.StepDataConfig) (*model.Step, error)
-	NewEdgeInstance(pipelineID uint, nodeType string, stepConfig model.StepDataConfig) (*model.Edge, error)
+	NewStepInstance(pipelineID uint, nodeType string, stepConfig model.StepDataConfig) (*steps.Step, error)
+	NewEdgeInstance(pipelineID uint, nodeType string, stepConfig model.StepDataConfig) (*steps.Edge, error)
 }

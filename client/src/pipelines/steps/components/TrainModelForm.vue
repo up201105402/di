@@ -1,21 +1,21 @@
 <script setup>
-    import { trainModel } from '@/pipelines/steps';
+    import { TrainModel } from '@/pipelines/steps';
 </script>
 
 <template>
     <GroupElement 
-        :name="trainModel.name" 
-        :label="trainModel.label" 
-        :conditions="trainModel.conditions">
+        :name="TrainModel.name" 
+        :label="TrainModel.label" 
+        :conditions="TrainModel.conditions">
         <TextElement 
-            :name="trainModel.fields.modelDirectory.name" 
-            :label="trainModel.fields.modelDirectory.label" 
-            :rules="trainModel.fields.modelDirectory.rules" />
+            :name="TrainModel.fields.modelDirectory.name" 
+            :label="TrainModel.fields.modelDirectory.label" 
+            :rules="TrainModel.fields.modelDirectory.rules" />
         <TextElement 
-            :name="trainModel.fields.epochs.name" 
-            :label="trainModel.fields.epochs.label"
+            :name="TrainModel.fields.epochs.name" 
+            :label="TrainModel.fields.epochs.label"
             input-type="number" 
-            :rules="trainModel.fields.epochs.rules" 
+            :rules="TrainModel.fields.epochs.rules" 
             autocomplete="off" />
     </GroupElement>
 </template>

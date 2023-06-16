@@ -50,14 +50,3 @@ type NodeDescription struct {
 		IsFirstStep bool                `json:"isFirstStep"`
 	} `json:"data"`
 }
-
-type Step interface {
-	GetID() int
-	Execute() error
-}
-
-type Edge interface {
-	GetID() int
-	GetNextStep() *Step
-	GetPreviousStep() *Step
-}

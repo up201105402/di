@@ -2,7 +2,7 @@ package tasks
 
 import (
 	"context"
-	"di/model"
+	"di/steps"
 	"encoding/json"
 	"fmt"
 
@@ -15,11 +15,11 @@ const (
 )
 
 type RunPipelinePayload struct {
-	Graph     graph.Graph[int, model.Step]
+	Graph     graph.Graph[int, steps.Step]
 	StepIndex uint
 }
 
-func NewRunPipelineTask(graph graph.Graph[int, model.Step], stepIndex uint) (*asynq.Task, error) {
+func NewRunPipelineTask(graph graph.Graph[int, steps.Step], stepIndex uint) (*asynq.Task, error) {
 	payload, err := json.Marshal(RunPipelinePayload{Graph: graph, StepIndex: stepIndex})
 	if err != nil {
 		return nil, err
