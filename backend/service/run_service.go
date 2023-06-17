@@ -64,7 +64,7 @@ func (service *runServiceImpl) Execute(runID uint) error {
 		return err
 	}
 
-	runPipelineTask, err := service.TaskService.NewRunPipelineTask(pipeline.ID, pipeline.Definition, 0)
+	runPipelineTask, err := service.TaskService.NewRunPipelineTask(pipeline.ID, runID, pipeline.Definition, 0)
 
 	if err != nil {
 		return err

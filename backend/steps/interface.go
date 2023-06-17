@@ -7,6 +7,9 @@ type Step interface {
 	Execute() error
 	SetConfig(stepConfig model.StepDataConfig) error
 	SetPipelineID(pipelineID uint) error
+	SetRunID(runID uint) error
+	GetPipelineID() uint
+	GetRunID() uint
 }
 
 type Edge interface {

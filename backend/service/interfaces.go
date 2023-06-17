@@ -49,12 +49,12 @@ type RunService interface {
 }
 
 type NodeTypeService interface {
-	NewStepInstance(pipelineID uint, nodeType string, stepConfig model.StepDataConfig) (*steps.Step, error)
-	NewEdgeInstance(pipelineID uint, edgeType string, stepConfig model.StepDataConfig) (*steps.Edge, error)
+	NewStepInstance(pipelineID uint, runID uint, nodeType string, stepConfig model.StepDataConfig) (*steps.Step, error)
+	NewEdgeInstance(pipelineID uint, runID uint, edgeType string, stepConfig model.StepDataConfig) (*steps.Edge, error)
 }
 
 type TaskService interface {
 	SetupAsynqWorker()
-	NewRunPipelineTask(pipelineID uint, graph string, stepIndex uint) (*asynq.Task, error)
+	NewRunPipelineTask(pipelineID uint, runID uint, graph string, stepIndex uint) (*asynq.Task, error)
 	HandleRunPipelineTask(ctx context.Context, t *asynq.Task) error
 }
