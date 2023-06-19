@@ -1,17 +1,12 @@
 <script setup>
-import { ref, reactive, computed, watch } from "vue";
+import { computed, watch } from "vue";
 import { storeToRefs } from "pinia";
-import {
-  mdiChartTimelineVariant,
-  mdiPlus
-} from "@mdi/js";
+import { mdiChartTimelineVariant } from "@mdi/js";
 import SectionMain from "@/components/SectionMain.vue";
 import LayoutAuthenticated from "@/layouts/LayoutAuthenticated.vue";
 import SectionTitleLineWithButton from "@/components/SectionTitleLineWithButton.vue";
-import RunsTable from "@/components/RunsTable.vue";
-import CardBoxModal from "@/components/CardBoxModal.vue";
-import BaseButton from "@/components/BaseButton.vue";
-import { useAuth, useAuthStore } from "@/stores/auth";
+import PipelinesRunsTable from "@/components/PipelinesRunsTable.vue";
+import { useAuthStore } from "@/stores/auth";
 import { doRequest } from "@/util";
 import { useAsyncState } from "@vueuse/core";
 import Loading from "vue-loading-overlay";
@@ -55,7 +50,7 @@ const isLoading = computed(() => isFetching.value)
     <SectionMain>
       <loading v-model:active="isLoading" :is-full-page="false" />
       <SectionTitleLineWithButton :icon="mdiChartTimelineVariant" :title="'Runs'" main />
-      <RunsTable :items="pipelines" checkable />
+      <PipelinesRunsTable :items="pipelines" checkable />
     </SectionMain>
   </LayoutAuthenticated>
 </template>

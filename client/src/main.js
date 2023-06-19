@@ -18,6 +18,9 @@ import formkitConfig from './../formkit.config'
 import '@formkit/themes/genesis'
 import '@formkit/addons/css/multistep'
 
+// PrimeVue
+import PrimeVue from 'primevue/config';
+
 const i18n = createI18n({
   legacy: false, // you must set `false`, to use Composition API
   locale: 'en', // set locale
@@ -54,5 +57,5 @@ router.afterEach((to) => {
 
 /* Formkit */
 
-const spa = createApp(App).use(authStore).use(router).use(i18n).use(Vueform, vueformConfig).use(formKitPlugin, formkitConfig);
+const spa = createApp(App).use(authStore).use(router).use(i18n).use(PrimeVue).use(formKitPlugin, formkitConfig);
 spa.mount('#app')
