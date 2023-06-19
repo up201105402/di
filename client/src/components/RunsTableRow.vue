@@ -147,6 +147,8 @@
 
         if (isRowOpen.value) {
             const fetch = fetchSubrows(null, props.parentRow.ID)
+        } else {
+            slideUpSubRow();
         }
 
         emit("expand-collapse-row", props.parentRow.ID, isRowOpen.value)
@@ -174,6 +176,12 @@
         const subRow = $("#subrow-" + props.parentRow.ID);
         subRow.removeClass("hidden-subrow");
         subRow.addClass("show-subrow");
+    }
+
+    const slideUpSubRow = (subRowID) => {
+        const subRow = $("#subrow-" + props.parentRow.ID);
+        subRow.removeClass("show-subrow");
+        subRow.addClass("hidden-subrow");
     }
 
 </script>
