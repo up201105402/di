@@ -20,32 +20,7 @@
         items: Array,
         checkable: Boolean,
     });
-
-    // FETCH RUNS
-
-    const {
-        isLoading: isFetchingPipelineRuns,
-        state: fetchPipelineRunsResponse,
-        isReady: isFetchPipelineRunsFinished,
-        execute: fetchPipelineRuns
-    } = useAsyncState(
-        (pipelineID) => {
-            return doRequest({
-                url: `/api/run/${pipelineID}`,
-                method: 'GET',
-                headers: {
-                    Authorization: `${accessToken.value}`
-                },
-            })
-        },
-        {},
-        {
-            delay: 500,
-            resetOnExecute: false,
-            immediate: false,
-        },
-    );
-
+    
     // ITEMS PROCESSING
 
     const perPage = ref(5);
@@ -108,7 +83,6 @@
             openedPipelines.value.splice(index, 1);
         } else {
             openedPipelines.value.push(pipelineID);
-            // fetchPipelineRuns(500, pipelineID);
         }
     }
 

@@ -45,21 +45,23 @@ func (step *CheckoutRepo) GetRunID() uint {
 	return step.RunID
 }
 
-func (step CheckoutRepo) Execute() error {
+func (step CheckoutRepo) Execute(logFile *os.File) error {
 
 	pipelinesWorkDir := os.Getenv("PIPELINES_WORK_DIR")
-	currentPipelineWorkDir := pipelinesWorkDir + "/" + fmt.Sprint(step.PipelineID) + "/" + fmt.Sprint(step.RunID)
+	currentPipelineWorkDir := pipelinesWorkDir + "/" + fmt.Sprint(step.PipelineID) + "/" + fmt.Sprint(step.RunID) + "/"
 	if err := os.MkdirAll(currentPipelineWorkDir, os.ModePerm); err != nil {
 		return err
 	}
 
-	if _, err := git.PlainClone(pipelinesWorkDir, false, &git.CloneOptions{
+	if _, err := git.PlainClone(currentPipelineWorkDir, false, &git.CloneOptions{
 		URL:      step.RepoURL,
-		Progress: os.Stdout,
+		Progress: logFile,
 	}); err != nil {
-		if err == git.ErrRepositoryAlreadyExists {
+		// if err == git.ErrRepositoryAlreadyExists {
+		// 	return err
+		// }
 
-		}
+		return err
 	}
 
 	return nil

@@ -5,6 +5,7 @@
     import { doRequest } from "@/util";
     import { useAuthStore } from "@/stores/auth";
     import { mdiRefresh, mdiEye, mdiPlus, mdiPlayOutline, mdiChevronRight, mdiChevronDown, mdiRunFast } from "@mdi/js";
+    import $ from 'jquery';
     import CardBoxModal from "@/components/CardBoxModal.vue";
     import TableCheckboxCell from "@/components/TableCheckboxCell.vue";
     import BaseLevel from "@/components/BaseLevel.vue";
@@ -123,6 +124,8 @@
         if (newVal.error) {
             isRequestError.value = true;
             requestError.value = newVal.error.message;
+        } else {
+            slideDownSubRow();
         }
     })
 
@@ -167,6 +170,12 @@
         isRequestError.value = null
     }
 
+    const slideDownSubRow = (subRowID) => {
+        const subRow = $("#subrow-" + props.parentRow.ID);
+        subRow.removeClass("hidden-subrow");
+        subRow.addClass("show-subrow");
+    }
+
 </script>
 
 <template>
@@ -175,7 +184,8 @@
 
     <tr :key="parentRow.ID">
         <td class="border-b-0 lg:w-6 before:hidden">
-            <BaseIcon :path="isRowOpen ? mdiChevronDown : mdiChevronRight" @click.prevent="(e) => expandOrCollapseRow(e, parentRow.ID)" />
+            <BaseIcon :path="isRowOpen ? mdiChevronDown : mdiChevronRight"
+                @click.prevent="(e) => expandOrCollapseRow(e, parentRow.ID)" />
         </td>
         <td class="border-b-0 lg:w-6 before:hidden">
             <UserAvatar :username="parentRow.name" class="w-24 h-24 mx-auto lg:w-6 lg:h-6" />
@@ -199,32 +209,70 @@
             </BaseButtons>
         </td>
     </tr>
-    <tr v-if="isRowOpen" v-for="subRow in subRows" :key="subRow.ID">
-        <td class="border-b-0 text-center lg:w-6 before:hidden">
-            {{ subRow.ID }}
-        </td>
-        <td class="border-b-0 text-center lg:w-6 before:hidden">
-            <BaseIcon :path="mdiRunFast" />
-        </td>
-        <td class="border-b-0 lg:w-6 before:hidden">
-            {{ subRow.Status.Name }}
-        </td>
-        <td data-label="Progress" class="lg:w-32">
-            <progress class="flex w-2/5 self-center lg:w-full" max="100" :value="parentRow.progress">
-                {{ subRow.progress }}
-            </progress>
-        </td>
-        <td data-label="Created" class="lg:w-1 whitespace-nowrap">
-            <small class="text-gray-500 dark:text-slate-400" :title="parentRow.CreatedAt">{{ parentRow.CreatedAt }}</small>
-        </td>
-        <td class="before:hidden lg:w-1 whitespace-nowrap">
-            <BaseButtons type="justify-start lg:justify-end" no-wrap>
-                <BaseButton color="success" :icon="mdiPlayOutline" small @click.prevent="(e) => onSubRowButtonClicked(e, subRow.ID)" />
-            </BaseButtons>
+    <tr>
+        <td class="border-b-0 lg:w-6 before:hidden" colspan="100">
+            <div :id="'subrow-' + parentRow.ID" class="hidden-subrow">
+                <table>
+                    <thead>
+                        <tr>
+                            <th />
+                            <th>Name</th>
+                            <th>Status</th>
+                            <th>Last Run</th>
+                            <th />
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr v-for="subRow in subRows" :key="subRow.ID">
+                            <td class="border-b-0 text-center lg:w-6 before:hidden">
+                                {{ subRow.ID }}
+                            </td>
+                            <td class="border-b-0 text-center lg:w-6 before:hidden">
+                                <BaseIcon :path="mdiRunFast" />
+                            </td>
+                            <td class="border-b-0 lg:w-6 before:hidden">
+                                {{ subRow.Status.Name }}
+                            </td>
+                            <td data-label="Progress" class="lg:w-32">
+                                <progress class="flex w-2/5 self-center lg:w-full" max="100"
+                                    :value="parentRow.progress">
+                                    {{ subRow.progress }}
+                                </progress>
+                            </td>
+                            <td data-label="Created" class="lg:w-1 whitespace-nowrap">
+                                <small class="text-gray-500 dark:text-slate-400" :title="parentRow.CreatedAt">{{
+                                    parentRow.CreatedAt
+                                    }}</small>
+                            </td>
+                            <td class="before:hidden lg:w-1 whitespace-nowrap">
+                                <BaseButtons type="justify-start lg:justify-end" no-wrap>
+                                    <BaseButton color="success" :icon="mdiPlayOutline" small
+                                        @click.prevent="(e) => onSubRowButtonClicked(e, subRow.ID)" />
+                                </BaseButtons>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
         </td>
     </tr>
 
-    <CardBoxModal v-model="isCreateModalActive" @confirm="onCreateSubrow" :title="`Create Run for Pipeline ${props.parentRow.ID}?`" button="success" has-cancel />
-    <ErrorModal :title="'Error'" v-model="isRequestError" :errorMessage="requestError" @acknowledge="acknowledgeError"></ErrorModal>
+    <CardBoxModal v-model="isCreateModalActive" @confirm="onCreateSubrow"
+        :title="`Create Run for Pipeline ${props.parentRow.ID}?`" button="success" has-cancel />
+    <ErrorModal :title="'Error'" v-model="isRequestError" :errorMessage="requestError" @acknowledge="acknowledgeError">
+    </ErrorModal>
 
 </template>
+
+<style>
+    .hidden-subrow {
+        max-height: 0;
+        transition: max-height 0.15s ease-out;
+        overflow: hidden;
+    }
+
+    .show-subrow {
+        max-height: 500px;
+        transition: max-height 0.25s ease-in;
+    }
+</style>

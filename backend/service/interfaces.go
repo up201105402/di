@@ -46,6 +46,8 @@ type RunService interface {
 	Execute(runID uint) error
 	Update(run *model.Run) error
 	Delete(id uint) error
+	NewRunPipelineTask(pipelineID uint, runID uint, graph string, stepIndex uint) (*asynq.Task, error)
+	HandleRunPipelineTask(ctx context.Context, t *asynq.Task) error
 }
 
 type NodeTypeService interface {
@@ -55,6 +57,4 @@ type NodeTypeService interface {
 
 type TaskService interface {
 	SetupAsynqWorker()
-	NewRunPipelineTask(pipelineID uint, runID uint, graph string, stepIndex uint) (*asynq.Task, error)
-	HandleRunPipelineTask(ctx context.Context, t *asynq.Task) error
 }

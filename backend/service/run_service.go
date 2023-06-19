@@ -1,10 +1,17 @@
 package service
 
 import (
+	"context"
 	"di/model"
 	"di/repository"
+	"di/steps"
+	"di/util"
+	"encoding/json"
+	"fmt"
 	"log"
+	"os"
 
+	"github.com/dominikbraun/graph"
 	"github.com/hibiken/asynq"
 	"gorm.io/gorm"
 )
@@ -14,16 +21,14 @@ type runServiceImpl struct {
 	PipelineService  PipelineService
 	NodeTypeService  NodeTypeService
 	TasksQueueClient asynq.Client
-	TaskService      TaskService
 }
 
-func NewRunService(gormDB *gorm.DB, client *asynq.Client, pipelineService *PipelineService, stepTypeService *NodeTypeService, taskService *TaskService) RunService {
+func NewRunService(gormDB *gorm.DB, client *asynq.Client, pipelineService *PipelineService, stepTypeService *NodeTypeService) RunService {
 	return &runServiceImpl{
 		RunRepository:    repository.NewRunRepository(gormDB),
 		PipelineService:  *pipelineService,
 		NodeTypeService:  *stepTypeService,
 		TasksQueueClient: *client,
-		TaskService:      *taskService,
 	}
 }
 
@@ -64,7 +69,7 @@ func (service *runServiceImpl) Execute(runID uint) error {
 		return err
 	}
 
-	runPipelineTask, err := service.TaskService.NewRunPipelineTask(pipeline.ID, runID, pipeline.Definition, 0)
+	runPipelineTask, err := service.NewRunPipelineTask(pipeline.ID, runID, pipeline.Definition, 0)
 
 	if err != nil {
 		return err
@@ -98,4 +103,93 @@ func (service *runServiceImpl) Delete(id uint) error {
 	}
 
 	return nil
+}
+
+func (service *runServiceImpl) NewRunPipelineTask(pipelineID uint, runID uint, graph string, stepIndex uint) (*asynq.Task, error) {
+	payload, err := json.Marshal(RunPipelinePayload{PipelineID: pipelineID, RunID: runID, GraphDefinition: graph, StepIndex: stepIndex})
+	if err != nil {
+		return nil, err
+	}
+	return asynq.NewTask(RunPipelineTask, payload), nil
+}
+
+func (service *runServiceImpl) HandleRunPipelineTask(ctx context.Context, t *asynq.Task) error {
+	var runPipelinePayload RunPipelinePayload
+	if err := json.Unmarshal(t.Payload(), &runPipelinePayload); err != nil {
+		log.Println("json.Unmarshal failed: %v: %w", err, asynq.SkipRetry)
+		errStr := fmt.Errorf("json.Unmarshal failed: %v: %w", err, asynq.SkipRetry)
+		return errStr
+	}
+
+	var stepDescriptions []model.NodeDescription
+
+	if err := json.Unmarshal([]byte(runPipelinePayload.GraphDefinition), &stepDescriptions); err != nil {
+		log.Printf("Unable to unmarshal pipeline %v definition\n", runPipelinePayload.PipelineID)
+		return err
+	}
+
+	pipelineGraph := graph.New(stepHash, graph.Directed(), graph.Acyclic())
+
+	stps := util.Map(stepDescriptions, func(stepDescription model.NodeDescription) steps.Step {
+		step, _ := service.NodeTypeService.NewStepInstance(runPipelinePayload.PipelineID, runPipelinePayload.RunID, stepDescription.Type, stepDescription.Data.StepConfig)
+
+		if step != nil {
+			return *step
+		}
+
+		return nil
+	})
+
+	edgs := util.Map(stepDescriptions, func(stepDescription model.NodeDescription) steps.Edge {
+		edge, _ := service.NodeTypeService.NewEdgeInstance(runPipelinePayload.PipelineID, runPipelinePayload.RunID, stepDescription.Type, stepDescription.Data.StepConfig)
+
+		if edge != nil {
+			return *edge
+		}
+
+		return nil
+	})
+
+	stps = util.Filter(stps, func(step steps.Step) bool {
+		return step != nil
+	})
+
+	edgs = util.Filter(edgs, func(edge steps.Edge) bool {
+		return edge != nil
+	})
+
+	for _, step := range stps {
+		pipelineGraph.AddVertex(step)
+	}
+
+	for _, edge := range edgs {
+		previousStepID := (*edge.GetPreviousStep()).GetID()
+		nextStepID := (*edge.GetNextStep()).GetID()
+		pipelineGraph.AddEdge(previousStepID, nextStepID)
+	}
+
+	pipelinesWorkDir := os.Getenv("PIPELINES_WORK_DIR")
+	currentPipelineWorkDir := pipelinesWorkDir + "/" + fmt.Sprint(runPipelinePayload.PipelineID) + "/" + fmt.Sprint(runPipelinePayload.RunID) + "/"
+	logFileName := "run.log"
+	logFile, err := os.Open(currentPipelineWorkDir + logFileName)
+
+	if err != nil {
+		log.Print(err.Error())
+		return asynq.SkipRetry
+	}
+
+	graph.BFS(pipelineGraph, 0, func(id int) bool {
+		step, _ := pipelineGraph.Vertex(id)
+		log.Printf("BFS  %v\n", step)
+
+		if err := step.Execute(logFile); err != nil {
+			service.Get(step.GetRunID())
+			// service.RunService.Update()
+			logFile.Close()
+		}
+
+		return false
+	})
+
+	return asynq.SkipRetry
 }

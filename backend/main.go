@@ -40,12 +40,13 @@ func main() {
 
 	pipelineService := service.NewPipelineService(dbConnection)
 	stepTypeService := service.NewNodeService()
-	taskService := service.NewTaskService(&stepTypeService)
+	runService := service.NewRunService(dbConnection, client, &pipelineService, &stepTypeService)
+	taskService := service.NewTaskService(&stepTypeService, &runService)
 
 	services := &service.Services{
 		UserService:     service.NewUserService(dbConnection),
 		PipelineService: pipelineService,
-		RunService:      service.NewRunService(dbConnection, client, &pipelineService, &stepTypeService, &taskService),
+		RunService:      runService,
 		TokenService:    service.NewTokenService(tokenServiceConfig),
 	}
 

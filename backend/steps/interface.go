@@ -1,10 +1,13 @@
 package steps
 
-import "di/model"
+import (
+	"di/model"
+	"os"
+)
 
 type Step interface {
 	GetID() int
-	Execute() error
+	Execute(logFile *os.File) error
 	SetConfig(stepConfig model.StepDataConfig) error
 	SetPipelineID(pipelineID uint) error
 	SetRunID(runID uint) error
