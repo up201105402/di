@@ -21,6 +21,8 @@
   import FlowChart from "@/components/FlowChart.vue";
   import CardBoxModal from '@/components/CardBoxModal.vue';
   import UpsertStepDialog from '@/components/UpsertStepDialog.vue';
+  import Toast from 'primevue/toast';
+  import { useToast } from 'primevue/usetoast';
   import Loading from "vue-loading-overlay";
   import CheckoutRepoNode from "@/pipelines/steps/components/nodes/CheckoutRepoNode.vue";
   import { nodeTypes } from "@/pipelines/steps";
@@ -32,6 +34,7 @@
   const route = useRoute();
   const elements = ref([]);
   const pipelineTitle = ref('');
+  const toast = useToast();
 
   const emit = defineEmits(["onUpdate", "onStepEdited"]);
 
@@ -78,11 +81,9 @@
     },
   )
 
-  watch(fetchResponse, () => {
-    if (fetchResponse.value.status === 401) {
-      router.push(requireAuthRoute);
-    } else if (fetchResponse.value.status === 500) {
-      router.push("/pipelines");
+  watch(fetchResponse, (newVal) => {
+    if (newVal.error) {
+      toast.add({ severity: 'error', summary: 'Error', detail: newVal.error.message, life: 3000 });
     }
   })
 
@@ -99,8 +100,12 @@
     pipelineTitle.value = fetchResponse.value?.data ? fetchResponse.value.data.pipeline.name : 'Untitled';
   })
 
-  watch(updateResponse, () => {
-    if (updateResponse.value.status === 200) {
+  watch(updateResponse, (newVal) => {
+    if (newVal.error) {
+      toast.add({ severity: 'error', summary: 'Error', detail: newVal.error.message, life: 3000 });
+    }
+
+    if (newVal.status === 200) {
       hasChanges.value = false;
       router.push("/pipelines");
     }
@@ -201,7 +206,7 @@
           data: { ...formData.data, isFirstStep: newStepData.isFirstStep },
         });
       }
-      
+
       isStepDialogActive.value = false;
       count++;
     }
@@ -245,7 +250,7 @@
   onConnect((edge) => {
     edge.updatable = true;
     edge.type = 'smoothstep',
-    addEdges([edge]);
+      addEdges([edge]);
     hasChanges.value = true;
     emit("onUpdate", elements.value);
   })
@@ -358,12 +363,14 @@
       </VueFlow>
       <CardBoxModal v-model="isStepDialogActive" :has-submit="false" :has-cancel="false" title="Create Step"
         @cancel="count++">
-        <UpsertStepDialog :key="'createStepDialog_' + count" :nodeId="editStepNodeId" :nodeData="stepData" @onSubmit="onStepEdited" />
+        <UpsertStepDialog :key="'createStepDialog_' + count" :nodeId="editStepNodeId" :nodeData="stepData"
+          @onSubmit="onStepEdited" />
       </CardBoxModal>
       <BaseButtons style="float:right">
         <BaseButton :disabled="!hasChanges" :label="'Save'" color="success" @click="onPipelineSave" />
         <BaseButton :label="'Cancel'" color="danger" @click="onPipelineCancel" />
       </BaseButtons>
     </SectionMain>
+    <Toast />
   </LayoutAuthenticated>
 </template>

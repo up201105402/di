@@ -146,3 +146,7 @@
         background-position: 0% 22%
     }
 }
+
+.p-toast-message-content {
+    border: 0px;
+}

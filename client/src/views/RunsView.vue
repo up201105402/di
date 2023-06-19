@@ -9,11 +9,14 @@ import PipelinesRunsTable from "@/components/PipelinesRunsTable.vue";
 import { useAuthStore } from "@/stores/auth";
 import { doRequest } from "@/util";
 import { useAsyncState } from "@vueuse/core";
+import Toast from 'primevue/toast';
+import { useToast } from 'primevue/usetoast';
 import Loading from "vue-loading-overlay";
 import "vue-loading-overlay/dist/css/index.css";
 import router from "@/router";
 
 const { accessToken, requireAuthRoute } = storeToRefs(useAuthStore());
+const toast = useToast();
 
 // FETCH PIPELINES
 
@@ -34,9 +37,9 @@ const { isLoading: isFetching, state: fetchResponse, isReady: isFetchFinished, e
   },
 )
 
-watch(fetchResponse, () => {
-  if (fetchResponse.value.status === 401) {
-    router.push(requireAuthRoute);
+watch(fetchResponse, (newVal) => {
+  if (newVal.error) {
+    toast.add({ severity: 'error', summary: 'Error', detail: newVal.error.message, life: 3000 });
   }
 })
 
@@ -52,5 +55,6 @@ const isLoading = computed(() => isFetching.value)
       <SectionTitleLineWithButton :icon="mdiChartTimelineVariant" :title="'Runs'" main />
       <PipelinesRunsTable :items="pipelines" checkable />
     </SectionMain>
+    <Toast />
   </LayoutAuthenticated>
 </template>

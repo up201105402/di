@@ -10,9 +10,6 @@ import { useStyleStore } from "@/stores/style.js";
 import { darkModeKey, styleKey } from "@/config.js";
 import './css/main.css';
 
-import Vueform from '@vueform/vueform/plugin'
-import vueformConfig from './../vueform.config'
-
 import { plugin as formKitPlugin } from '@formkit/vue';
 import formkitConfig from './../formkit.config'
 import '@formkit/themes/genesis'
@@ -20,6 +17,11 @@ import '@formkit/addons/css/multistep'
 
 // PrimeVue
 import PrimeVue from 'primevue/config';
+import ToastService from 'primevue/toastservice';
+//theme
+import "primevue/resources/themes/lara-light-indigo/theme.css";     
+//core
+import "primevue/resources/primevue.min.css";
 
 const i18n = createI18n({
   legacy: false, // you must set `false`, to use Composition API
@@ -57,5 +59,11 @@ router.afterEach((to) => {
 
 /* Formkit */
 
-const spa = createApp(App).use(authStore).use(router).use(i18n).use(PrimeVue).use(formKitPlugin, formkitConfig);
+const spa = createApp(App);
+spa.use(authStore);
+spa.use(router);
+spa.use(i18n);
+spa.use(PrimeVue);
+spa.use(ToastService);
+spa.use(formKitPlugin, formkitConfig);
 spa.mount('#app')

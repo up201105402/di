@@ -9,10 +9,11 @@ import BaseButtons from "@/components/BaseButtons.vue";
 import BaseButton from "@/components/BaseButton.vue";
 import BaseIcon from "@/components/BaseIcon.vue";
 import Loading from "vue-loading-overlay";
-import ErrorModal from '@/components/ErrorModal.vue';
+import { useToast } from 'primevue/usetoast';
 import { watch } from "vue";
 
 const { accessToken } = storeToRefs(useAuthStore());
+const toast = useToast();
 
 const props = defineProps({
     rows: {
@@ -49,6 +50,7 @@ const {
 
 watch(executeSubrowResponse, (value) => {
     if (value.error) {
+        toast.add({ severity: 'error', summary: 'Error', detail: newVal.error.message, life: 3000 });
     }
 })
 
@@ -103,6 +105,4 @@ const acknowledgeError = (e) => {
             </tr>
         </tbody>
     </table>
-
-    <ErrorModal :title="'Error'" v-model="isRequestError" :errorMessage="requestError" @acknowledge="acknowledgeError" />
 </template>

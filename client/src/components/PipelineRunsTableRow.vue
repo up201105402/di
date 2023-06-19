@@ -12,10 +12,13 @@
     import BaseButton from "@/components/BaseButton.vue";
     import UserAvatar from "@/components/UserAvatar.vue";
     import BaseIcon from "@/components/BaseIcon.vue";
+    import { useToast } from 'primevue/usetoast';
     import Loading from "vue-loading-overlay";
+
     import ErrorModal from '@/components/ErrorModal.vue';
 
     const { accessToken } = storeToRefs(useAuthStore());
+    const toast = useToast();
 
     const props = defineProps({
         parentRow: {
@@ -123,6 +126,7 @@
         if (newVal.error) {
             isRequestError.value = true;
             requestError.value = newVal.error.message;
+            toast.add({ severity: 'error', summary: 'Error', detail: newVal.error.message, life: 3000 });
         } else {
             slideDownSubRow();
         }
@@ -132,6 +136,7 @@
         if (newVal.error) {
             isRequestError.value = true;
             requestError.value = newVal.error.message;
+            toast.add({ severity: 'error', summary: 'Error', detail: newVal.error.message, life: 3000 });
         }
     })
 
@@ -206,8 +211,7 @@
             </progress>
         </td>
         <td data-label="Created" class="lg:w-1 whitespace-nowrap">
-            <small class="text-gray-500 dark:text-slate-400" :title="parentRow.CreatedAt">{{ parentRow.CreatedAt
-                }}</small>
+            <small class="text-gray-500 dark:text-slate-400" :title="parentRow.CreatedAt">{{ parentRow.CreatedAt }}</small>
         </td>
         <td class="before:hidden lg:w-1 whitespace-nowrap">
             <BaseButtons type="justify-start lg:justify-end" no-wrap>
@@ -225,7 +229,6 @@
     </tr>
 
     <CardBoxModal v-model="isCreateModalActive" @confirm="onCreateSubrow" :title="`Create Run for Pipeline ${props.parentRow.ID}?`" button="success" has-cancel />
-    <ErrorModal :title="'Error'" v-model="isRequestError" :errorMessage="requestError" @acknowledge="acknowledgeError" />
 
 </template>
 

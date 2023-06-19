@@ -1,136 +1,143 @@
 <script setup>
-import { ref, reactive, computed, watch } from "vue";
-import { storeToRefs } from "pinia";
-import {
-  mdiChartTimelineVariant,
-  mdiPlus
-} from "@mdi/js";
-import { useRouter } from 'vue-router';
-import SectionMain from "@/components/SectionMain.vue";
-import LayoutAuthenticated from "@/layouts/LayoutAuthenticated.vue";
-import SectionTitleLineWithButton from "@/components/SectionTitleLineWithButton.vue";
-import PipelinesTable from "@/components/PipelinesTable.vue";
-import CardBoxModal from "@/components/CardBoxModal.vue";
-import BaseButton from "@/components/BaseButton.vue";
-import FormControl from "@/components/FormControl.vue";
-import FormField from "@/components/FormField.vue";
-import { useAuthStore } from "@/stores/auth";
-import { doRequest } from "@/util";
-import { useAsyncState } from "@vueuse/core";
-import Loading from "vue-loading-overlay";
-import "vue-loading-overlay/dist/css/index.css";
-import router from "@/router";
+  import { ref, reactive, computed, watch } from "vue";
+  import { storeToRefs } from "pinia";
+  import {
+    mdiChartTimelineVariant,
+    mdiPlus
+  } from "@mdi/js";
+  import { useRouter } from 'vue-router';
+  import SectionMain from "@/components/SectionMain.vue";
+  import LayoutAuthenticated from "@/layouts/LayoutAuthenticated.vue";
+  import SectionTitleLineWithButton from "@/components/SectionTitleLineWithButton.vue";
+  import PipelinesTable from "@/components/PipelinesTable.vue";
+  import CardBoxModal from "@/components/CardBoxModal.vue";
+  import BaseButton from "@/components/BaseButton.vue";
+  import FormControl from "@/components/FormControl.vue";
+  import FormField from "@/components/FormField.vue";
+  import { useAuthStore } from "@/stores/auth";
+  import { doRequest } from "@/util";
+  import { useAsyncState } from "@vueuse/core";
+  import Toast from 'primevue/toast';
+  import { useToast } from 'primevue/usetoast';
+  import Loading from "vue-loading-overlay";
+  import "vue-loading-overlay/dist/css/index.css";
+  import router from "@/router";
 
-const { accessToken, requireAuthRoute } = storeToRefs(useAuthStore());
+  const { accessToken, requireAuthRoute } = storeToRefs(useAuthStore());
+  const toast = useToast();
 
-// FETCH PIPELINES
+  // FETCH PIPELINES
 
-const { isLoading: isFetching, state: fetchResponse, isReady: isFetchFinished, execute: fetchPipelines } = useAsyncState(
-  () => {
-    return doRequest({
-      url: '/api/pipeline',
-      method: 'GET',
-      headers: {
-        Authorization: `${accessToken.value}`
-      },
-    })
-  },
-  {},
-  {
-    delay: 500,
-    resetOnExecute: false,
-  },
-)
-
-// CREATE PIPELINE
-
-const isCreateModalActive = ref(false);
-const onNewPipelineClicked = (e) => isCreateModalActive.value = true;
-
-const createPipelineForm = reactive({
-  name: "",
-});
-
-const { isLoading: isCreating, state: createResponse, isReady: createFinished, execute: createPipeline } = useAsyncState(
-  (name) => {
-    if (name && name != "") {
+  const { isLoading: isFetching, state: fetchResponse, isReady: isFetchFinished, execute: fetchPipelines } = useAsyncState(
+    () => {
       return doRequest({
         url: '/api/pipeline',
-        method: 'POST',
+        method: 'GET',
         headers: {
-          Authorization: `${accessToken.value}`,
+          Authorization: `${accessToken.value}`
         },
-        data: {
-          name: createPipelineForm.name
-        },
-      });
+      })
+    },
+    {},
+    {
+      delay: 500,
+      resetOnExecute: false,
+    },
+  )
+
+  watch(fetchResponse, (newVal) => {
+    if (newVal.error) {
+      toast.add({ severity: 'error', summary: 'Error', detail: newVal.error.message, life: 3000 });
     }
+  })
 
-    return {};
-  },
-  {},
-  {
-    delay: 500,
-    resetOnExecute: false,
-    immediate: false,
-  },
-)
+  // CREATE PIPELINE
 
-watch(createFinished, () => {
-  if (createFinished.value) {
-    fetchPipelines();
-  }
-})
+  const isCreateModalActive = ref(false);
+  const onNewPipelineClicked = (e) => isCreateModalActive.value = true;
 
-// DELETE PIPELINE
+  const createPipelineForm = reactive({
+    name: "",
+  });
 
-const isDeleteModalActive = ref(false);
-const pipelineIdToDelete = ref(null);
+  const { isLoading: isCreating, state: createResponse, isReady: createFinished, execute: createPipeline } = useAsyncState(
+    (name) => {
+      if (name && name != "") {
+        return doRequest({
+          url: '/api/pipeline',
+          method: 'POST',
+          headers: {
+            Authorization: `${accessToken.value}`,
+          },
+          data: {
+            name: createPipelineForm.name
+          },
+        });
+      }
 
-const onDeletePipelineClicked = (id) => {
-  isDeleteModalActive.value = true;
-  pipelineIdToDelete.value = id;
-}
+      return {};
+    },
+    {},
+    {
+      delay: 500,
+      resetOnExecute: false,
+      immediate: false,
+    },
+  )
 
-const { isLoading: isDeleting, state: deleteResponse, isReady: deleteFinished, execute: deletePipeline } = useAsyncState(
-  (pipelineID) => {
-    if (pipelineID) {
-      return doRequest({
-        url: '/api/pipeline',
-        method: 'DELETE',
-        headers: {
-          Authorization: `${accessToken.value}`,
-        },
-        data: {
-          ID: pipelineID
-        },
-      });
+  watch(createResponse, (newVal) => {
+    if (newVal.error) {
+      toast.add({ severity: 'error', summary: 'Error', detail: newVal.error.message, life: 3000 });
+    } else {
+      fetchPipelines();
     }
+  })
 
-    return {};
-  },
-  {},
-  {
-    delay: 500,
-    resetOnExecute: false,
-    immediate: false,
-  },
-)
+  // DELETE PIPELINE
 
-watch(deleteFinished, () => {
-  if (deleteFinished.value) {
-    fetchPipelines();
+  const isDeleteModalActive = ref(false);
+  const pipelineIdToDelete = ref(null);
+
+  const onDeletePipelineClicked = (id) => {
+    isDeleteModalActive.value = true;
+    pipelineIdToDelete.value = id;
   }
-})
 
-watch(fetchResponse, () => {
-  if (fetchResponse.value.status === 401) {
-    router.push(requireAuthRoute);
-  }
-})
+  const { isLoading: isDeleting, state: deleteResponse, isReady: deleteFinished, execute: deletePipeline } = useAsyncState(
+    (pipelineID) => {
+      if (pipelineID) {
+        return doRequest({
+          url: '/api/pipeline',
+          method: 'DELETE',
+          headers: {
+            Authorization: `${accessToken.value}`,
+          },
+          data: {
+            ID: pipelineID
+          },
+        });
+      }
 
-const pipelines = computed(() => fetchResponse.value?.data ? fetchResponse.value.data.pipelines : []);
-const isLoading = computed(() => isFetching.value || isCreating.value || isDeleting.value);
+      return {};
+    },
+    {},
+    {
+      delay: 500,
+      resetOnExecute: false,
+      immediate: false,
+    },
+  )
+
+  watch(deleteResponse, (newVal) => {
+    if (newVal.error) {
+      toast.add({ severity: 'error', summary: 'Error', detail: newVal.error.message, life: 3000 });
+    } else {
+      fetchPipelines();
+    }
+  })
+
+  const pipelines = computed(() => fetchResponse.value?.data ? fetchResponse.value.data.pipelines : []);
+  const isLoading = computed(() => isFetching.value || isCreating.value || isDeleting.value);
 
 </script>
 
@@ -146,8 +153,8 @@ const isLoading = computed(() => isFetching.value || isCreating.value || isDelet
       <PipelinesTable :items="pipelines" @deleteButtonClicked="onDeletePipelineClicked" checkable />
     </SectionMain>
 
-    <CardBoxModal v-model="isCreateModalActive" @confirm="createPipeline(200, createPipelineForm.name)" title="Create Pipeline" button="success"
-      has-cancel>
+    <CardBoxModal v-model="isCreateModalActive" @confirm="createPipeline(200, createPipelineForm.name)"
+      title="Create Pipeline" button="success" has-cancel>
       <FormField label="Name" help="Please enter the pipeline name">
         <FormControl v-model="createPipelineForm.name" name="name" autocomplete="name" placeholder="Name"
           :focus="isCreateModalActive" />
@@ -159,5 +166,6 @@ const isLoading = computed(() => isFetching.value || isCreating.value || isDelet
       <p>This will permanently delete this pipeline.</p>
     </CardBoxModal>
 
+    <Toast />
   </LayoutAuthenticated>
 </template>
