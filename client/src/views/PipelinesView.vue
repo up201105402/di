@@ -21,9 +21,8 @@
   import { useToast } from 'primevue/usetoast';
   import Loading from "vue-loading-overlay";
   import "vue-loading-overlay/dist/css/index.css";
-  import router from "@/router";
 
-  const { accessToken, requireAuthRoute } = storeToRefs(useAuthStore());
+  const { accessToken } = storeToRefs(useAuthStore());
   const toast = useToast();
 
   // FETCH PIPELINES

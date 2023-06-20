@@ -2,6 +2,7 @@ import { createRouter, createWebHashHistory } from "vue-router";
 import Home from "@/views/HomeView.vue";
 import Pipelines from "@/views/PipelinesView.vue";
 import Runs from "@/views/RunsView.vue";
+import PipelineRuns from "@/views/PipelineRunsView.vue";
 import PipelineEditor from "@/views/PipelineEditorView.vue";
 
 const routes = [
@@ -14,8 +15,6 @@ const routes = [
   //   component: Style,
   // },
   {
-    // Document title tag
-    // We combine it with defaultDocumentTitle set in `src/main.js` on router.afterEach hook
     meta: {
       title: "Dashboard",
     },
@@ -25,8 +24,6 @@ const routes = [
     private: true,
   },
   {
-    // Document title tag
-    // We combine it with defaultDocumentTitle set in `src/main.js` on router.afterEach hook
     meta: {
       title: "Pipelines",
     },
@@ -36,8 +33,6 @@ const routes = [
     private: true,
   },
   {
-    // Document title tag
-    // We combine it with defaultDocumentTitle set in `src/main.js` on router.afterEach hook
     meta: {
       title: "Runs",
     },
@@ -47,14 +42,21 @@ const routes = [
     private: true,
   },
   {
-    // Document title tag
-    // We combine it with defaultDocumentTitle set in `src/main.js` on router.afterEach hook
     meta: {
       title: "Pipeline Editor",
     },
-    path: "/pipeline/:id",
+    path: "/pipelines/edit/:id",
     name: "pipeline",
     component: PipelineEditor,
+    private: true,
+  },
+  {
+    meta: {
+      title: "Pipeline Runs",
+    },
+    path: "/pipelines/runs/:id",
+    name: "pipelineruns",
+    component: PipelineRuns,
     private: true,
   },
   {

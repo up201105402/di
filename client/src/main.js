@@ -57,8 +57,6 @@ router.afterEach((to) => {
     : defaultDocumentTitle;
 });
 
-/* Formkit */
-
 const spa = createApp(App);
 spa.use(authStore);
 spa.use(router);

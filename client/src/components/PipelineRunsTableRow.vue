@@ -15,8 +15,6 @@
     import { useToast } from 'primevue/usetoast';
     import Loading from "vue-loading-overlay";
 
-    import ErrorModal from '@/components/ErrorModal.vue';
-
     const { accessToken } = storeToRefs(useAuthStore());
     const toast = useToast();
 
@@ -215,7 +213,7 @@
         </td>
         <td class="before:hidden lg:w-1 whitespace-nowrap">
             <BaseButtons type="justify-start lg:justify-end" no-wrap>
-                <BaseButton color="info" :icon="mdiEye" small :to="'/run/' + parentRow.ID" />
+                <BaseButton color="info" :icon="mdiEye" small :to="'/pipelines/runs/' + parentRow.ID" />
                 <BaseButton color="success" :icon="mdiPlus" small @click.prevent="onRowCreateButtonClicked" />
             </BaseButtons>
         </td>

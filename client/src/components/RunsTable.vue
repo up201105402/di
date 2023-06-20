@@ -1,5 +1,4 @@
 <script setup>
-import { ref } from "vue";
 import { storeToRefs } from "pinia";
 import { useAsyncState } from "@vueuse/core";
 import { doRequest } from "@/util";
@@ -8,7 +7,6 @@ import { mdiPlayOutline, mdiRunFast } from "@mdi/js";
 import BaseButtons from "@/components/BaseButtons.vue";
 import BaseButton from "@/components/BaseButton.vue";
 import BaseIcon from "@/components/BaseIcon.vue";
-import Loading from "vue-loading-overlay";
 import { useToast } from 'primevue/usetoast';
 import { watch } from "vue";
 
@@ -54,15 +52,8 @@ watch(executeSubrowResponse, (value) => {
     }
 })
 
-const isRequestError = ref(false);
-const requestError = ref("");
-
 const onSubRowButtonClicked = (e, subRowID) => {
     executeSubrow(null, subRowID);
-}
-
-const acknowledgeError = (e) => {
-    isRequestError.value = null
 }
 
 </script>

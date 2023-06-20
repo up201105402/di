@@ -113,7 +113,7 @@ const checked = (isChecked, pipeline) => {
                 </td>
                 <td class="before:hidden lg:w-1 whitespace-nowrap">
                     <BaseButtons type="justify-start lg:justify-end" no-wrap>
-                        <BaseButton color="info" :icon="mdiEye" small :to="'/pipeline/' + pipeline.ID" />
+                        <BaseButton color="info" :icon="mdiEye" small :to="'/pipelines/edit/' + pipeline.ID" />
                         <BaseButton color="danger" :icon="mdiTrashCan" small :target-id="pipeline.ID" @clicked="deleteButtonClicked" />
                     </BaseButtons>
                 </td>

@@ -23,7 +23,7 @@
   import { useToast } from 'primevue/usetoast';
 
   const authStore = useAuthStore();
-  const toast = userToast();
+  const toast = useToast();
 
   const profileForm = reactive({
     name: authStore.userName,

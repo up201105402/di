@@ -4,7 +4,7 @@
   import { Background } from '@vue-flow/background';
   import { Controls } from '@vue-flow/controls';
   import { MiniMap } from '@vue-flow/minimap';
-  import { reactive, ref, computed, watch } from "vue";
+  import { ref, computed, watch } from "vue";
   import { useAsyncState } from "@vueuse/core";
   import { doRequest } from "@/util";
   import { useAuthStore } from "@/stores/auth";
@@ -18,13 +18,11 @@
   import SectionTitleLineWithButton from "@/components/SectionTitleLineWithButton.vue";
   import BaseButtons from "@/components/BaseButtons.vue";
   import BaseButton from "@/components/BaseButton.vue";
-  import FlowChart from "@/components/FlowChart.vue";
   import CardBoxModal from '@/components/CardBoxModal.vue';
   import UpsertStepDialog from '@/components/UpsertStepDialog.vue';
   import Toast from 'primevue/toast';
   import { useToast } from 'primevue/usetoast';
   import Loading from "vue-loading-overlay";
-  import CheckoutRepoNode from "@/pipelines/steps/components/nodes/CheckoutRepoNode.vue";
   import { nodeTypes } from "@/pipelines/steps";
   import deepEqual from 'deep-equal';
   import $ from 'jquery';
