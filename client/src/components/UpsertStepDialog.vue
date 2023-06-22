@@ -1,8 +1,9 @@
 <script setup>
-  import { ref, computed, reactive, markRaw } from 'vue';
+  import { ref, computed, reactive, markRaw, onMounted } from 'vue';
   import stepTypes from '@/pipelines/steps'
   import { watch } from 'vue';
   import useSteps from '@/pipelines/steps'
+  import $ from 'jquery';
 
   const props = defineProps({
     nodeId: {
@@ -22,7 +23,13 @@
     set: (value) => { },
   });
 
-  const emit = defineEmits(["onSubmit"]);
+  onMounted(() => {
+    $("#cancel-create-step-button").off('click').on('click', function (e) {
+      emit("onCancel");
+    });
+  });
+
+  const emit = defineEmits(["onSubmit", "onCancel"]);
 
   const onSubmit = (formData) => {
     emit("onSubmit", { id: props.nodeId, data: formData });
@@ -33,31 +40,9 @@
 </script>
 
 <template>
-  <!-- <Vueform v-model="data" sync :endpoint="false" @submit="onSubmit">
-    <template #empty>
-      <FormSteps>
-        <FormStep name="step1" label="Select Type" :elements="['stepName', 'stepType']" />
-        <FormStep name="step2" label="Configure" :elements="Object.values(stepTypes).map(stepType => stepType.name)" :labels="{ next: 'Submit' }" />
-      </FormSteps>
-
-      <FormElements>
-        <TextElement name="stepName" label="Name" :rules="['required']" />
-        <SelectElement name="stepType" :search="true" :native="false" label="Type" input-type="search"
-          autocomplete="off" :items="Object.values(stepTypes).map(stepType => ({
-            'value': stepType.name,
-            'label': stepType.label,
-          }))" :rules="['required']" />
-        <CheckoutRepositoryForm />
-        <LoadTrainingDatasetForm />
-        <TrainModelForm />
-      </FormElements>
-
-      <FormStepsControls />
-    </template>
-  </Vueform> -->
   <FormKitSchema :schema="formSchema" :data="formkitData" />
 </template>
 
 <style>
-  @import "https://cdn.formk.it/web-assets/multistep-form.css";
+  @import "@/css/formkit/multistep-form.css";
 </style>

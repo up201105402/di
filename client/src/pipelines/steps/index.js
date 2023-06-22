@@ -41,18 +41,56 @@ const stepConfigFields = [
     validation: 'required',
     min: 1,
     if: '$isActiveNodeType("TrainModel")',
-  }
+  },
+  {
+    $formkit: 'number',
+    name: "epochs",
+    label: "Number of Epochs",
+    validation: 'required',
+    min: 1,
+    if: '$isActiveNodeType("TrainModel")',
+  },
 ]
 
 const nodeTypesOptions = [
   { id: 0, value: "CheckoutRepo", label: "Checkout Repository" },
   { id: 1, value: "TrainModel", label: "Train Model" },
+  { id: 2, value: "Scikit", label: "Scikit" },
 ];
 
 export const nodeTypes = {
   CheckoutRepo: markRaw(CheckoutRepoNode),
   TrainModel: markRaw(TrainModelNode),
+  Scikit: markRaw(TrainModelNode),
 };
+
+const learningTypes = [
+  { id: 0, value: "unsupervised", label: "Unsupervised" },
+  { id: 1, value: "supervised", label: "Supervised" },
+];
+
+const scikitUnsupervisedModelOptions = [
+  { id: 0, value: "ordinaryLeastSquares", label: "Ordinary Least Squares" },
+  { id: 1, value: "ridgeRegressionAndClassification", label: "Ridge regression and classification" },
+  { id: 2, value: "lasso", label: "Lasso" },
+  { id: 3, value: "multiTaskLasso", label: "Multi-task Lasso" },
+  { id: 4, value: "elasticNet", label: "Elastic-Net" },
+  { id: 5, value: "multiTaskElasticNet", label: "Multi-task Elastic-Net" },
+  { id: 6, value: "leastAngleRegression", label: "Least Angle Regression" },
+  { id: 7, value: "larsLasso", label: "LARS Lasso" },
+  { id: 8, value: "omp", label: "Orthogonal Matching Pursuit" },
+  { id: 9, value: "bayesianRegression", label: "Bayesian Regression" },
+  { id: 10, value: "logisticRegression", label: "Logistic regression" },
+  // { id: 11, value: "generalizedLinearModels", label: "Generalized Linear Models" },
+  { id: 12, value: "sgd", label: "Stochastic Gradient Descent" },
+  { id: 13, value: "perceptron", label: "Perceptron" },
+  { id: 14, value: "passiveAgressiveAlgorithms", label: "Passive Aggressive Algorithms" },
+  { id: 15, value: "robustnessRegression", label: "Robustness regression" },
+  { id: 16, value: "quantileRegression", label: "Quantile Regression" },
+  { id: 17, value: "polynomialRegression", label: "Polynomial regression" },
+];
+
+const scikitSupervisedModelOptions = [];
 
 import { reactive, toRef, ref, watch } from 'vue';
 import { getNode, createMessage } from '@formkit/core';
@@ -61,6 +99,7 @@ export default function useSteps(data, onSubmit) {
   const activeStep = ref('');
 
   const activeNodeType = ref(nodeTypesOptions[0].value);
+  const activeLearningType = ref(learningTypes[0].value);
 
   const steps = reactive({});
   const visitedSteps = ref([]); // track visited steps
@@ -131,17 +170,27 @@ export default function useSteps(data, onSubmit) {
     visitedSteps,
     activeStep,
     activeNodeType,
+    activeLearningType,
     plugins: [
       stepPlugin
     ],
     isActiveNodeType: (nodeType) => {
       return nodeType === activeNodeType.value;
     },
+    isSupervisedLearning: () => {
+      return activeLearningType.value == "supervised";
+    },
+    isUnsupervisedLearning: () => {
+      return activeLearningType.value == "unsupervised";
+    },
     setStep: target => () => {
       setStep(target)
     },
     setActiveNodeType: changeEvent => {
       activeNodeType.value = changeEvent.target.value;
+    },
+    setLearningType: changeEvent => {
+      activeLearningType.value = changeEvent.target.value;
     },
     setActiveStep: stepName => () => {
       activeStep.value = stepName
@@ -249,6 +298,34 @@ export default function useSteps(data, onSubmit) {
                       validation: 'required',
                       onChange: "$setActiveNodeType",
                     },
+                    {
+                      $formkit: 'select',
+                      name: 'learningType',
+                      label: 'Learning Type',
+                      placeholder: "",
+                      options: learningTypes,
+                      validation: 'required',
+                      if: '$isActiveNodeType("Scikit")',
+                      onChange: "$setLearningType",
+                    },
+                    {
+                      $formkit: 'select',
+                      name: 'scikitModel',
+                      label: 'Scikit Model',
+                      placeholder: "",
+                      options: scikitUnsupervisedModelOptions,
+                      validation: 'required',
+                      if: '$isActiveNodeType("Scikit") && $isUnsupervisedLearning()',
+                    },
+                    {
+                      $formkit: 'select',
+                      name: 'scikitModel',
+                      label: 'Scikit Model',
+                      placeholder: "",
+                      options: scikitSupervisedModelOptions,
+                      validation: 'required',
+                      if: '$isActiveNodeType("Scikit") && $isSupervisedLearning()',
+                    },
                   ]
                 }
               ]
@@ -293,10 +370,23 @@ export default function useSteps(data, onSubmit) {
           ]
         },
         {
-          $formkit: 'submit',
-          label: 'Submit',
-          disabled: '$get(form).state.valid !== true',
-        }
+          $el: 'div',
+          attrs: {
+            class: 'formkit-bottom-buttons'
+          },
+          children: [
+            {
+              $formkit: 'button',
+              label: 'Cancel',
+              id: 'cancel-create-step-button'
+            },
+            {
+              $formkit: 'submit',
+              label: 'Submit',
+              disabled: '$get(form).state.valid !== true',
+            },
+          ]
+        },
       ]
     },
   ];

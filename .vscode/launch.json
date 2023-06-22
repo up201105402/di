@@ -17,7 +17,8 @@
                 "TOKEN_REFRESH_SECRET": "areallynotsuperg00ds33cret",
                 "ID_TOKEN_DURATION": "10",
                 "REFRESH_TOKEN_DURATION": "259200",
-                "PIPELINES_WORK_DIR": "/usr/src/di/work/pipelines"
+                "PIPELINES_WORK_DIR": "/usr/src/di/work/pipelines",
+                "SCIKIT_VERSION": "1.2.2",
             }
         }
     ]

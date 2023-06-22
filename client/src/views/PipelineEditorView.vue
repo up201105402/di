@@ -185,6 +185,11 @@
     count++;
   }
 
+  const onCancel = () => {
+    isStepDialogActive.value = false;
+    count++;
+  }
+
   const onStepEdited = (formData) => {
     const index = elements.value.findIndex(element => element.id === formData.id);
 
@@ -361,8 +366,7 @@
       </VueFlow>
       <CardBoxModal v-model="isStepDialogActive" :has-submit="false" :has-cancel="false" title="Create Step"
         @cancel="count++">
-        <UpsertStepDialog :key="'createStepDialog_' + count" :nodeId="editStepNodeId" :nodeData="stepData"
-          @onSubmit="onStepEdited" />
+        <UpsertStepDialog :key="'createStepDialog_' + count" :nodeId="editStepNodeId" :nodeData="stepData" @onSubmit="onStepEdited" @onCancel="onCancel" />
       </CardBoxModal>
       <BaseButtons style="float:right">
         <BaseButton :disabled="!hasChanges" :label="'Save'" color="success" @click="onPipelineSave" />
