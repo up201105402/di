@@ -2,19 +2,18 @@ package steps
 
 import (
 	"di/model"
+	"di/steps/scikit"
 	"fmt"
 	"os"
 	"reflect"
 	"strings"
-
-	"github.com/go-git/go-git/v5"
 )
 
 type Scikit struct {
 	ID         uint
 	PipelineID uint
 	RunID      uint
-	RepoURL    string `json:"repoURL"`
+	ScikitStep Step
 }
 
 func (step Scikit) GetID() int {
@@ -22,9 +21,7 @@ func (step Scikit) GetID() int {
 }
 
 func (step *Scikit) SetConfig(stepConfig model.StepDataConfig) error {
-	step.RepoURL = stepConfig.RepoURL
-
-	return nil
+	return step.ScikitStep.SetConfig(stepConfig)
 }
 
 func (step *Scikit) SetPipelineID(pipelineID uint) error {
@@ -55,24 +52,17 @@ func (step Scikit) Execute(logFile *os.File) error {
 		return err
 	}
 
-	if _, err := git.PlainClone(currentPipelineWorkDir, false, &git.CloneOptions{
-		URL:      step.RepoURL,
-		Progress: logFile,
-	}); err != nil {
-		// if err == git.ErrRepositoryAlreadyExists {
-		// 	return err
-		// }
-
-		return err
-	}
-
-	return nil
+	return step.ScikitStep.Execute(logFile)
 }
 
 func initScikitModelTypeRegistry() map[string]reflect.Type {
 	var scikitModelTypeRegistry = make(map[string]reflect.Type)
 
-	stepTypes := []interface{}{steps.CheckoutRepo{}}
+	stepTypes := []interface{}{
+		scikit.LeastSquares{},
+		scikit.RidgeRegAndClassification{},
+		scikit.Lasso{},
+	}
 
 	for _, v := range stepTypes {
 		splitString := strings.SplitAfter(fmt.Sprintf("%T", v), ".")

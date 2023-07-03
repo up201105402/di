@@ -71,7 +71,7 @@ const learningTypes = [
 
 const scikitUnsupervisedModelOptions = [
   { id: 0, value: "ordinaryLeastSquares", label: "Ordinary Least Squares" },
-  { id: 1, value: "ridgeRegressionAndClassification", label: "Ridge regression and classification" },
+  { id: 1, value: "ridgeRegressionAndClassification", label: "Ridge Regression and Classification" },
   { id: 2, value: "lasso", label: "Lasso" },
   { id: 3, value: "multiTaskLasso", label: "Multi-task Lasso" },
   { id: 4, value: "elasticNet", label: "Elastic-Net" },
