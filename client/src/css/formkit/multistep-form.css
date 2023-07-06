@@ -61,7 +61,7 @@
 
 .step--errors,
 [data-step-valid="true"]:after {
-    content: 'âœ“';
+    content: '\2713';
     background-color: #54A085;
     position: absolute;
     top: 4px;
