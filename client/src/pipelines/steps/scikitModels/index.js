@@ -1,5 +1,5 @@
-import { leastSquaresStepConfig } from './leastSquares';
-import { ridgeRegressionStepConfig } from './ridgeRegression';
+import { leastSquaresConfigSection } from './leastSquares';
+import { ridgeRegressionConfigSection } from './ridgeRegression';
 
 export const learningTypes = [
     { id: 0, value: "unsupervised", label: "Unsupervised" },
@@ -68,7 +68,7 @@ export const scikitSupervisedModelSelect = [
     },
 ]
 
-export const scikitModelsStepConfig = [
-    ...leastSquaresStepConfig,
-    ...ridgeRegressionStepConfig
+export const scikitModelConfigSections = [
+    leastSquaresConfigSection,
+    ridgeRegressionConfigSection
 ]

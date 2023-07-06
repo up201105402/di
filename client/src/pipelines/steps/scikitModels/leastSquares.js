@@ -1,27 +1,31 @@
 export const leastSquaresStepConfig = [
     {
         $formkit: 'checkbox',
-        name: "fitIntercept",
-        label: "Fit Intercept",
-        if: '$isActiveNodeType("ScikitModel") && $isScikitModel("leastSquares")',
+        name: "fitIntercept_1",
+        label: "Fit Intercept 1",
     },
     {
         $formkit: 'checkbox',
-        name: "copyX",
-        label: "Copy X",
-        if: '$isActiveNodeType("ScikitModel") && $isScikitModel("leastSquares")',
+        name: "copyX_1",
+        label: "Copy X 1",
     },
     {
         $formkit: 'number',
         name: "nJobs",
         label: "Computation number of Jobs",
         placeholder: '1',
-        if: '$isActiveNodeType("ScikitModel") && $isScikitModel("leastSquares")',
     },
     {
         $formkit: 'checkbox',
         name: "positive",
         label: "Positive",
-        if: '$isActiveNodeType("ScikitModel") && $isScikitModel("leastSquares")',
     },
 ]
+
+export const leastSquaresConfigSection = {
+    $formkit: 'group',
+    id: 'stepConfig_1',
+    name: 'stepConfig',
+    children: leastSquaresStepConfig,
+    if: '$isActiveNodeType("ScikitModel") && $isScikitModel("leastSquares")',
+}

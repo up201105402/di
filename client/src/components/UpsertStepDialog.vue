@@ -16,6 +16,10 @@
       required: false,
       default: null,
     },
+    stepCategory: {
+      type: String,
+      required: true,
+    },
   });
 
   const data = computed({
@@ -35,12 +39,12 @@
     emit("onSubmit", { id: props.nodeId, data: formData });
   }
 
-  let { formSchema, formkitData, steps, visitedSteps, activeStep, nodeTypesOptions, activeNodeType, setStep, stepPlugin } = useSteps(props.nodeData, onSubmit);
+  let { formSchemas, formkitData, steps, visitedSteps, activeStep, nodeTypesOptions, activeNodeType, setStep, stepPlugin } = useSteps[props.stepCategory](props.nodeData, onSubmit);
 
 </script>
 
 <template>
-  <FormKitSchema :schema="formSchema" :data="formkitData" />
+  <FormKitSchema :schema="formSchema[stepCategory]" :data="formkitData" />
 </template>
 
 <style>

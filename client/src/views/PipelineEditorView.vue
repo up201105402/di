@@ -18,6 +18,7 @@
   import SectionTitleLineWithButton from "@/components/SectionTitleLineWithButton.vue";
   import BaseButtons from "@/components/BaseButtons.vue";
   import BaseButton from "@/components/BaseButton.vue";
+  import SplitButton from 'primevue/splitbutton';
   import CardBoxModal from '@/components/CardBoxModal.vue';
   import UpsertStepDialog from '@/components/UpsertStepDialog.vue';
   import Toast from 'primevue/toast';
@@ -114,6 +115,7 @@
 
   const hasChanges = ref(false);
   const isStepDialogActive = ref(false);
+  const stepCategory = ref('');
   const stepData = ref({});
   const editStepNodeId = ref("-1");
   let count = 0;
@@ -140,10 +142,38 @@
 
   const onCreateStepClick = (e) => {
     isStepDialogActive.value = !isStepDialogActive.value;
+    stepCategory.value = e.item.value;
     editStepNodeId.value = "-1";
     stepData.value = {};
     count++;
   }
+
+  const stepCategories = [
+    {
+        label: 'Checkout Repo',
+        value: 'checkoutRepo',
+        icon: 'pi pi-refresh',
+        command: onCreateStepClick
+    },
+    {
+        label: 'SciKit - Load Training Dataset',
+        value: 'scikitTrainingDataset',
+        icon: 'pi pi-times',
+        command: onCreateStepClick
+    },
+    {
+        label: 'SciKit - Load Testing Dataset',
+        value: 'scikitTrainingDataset',
+        icon: 'pi pi-external-link',
+        command: onCreateStepClick
+    },
+    {
+        label: 'SciKit - Run Model',
+        value: 'scikitModel',
+        icon: 'pi pi-external-link',
+        command: onCreateStepClick
+    },
+];
 
   const onNodeDoubleClick = (e) => {
     isStepDialogActive.value = true;
@@ -315,7 +345,19 @@
       <loading v-model:active="isLoading" :is-full-page="false" />
 
       <SectionTitleLineWithButton :icon="mdiChartTimelineVariant" :title="pipelineTitle" main>
-        <BaseButton :icon="mdiPlus" color="success" @click="onCreateStepClick" />
+        <!-- <BaseButton :icon="mdiPlus" color="success" @click="onCreateStepClick" /> -->
+        <SplitButton
+            label="Add Step"
+            severity="success"
+            size="small"
+            @click="save"
+            :model="stepCategories"
+            :pt="{
+                menu: {
+                    root: { class: 'surface-ground' }
+                }
+            }"
+        />
       </SectionTitleLineWithButton>
       <VueFlow v-model="elements" :class="{ dark }" class="basicflow" :node-types="nodeTypes"
         @nodeDoubleClick="onNodeDoubleClick" @edge-update="onEdgeUpdate" :default-viewport="{ zoom: 1.5 }"
@@ -366,7 +408,7 @@
       </VueFlow>
       <CardBoxModal v-model="isStepDialogActive" :has-submit="false" :has-cancel="false" title="Create Step"
         @cancel="count++">
-        <UpsertStepDialog :key="'createStepDialog_' + count" :nodeId="editStepNodeId" :nodeData="stepData" @onSubmit="onStepEdited" @onCancel="onCancel" />
+        <UpsertStepDialog :key="'createStepDialog_' + count" :stepCategory="stepCategory" :nodeId="editStepNodeId" :nodeData="stepData" @onSubmit="onStepEdited" @onCancel="onCancel" />
       </CardBoxModal>
       <BaseButtons style="float:right">
         <BaseButton :disabled="!hasChanges" :label="'Save'" color="success" @click="onPipelineSave" />

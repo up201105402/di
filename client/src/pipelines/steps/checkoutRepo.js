@@ -5,13 +5,19 @@ export const checkoutRepoStepConfigFields = [
         label: 'URL',
         name: 'repoURL',
         validation: 'required|url',
-        if: '$isActiveNodeType("CheckoutRepo")',
     },
     {
         $formkit: 'text',
         label: 'File Path',
         name: 'filePath',
         validation: 'required',
-        if: '$isActiveNodeType("CheckoutRepo")',
     },
 ]
+
+export const checkoutRepoConfigSection = {
+    $formkit: 'group',
+    id: 'checkoutRepoConfig',
+    name: 'stepConfig',
+    children: checkoutRepoStepConfigFields,
+    if: '$isActiveNodeType("CheckoutRepo")',
+}

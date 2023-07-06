@@ -5,37 +5,40 @@ export const datasetConfigFields = [
         name: "filePath",
         label: "File Path",
         validation: 'required',
-        if: '$isScikitDataset("scikitLoadFile")',
     },
     {
         $formkit: 'number',
         name: "lowerXRangeIndex",
         label: "Lower X Range Index",
         min: 0,
-        if: '$isActiveNodeType("ScikitTrainingDataset") || $isActiveNodeType("ScikitTestingDataset")',
     },
     {
         $formkit: 'number',
         name: "upperXRangeIndex",
         label: "Upper X Range Index",
         min: 0,
-        if: '$isActiveNodeType("ScikitTrainingDataset") || $isActiveNodeType("ScikitTestingDataset")',
     },
     {
         $formkit: 'number',
         name: "lowerYRangeIndex",
         label: "Lower Y Range Index",
         min: 0,
-        if: '$isActiveNodeType("ScikitTrainingDataset") || $isActiveNodeType("ScikitTestingDataset")',
     },
     {
         $formkit: 'number',
         name: "upperYRangeIndex",
         label: "Upper Y Range Index",
         min: 0,
-        if: '$isActiveNodeType("ScikitTrainingDataset") || $isActiveNodeType("ScikitTestingDataset")',
     },
 ]
+
+export const datasetConfigSection = {
+    $formkit: 'group',
+    id: 'stepConfig',
+    name: 'stepConfig',
+    children: datasetConfigFields,
+    if: '$isActiveNodeType("ScikitTrainingDataset") || $isActiveNodeType("ScikitTestingDataset")',
+}
 
 export const scikitDatasets = [
     { id: 0, value: "scikitBreastCancer", label: "Breast Cancer Dataset" },
