@@ -23,14 +23,28 @@ export const nodeTypes = {
 };
 
 export default {
+  default: function (data, onSubmit) {
+
+    const formkitData = reactive({});
+
+    const formSchema = [
+      {
+        $cmp: 'FormKit',
+        props: {
+          type: 'form',
+          id: 'form',
+          onSubmit: '$submitForm',
+          plugins: '$plugins',
+          actions: false,
+          value: { ...data }
+        }
+      },
+    ];
+
+    return { formSchema, formkitData, }
+  },
   checkoutRepo: function (data, onSubmit) {
     const activeStep = ref('');
-
-    const activeNodeType = ref(nodeTypesOptions[0].value);
-    const activeLearningType = ref(learningTypes[0].value);
-    const activeScikitDataset = ref(scikitDatasets[0].value);
-    const activeScikitModel = ref(scikitUnsupervisedModelOptions[0].value);
-
     const steps = reactive({});
     const visitedSteps = ref([]); // track visited steps
 
@@ -57,11 +71,9 @@ export default {
     })
 
     const setStep = (delta) => {
-      if (activeNodeType.value !== "") {
-        const stepNames = Object.keys(steps)
-        const currentIndex = stepNames.indexOf(activeStep.value)
-        activeStep.value = stepNames[currentIndex + delta]
-      }
+      const stepNames = Object.keys(steps)
+      const currentIndex = stepNames.indexOf(activeStep.value)
+      activeStep.value = stepNames[currentIndex + delta]
     }
 
     // pushes the steps (group nodes - $formkit: 'group') into the steps object
@@ -99,42 +111,11 @@ export default {
       steps,
       visitedSteps,
       activeStep,
-      activeNodeType,
-      activeLearningType,
-      activeScikitDataset,
-      activeScikitModel,
       plugins: [
         stepPlugin
       ],
-      isActiveNodeType: (nodeType) => {
-        return nodeType === activeNodeType.value;
-      },
-      isScikitDataset: (dataset) => {
-        return activeScikitDataset.value === dataset;
-      },
-      isScikitModel: (model) => {
-        return activeScikitModel.value === model;
-      },
-      isSupervisedLearning: () => {
-        return activeLearningType.value === "supervised";
-      },
-      isUnsupervisedLearning: () => {
-        return activeLearningType.value === "unsupervised";
-      },
       setStep: target => () => {
         setStep(target)
-      },
-      setActiveNodeType: changeEvent => {
-        activeNodeType.value = changeEvent.target.value;
-      },
-      setLearningType: changeEvent => {
-        activeLearningType.value = changeEvent.target.value;
-      },
-      setSciKitDataset: changeEvent => {
-        activeScikitDataset.value = changeEvent.target.value;
-      },
-      setScikitModel: changeEvent => {
-        activeScikitModel.value = changeEvent.target.value;
       },
       setActiveStep: stepName => () => {
         activeStep.value = stepName
@@ -184,10 +165,6 @@ export default {
                     'step': true,
                     'has-errors': '$showStepErrors($stepName)'
                   },
-                  style: {
-                    if: '$activeNodeType == ""',
-                    then: 'display: none;'
-                  },
                   onClick: '$setActiveStep($stepName)',
                   'data-step-active': '$activeStep === $stepName',
                   'data-step-valid': '$stepIsValid($stepName)'
@@ -223,8 +200,8 @@ export default {
                 children: [
                   {
                     $formkit: 'group',
-                    id: 'nameAndType',
-                    name: 'nameAndType',
+                    id: 'name',
+                    name: 'name',
                     children: [
                       {
                         $formkit: 'text',
@@ -232,15 +209,6 @@ export default {
                         label: 'Step Name',
                         placeholder: 'Step Name',
                         validation: 'required'
-                      },
-                      {
-                        $formkit: 'select',
-                        name: 'nodeType',
-                        label: 'Node Type',
-                        placeholder: "",
-                        options: nodeTypesOptions,
-                        validation: 'required',
-                        onChange: "$setActiveNodeType",
                       },
                     ]
                   }
@@ -256,8 +224,6 @@ export default {
                 },
                 children: [
                   checkoutRepoConfigSection,
-                  datasetConfigSection,
-                  ...scikitModelConfigSections
                 ]
               },
               {
@@ -304,9 +270,9 @@ export default {
       },
     ];
 
-    return { formSchemas, formkitData, activeStep, nodeTypesOptions, activeNodeType, visitedSteps, steps, stepPlugin, setStep }
+    return { formSchema, formkitData, activeStep, nodeTypesOptions, visitedSteps, steps, stepPlugin, setStep }
   },
-  scikitLoadDataset: function (data, onSubmit) {
+  scikitTrainingDataset: function (data, onSubmit) {
     const activeStep = ref('');
 
     const activeNodeType = ref(nodeTypesOptions[0].value);
@@ -587,6 +553,6 @@ export default {
       },
     ];
 
-    return { formSchemas, formkitData, activeStep, nodeTypesOptions, activeNodeType, visitedSteps, steps, stepPlugin, setStep }
+    return { formSchema, formkitData, activeStep, nodeTypesOptions, activeNodeType, visitedSteps, steps, stepPlugin, setStep }
   },
 }

@@ -19,5 +19,4 @@ export const checkoutRepoConfigSection = {
     id: 'checkoutRepoConfig',
     name: 'stepConfig',
     children: checkoutRepoStepConfigFields,
-    if: '$isActiveNodeType("CheckoutRepo")',
 }

@@ -27,6 +27,7 @@
   import { nodeTypes } from "@/pipelines/steps";
   import deepEqual from 'deep-equal';
   import $ from 'jquery';
+  import useSteps from '@/pipelines/steps';
 
   const { accessToken, requireAuthRoute } = storeToRefs(useAuthStore());
   const router = useRouter();
@@ -142,9 +143,12 @@
 
   const onCreateStepClick = (e) => {
     isStepDialogActive.value = !isStepDialogActive.value;
-    stepCategory.value = e.item.value;
     editStepNodeId.value = "-1";
     stepData.value = {};
+    let steps = useSteps[e.item.value](stepData.value, onStepEdited);
+    formSchema = steps.formSchema;
+    formkitData = steps.formkitData;
+    form
     count++;
   }
 
@@ -337,6 +341,8 @@
     return (dark.value = !dark.value)
   }
 
+  let { formSchema, formkitData } = useSteps['default'](stepData.value, onStepEdited);
+
 </script>
 
 <template>
@@ -408,7 +414,7 @@
       </VueFlow>
       <CardBoxModal v-model="isStepDialogActive" :has-submit="false" :has-cancel="false" title="Create Step"
         @cancel="count++">
-        <UpsertStepDialog :key="'createStepDialog_' + count" :stepCategory="stepCategory" :nodeId="editStepNodeId" :nodeData="stepData" @onSubmit="onStepEdited" @onCancel="onCancel" />
+        <UpsertStepDialog :key="'createStepDialog_' + count" :formSchema="formSchema" :formkitData="formkitData" :nodeId="editStepNodeId" :nodeData="stepData" @onSubmit="onStepEdited" @onCancel="onCancel" />
       </CardBoxModal>
       <BaseButtons style="float:right">
         <BaseButton :disabled="!hasChanges" :label="'Save'" color="success" @click="onPipelineSave" />

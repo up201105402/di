@@ -2,7 +2,7 @@
   import { ref, computed, reactive, markRaw, onMounted } from 'vue';
   import stepTypes from '@/pipelines/steps'
   import { watch } from 'vue';
-  import useSteps from '@/pipelines/steps'
+  import useSteps from '@/pipelines/steps';
   import $ from 'jquery';
 
   const props = defineProps({
@@ -16,9 +16,13 @@
       required: false,
       default: null,
     },
-    stepCategory: {
-      type: String,
-      required: true,
+    formSchema: {
+      type: Object,
+      required: false
+    },
+    formkitData: {
+      type: Object,
+      required: false
     },
   });
 
@@ -39,12 +43,13 @@
     emit("onSubmit", { id: props.nodeId, data: formData });
   }
 
-  let { formSchemas, formkitData, steps, visitedSteps, activeStep, nodeTypesOptions, activeNodeType, setStep, stepPlugin } = useSteps[props.stepCategory](props.nodeData, onSubmit);
+  let stepCategory = props.stepCategory != '' ? props.stepCategory : 'default';
+  // let { formSchema, formkitData } = useSteps[stepCategory](props.nodeData, onSubmit);
 
 </script>
 
 <template>
-  <FormKitSchema :schema="formSchema[stepCategory]" :data="formkitData" />
+  <FormKitSchema v-if="formSchema" :schema="formSchema" :data="formkitData" />
 </template>
 
 <style>
