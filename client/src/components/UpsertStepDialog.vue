@@ -1,8 +1,5 @@
 <script setup>
-  import { ref, computed, reactive, markRaw, onMounted } from 'vue';
-  import stepTypes from '@/pipelines/steps'
-  import { watch } from 'vue';
-  import useSteps from '@/pipelines/steps';
+  import { computed, onMounted } from 'vue';
   import $ from 'jquery';
 
   const props = defineProps({

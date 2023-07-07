@@ -50,3 +50,20 @@ const camel2title = (str) => str
   .replace(/([A-Z])/g, (match) => ` ${match}`)
   .replace(/^./, (match) => match.toUpperCase())
   .trim()
+
+export const removeDuplicates = (arr, uniqueProp) => {
+  const uniqueProps = [];
+
+  return arr.filter(element => {
+    const isDuplicate = uniqueProps.includes(element[uniqueProp]);
+
+    if (!isDuplicate) {
+      uniqueProps.push(element[uniqueProp]);
+
+      return true;
+    }
+
+    return false;
+  });
+
+}
