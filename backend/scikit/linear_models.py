@@ -299,6 +299,7 @@ def lasso_lars(
         X_train, 
         y_train, 
         X_test,
+        alpha=1.0,
         *,
         fit_intercept=True,
         verbose=False,
@@ -316,6 +317,7 @@ def lasso_lars(
 
     # Create lasso classifier with Least Angle Regression object
     regr = LassoLars(
+        alpha=alpha,
         fit_intercept=fit_intercept,
         verbose=verbose,
         normalize=normalize,
@@ -383,6 +385,7 @@ def lasso_lars_ic(
         X_train, 
         y_train, 
         X_test,
+        criterion="aic",
         *,
         fit_intercept=True,
         verbose=False,
@@ -398,6 +401,7 @@ def lasso_lars_ic(
 
     # Create lasso lars regressor using BIC or AIC object
     regr = LassoLarsIC(
+        criterion=criterion
         fit_intercept=fit_intercept,
         verbose=verbose,
         normalize=normalize,

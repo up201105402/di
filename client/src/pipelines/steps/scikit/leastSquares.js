@@ -2,18 +2,18 @@
 export const leastSquaresStepConfig = [
     {
         $formkit: 'checkbox',
-        name: "fitIntercept",
-        label: "Fit Intercept",
+        name: "fit_intercept",
+        label: "fit_intercept",
     },
     {
         $formkit: 'checkbox',
-        name: "copyX",
-        label: "Copy X",
+        name: "copy_X",
+        label: "copy_X",
     },
     {
         $formkit: 'number',
-        name: "nJobs",
-        label: "Computation number of Jobs",
+        name: "n_jobs",
+        label: "n_jobs",
         placeholder: '1',
     },
     {

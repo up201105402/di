@@ -1,9 +1,13 @@
-export const ridgeRegressionStepConfig = [
+export const multiTaskElasticNetStepConfig = [
     {
         $formkit: 'number',
         name: "alpha",
         label: "alpha",
-        validation: "required",
+    },
+    {
+        $formkit: 'number',
+        name: "l1_ratio",
+        label: "l1_ratio",
     },
     {
         $formkit: 'checkbox',
@@ -26,29 +30,28 @@ export const ridgeRegressionStepConfig = [
         label: "tol",
     },
     {
-        $formkit: 'select',
-        name: "solver",
-        label: "Solver",
-        options: ['auto', 'svd', 'cholesky', 'lsqr', 'sparse_cg', 'sag', 'saga', 'lbfgs'],
-    },
-    {
-        $formkit: 'checkbox',
-        name: "positive",
-        label: "Positive",
+        $formkit: 'number',
+        name: "warm_start",
+        label: "warm_start",
     },
     {
         $formkit: 'number',
         name: "random_state",
         label: "random_state",
+    },
+    {
+        $formkit: 'select',
+        name: "selection",
+        label: "selection",
+        options: ['cyclic', 'random']
     },
 ]
 
-export const ridgeRegressionCVStepConfig = [
+export const multiTaskElasticNetCVStepConfig = [
     {
-        $formkit: 'text',
-        name: "alphas",
-        label: "alphas",
-        validation: "required|floats"
+        $formkit: 'number',
+        name: "l1_ratio",
+        label: "l1_ratio",
     },
     {
         $formkit: 'checkbox',
@@ -71,19 +74,19 @@ export const ridgeRegressionCVStepConfig = [
         label: "tol",
     },
     {
-        $formkit: 'select',
-        name: "solver",
-        label: "Solver",
-        options: ['auto', 'svd', 'cholesky', 'lsqr', 'sparse_cg', 'sag', 'saga', 'lbfgs'],
-    },
-    {
-        $formkit: 'checkbox',
-        name: "positive",
-        label: "Positive",
+        $formkit: 'number',
+        name: "warm_start",
+        label: "warm_start",
     },
     {
         $formkit: 'number',
         name: "random_state",
         label: "random_state",
+    },
+    {
+        $formkit: 'select',
+        name: "selection",
+        label: "selection",
+        options: ['cyclic', 'random']
     },
 ]

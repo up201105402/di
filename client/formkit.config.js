@@ -3,19 +3,39 @@ import { defaultConfig } from '@formkit/vue'
 import { createMultiStepPlugin } from '@formkit/addons'
 import '@formkit/addons/css/multistep'
 
-const isDirectoryPath = (node) => {
+const dirPath = (node) => {
   return node.value?.match('^(.+)\/([^\/]+)$') != null;
 }
 
 // override default rule behaviors for your custom rule
-isDirectoryPath.blocking = false
-isDirectoryPath.skipEmpty = false
-isDirectoryPath.debounce = 20 // milliseconds
-isDirectoryPath.force = true
+dirPath.blocking = false
+dirPath.skipEmpty = false
+dirPath.debounce = 20 // milliseconds
+dirPath.force = true
+
+const floats = (node) => {
+  return node.value?.match('^(\\s*-?\\d+(\\.\\d+)?)(\\s*,\\s*-?\\d+(\\.\\d+)?)*$') != null;
+}
+
+// override default rule behaviors for your custom rule
+floats.blocking = false
+floats.skipEmpty = false
+floats.debounce = 20 // milliseconds
+floats.force = true
+
+const dict = (node) => {
+  return node.value?.match('(?<key>[^:]+):(?<value>[^,]+)') != null;
+}
+
+// override default rule behaviors for your custom rule
+dict.blocking = false
+dict.skipEmpty = false
+dict.debounce = 20 // milliseconds
+dict.force = true
 
 const config = defaultConfig({
   plugins: [createMultiStepPlugin()],
-  rules: { isDirectoryPath }
+  rules: { dirPath, floats, dict }
 })
 
 export default config

@@ -5,13 +5,6 @@ import { checkoutRepoForm } from '@/pipelines/steps/checkoutRepo';
 import { scikitDatasetForm } from '@/pipelines/steps/scikit/datasets';
 import { scikitLeastSquaresForm, ridgeRegressionForm, ridgeRegressionCVForm } from '@/pipelines/steps/scikit/models';
 
-const nodeTypesOptions = [
-  { id: 0, value: "CheckoutRepo", label: "Checkout Repository" },
-  { id: 1, value: "ScikitTrainingDataset", label: "Scikit - Load Training Dataset" },
-  { id: 2, value: "ScikitTestingDataset", label: "Scikit - Load Testing Dataset" },
-  { id: 3, value: "ScikitModel", label: "Scikit - Model" },
-];
-
 export const nodeTypes = {
   CheckoutRepo: markRaw(CheckoutRepoNode),
   TrainModel: markRaw(TrainModelNode),
@@ -66,7 +59,167 @@ export const steps = [
         name: 'ridgeRegressionCV',
         label: 'Ridge Regression CV',
         form: ridgeRegressionCVForm
-      } 
+      },
+      // {
+      //   name: 'ridgeClassifier',
+      //   label: 'Ridge Regression',
+      //   form: ridgeRegressionCVForm
+      // },
+      // {
+      //   name: 'ridgeClassifierCV',
+      //   label: 'Ridge Classifier CV',
+      //   form: ridgeRegressionCVForm
+      // },
+      // {
+      //   name: 'lasso',
+      //   label: 'Lasso',
+      //   form: ridgeRegressionCVForm
+      // },
+      // {
+      //   name: 'lassoCV',
+      //   label: 'Lasso CV',
+      //   form: ridgeRegressionCVForm
+      // },
+      // {
+      //   name: 'lassoLars',
+      //   label: 'Lasso Lars',
+      //   form: ridgeRegressionCVForm
+      // },
+      // {
+      //   name: 'lassoLarsCV',
+      //   label: 'Lasso Lars CV',
+      //   form: ridgeRegressionCVForm
+      // },
+      // {
+      //   name: 'lassoLarsIc',
+      //   label: 'Lasso Lars IC',
+      //   form: ridgeRegressionCVForm
+      // },
+      // {
+      //   name: 'multiTaskLasso',
+      //   label: 'Mult-Task Lasso',
+      //   form: ridgeRegressionCVForm
+      // },
+      // {
+      //   name: 'multiTaskLassoCV',
+      //   label: 'Mult-Task Lasso CV',
+      //   form: ridgeRegressionCVForm
+      // },
+      // {
+      //   name: 'elasticNet',
+      //   label: 'Elastic Net',
+      //   form: ridgeRegressionCVForm
+      // },
+      // {
+      //   name: 'elasticNetCV',
+      //   label: 'Elastic Net CV',
+      //   form: ridgeRegressionCVForm
+      // },
+      // {
+      //   name: 'multiTaskElasticNet',
+      //   label: 'Multi-Task Elastic Net',
+      //   form: ridgeRegressionCVForm
+      // },
+      // {
+      //   name: 'multiTaskElasticNetCV',
+      //   label: 'Multi-Task Elastic Net CV',
+      //   form: ridgeRegressionCVForm
+      // },
+      // {
+      //   name: 'lars',
+      //   label: 'LARS',
+      //   form: ridgeRegressionCVForm
+      // },
+      // {
+      //   name: 'larsCV',
+      //   label: 'LARS CV',
+      //   form: ridgeRegressionCVForm
+      // },
+      // {
+      //   name: 'omp',
+      //   label: 'Orthogonal Matching Puirsuit (OMP)',
+      //   form: ridgeRegressionCVForm
+      // },
+      // {
+      //   name: 'ompCV',
+      //   label: 'Orthogonal Matching Puirsuit (OMP) CV',
+      //   form: ridgeRegressionCVForm
+      // },
+      // {
+      //   name: 'bayesianRidgeRegression',
+      //   label: 'Bayesian Ridge Regression',
+      //   form: ridgeRegressionCVForm
+      // },
+      // {
+      //   name: 'bayesianARDRegression',
+      //   label: 'Bayesian ARD Regression',
+      //   form: ridgeRegressionCVForm
+      // },
+      // {
+      //   name: 'logisticRegression',
+      //   label: 'Logistic Regression',
+      //   form: ridgeRegressionCVForm
+      // },
+      // {
+      //   name: 'logisticRegressionCV',
+      //   label: 'Logistic Regression CV',
+      //   form: ridgeRegressionCVForm
+      // },
+      // {
+      //   name: 'tweedieRegressor',
+      //   label: 'Tweedie Regressor',
+      //   form: ridgeRegressionCVForm
+      // },
+      // {
+      //   name: 'poissonRegressor',
+      //   label: 'Poisson Regressor',
+      //   form: ridgeRegressionCVForm
+      // },
+      // {
+      //   name: 'gammaRegressor',
+      //   label: 'Gamma Regressor',
+      //   form: ridgeRegressionCVForm
+      // },
+      // {
+      //   name: 'sgdRegressor',
+      //   label: 'SGD Regressor',
+      //   form: ridgeRegressionCVForm
+      // },
+      // {
+      //   name: 'perceptron',
+      //   label: 'Perceptron',
+      //   form: ridgeRegressionCVForm
+      // },
+      // {
+      //   name: 'passiveAgressiveClassifier',
+      //   label: 'Passive Aggressive Classifier',
+      //   form: ridgeRegressionCVForm
+      // },
+      // {
+      //   name: 'passiveAgressiveRegressor',
+      //   label: 'Passive Aggressive Regressor',
+      //   form: ridgeRegressionCVForm
+      // },
+      // {
+      //   name: 'huberRegression',
+      //   label: 'Huber Regression',
+      //   form: ridgeRegressionCVForm
+      // },
+      // {
+      //   name: 'ransacRegression',
+      //   label: 'RANSAC Regression',
+      //   form: ridgeRegressionCVForm
+      // },
+      // {
+      //   name: 'theilSenRegression',
+      //   label: 'Theil-Sen Regression',
+      //   form: ridgeRegressionCVForm
+      // },
+      // {
+      //   name: 'quantileRegression',
+      //   label: 'Quantile Regression',
+      //   form: ridgeRegressionCVForm
+      // },
     ]
   },
 ];

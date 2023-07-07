@@ -1,4 +1,4 @@
-export const ridgeRegressionStepConfig = [
+export const ridgeClassifierStepConfig = [
     {
         $formkit: 'number',
         name: "alpha",
@@ -26,6 +26,12 @@ export const ridgeRegressionStepConfig = [
         label: "tol",
     },
     {
+        $formkit: 'text',
+        name: "class_weight",
+        label: "class_weight",
+        validation: 'dict'
+    },
+    {
         $formkit: 'select',
         name: "solver",
         label: "Solver",
@@ -43,7 +49,7 @@ export const ridgeRegressionStepConfig = [
     },
 ]
 
-export const ridgeRegressionCVStepConfig = [
+export const ridgeClassifierCVStepConfig = [
     {
         $formkit: 'text',
         name: "alphas",
@@ -56,34 +62,24 @@ export const ridgeRegressionCVStepConfig = [
         label: "fit_intercept",
     },
     {
-        $formkit: 'checkbox',
-        name: "copy_X",
-        label: "copy_X",
+        $formkit: 'text',
+        name: "scoring",
+        label: "scoring",
     },
     {
         $formkit: 'number',
-        name: "max_iter",
-        label: "max_iter",
+        name: "cv",
+        label: "cv",
     },
     {
-        $formkit: 'number',
-        name: "tol",
-        label: "tol",
-    },
-    {
-        $formkit: 'select',
-        name: "solver",
-        label: "Solver",
-        options: ['auto', 'svd', 'cholesky', 'lsqr', 'sparse_cg', 'sag', 'saga', 'lbfgs'],
+        $formkit: 'text',
+        name: "class_weight",
+        label: "class_weight",
+        validation: 'dict'
     },
     {
         $formkit: 'checkbox',
-        name: "positive",
-        label: "Positive",
-    },
-    {
-        $formkit: 'number',
-        name: "random_state",
-        label: "random_state",
+        name: "store_cv_values",
+        label: "store_cv_values",
     },
 ]
