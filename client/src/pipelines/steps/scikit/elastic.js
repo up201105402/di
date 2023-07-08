@@ -54,14 +54,19 @@ export const multiTaskElasticNetCVStepConfig = [
         label: "l1_ratio",
     },
     {
-        $formkit: 'checkbox',
-        name: "fit_intercept",
-        label: "fit_intercept",
+        $formkit: 'number',
+        name: "eps",
+        label: "eps",
+    },
+    {
+        $formkit: 'number',
+        name: "n_alphas",
+        label: "n_alphas",
     },
     {
         $formkit: 'checkbox',
-        name: "copy_X",
-        label: "copy_X",
+        name: "fit_intercept",
+        label: "fit_intercept",
     },
     {
         $formkit: 'number',
@@ -75,8 +80,23 @@ export const multiTaskElasticNetCVStepConfig = [
     },
     {
         $formkit: 'number',
-        name: "warm_start",
-        label: "warm_start",
+        name: "cv",
+        label: "cv",
+    },
+    {
+        $formkit: 'checkbox',
+        name: "copy_X",
+        label: "copy_X",
+    },
+    {
+        $formkit: 'checkbox',
+        name: "verbose",
+        label: "verbose",
+    },
+    {
+        $formkit: 'number',
+        name: "n_jobs",
+        label: "n_jobs",
     },
     {
         $formkit: 'number',
