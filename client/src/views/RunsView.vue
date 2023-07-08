@@ -1,7 +1,7 @@
 <script setup>
 import { computed, watch } from "vue";
 import { storeToRefs } from "pinia";
-import { mdiChartTimelineVariant } from "@mdi/js";
+import { mdiRunFast } from "@mdi/js";
 import SectionMain from "@/components/SectionMain.vue";
 import LayoutAuthenticated from "@/layouts/LayoutAuthenticated.vue";
 import SectionTitleLineWithButton from "@/components/SectionTitleLineWithButton.vue";
@@ -52,7 +52,7 @@ const isLoading = computed(() => isFetching.value)
   <LayoutAuthenticated>
     <SectionMain>
       <loading v-model:active="isLoading" :is-full-page="false" />
-      <SectionTitleLineWithButton :icon="mdiChartTimelineVariant" :title="'Runs'" main />
+      <SectionTitleLineWithButton :icon="mdiRunFast" :title="'Runs'" main />
       <PipelinesRunsTable :items="pipelines" checkable />
     </SectionMain>
     <Toast />

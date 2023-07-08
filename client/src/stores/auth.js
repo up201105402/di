@@ -16,16 +16,21 @@ export const useAuthStore = defineStore("auth", {
 
         error: null,
 
+        isLoading: false,
+
         onAuthRoute: '/',
         requireAuthRoute: '/login',
         publicRoutePaths: ['/signup', '/login']
     }),
     actions: {
         async logIn(username, password, router, redirectURL) {
+            this.isLoading = true;
+
             const { data, error } = await authenticate(username, password, '/api/user/login')
 
             if (error) {
                 this.error = error;
+                this.isLoading = false;
                 return;
             }
 
@@ -35,23 +40,30 @@ export const useAuthStore = defineStore("auth", {
             this.accessToken = accessToken.signedString;
             this.refreshToken = refreshToken.signedString;
             router.push(redirectURL);
+            this.isLoading = false;
         },
         async signUp(username, password, router, redirectURL) {
+            this.isLoading = true;
             const { data, error } = await authenticate(username, password, '/api/user/signup');
 
             if (error) {
-                store.accessToken = store.refreshToken = store.userName = null;
+                this.accessToken = this.refreshToken = this.userName = null;
                 removeTokens();
+                this.error = error;
+                this.isLoading = false;
                 return;
             }
 
-            const { accessToken, refreshToken } = data.tokens;
-            store.accessToken = accessToken.signedString;
-            store.refreshToken = refreshToken.signedString;
             this.userName = username;
+            this.error = null;
+            const { accessToken, refreshToken } = data.tokens;
+            this.accessToken = accessToken.signedString;
+            this.refreshToken = refreshToken.signedString;
             router.push(redirectURL);
+            this.isLoading = false;
         },
-        async signOut() {
+        async signOut(router, redirectURL) {
+            this.isLoading = true;
             const { error } = await doRequest({
                 url: '/api/user/signout',
                 method: 'POST',
@@ -62,11 +74,14 @@ export const useAuthStore = defineStore("auth", {
 
             if (error) {
                 this.error = error;
+                this.isLoading = false;
                 return;
             }
 
             this.userName = this.accessToken = this.refreshToken = null;
             removeTokens();
+            router.push(redirectURL);
+            this.isLoading = false;
         }
     },
 });

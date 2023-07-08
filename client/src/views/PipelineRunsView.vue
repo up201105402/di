@@ -10,7 +10,7 @@ import { useToast } from 'primevue/usetoast';
 import { watch } from "vue";
 import LayoutAuthenticated from '@/layouts/LayoutAuthenticated.vue';
 import SectionMain from '@/components/SectionMain.vue';
-import { mdiChartTimelineVariant } from '@mdi/js';
+import { mdiRunFast } from '@mdi/js';
 import SectionTitleLineWithButton from '@/components/SectionTitleLineWithButton.vue';
 import RunsTable from '@/components/RunsTable.vue';
 import Loading from "vue-loading-overlay";
@@ -69,7 +69,7 @@ const isLoading = computed(() => isFetchingRuns.value);
     <LayoutAuthenticated>
         <SectionMain>
             <loading v-model:active="isLoading" :is-full-page="false" />
-            <SectionTitleLineWithButton :icon="mdiChartTimelineVariant" :title="`Pipeline ${pipelineID} Runs`" main />
+            <SectionTitleLineWithButton :icon="mdiRunFast" :title="`Pipeline ${pipelineID} Runs`" main />
             <RunsTable :rows="runs" />
         </SectionMain>
         <Toast />

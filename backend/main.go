@@ -3,10 +3,8 @@ package main
 import (
 	"di/handlers"
 	"di/middleware"
-	"di/model"
 	"di/service"
 	"di/util"
-	"log"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
@@ -67,37 +65,12 @@ func setupRouter(services *service.Services) *gin.Engine {
 	router.LoadHTMLFiles("../client/index.html")
 
 	router.GET("/", func(context *gin.Context) {
-		username, exists := context.Get("user")
-
-		if exists {
-			userId := username.(*model.User).ID
-
-			user, err := services.UserService.Get(userId)
-
-			if err != nil {
-				log.Printf("Unable to find user: %d\n%v", userId, err)
-				// err := errors.NewNotFound("user", strconv.FormatUint(uint64(userId), 10))
-
-				// context.JSON(err.Status(), gin.H{
-				// 	"error": err,
-				// })
-
-				// return
-			}
-
-			context.HTML(http.StatusOK, "index.html", gin.H{
-				"user": user,
-			})
-
-			return
-		}
-
 		context.HTML(http.StatusOK, "index.html", gin.H{})
 	})
 
 	userAPI := router.Group("/api/user")
 	userAPI.POST("/login", handlers.LogIn(services))
-	userAPI.POST("/signup", middleware.Auth(services.TokenService), handlers.SignUp(services))
+	userAPI.POST("/signup", handlers.SignUp(services))
 	userAPI.POST("/tokens", handlers.NewAccessToken(services))
 	userAPI.POST("/signout", middleware.Auth(services.TokenService), handlers.SignOut(services))
 

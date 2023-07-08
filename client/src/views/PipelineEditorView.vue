@@ -29,6 +29,7 @@
   import deepEqual from 'deep-equal';
   import $ from 'jquery';
   import { steps } from '@/pipelines/steps';
+  import { camel2title } from '@/util';
 
   const { accessToken, requireAuthRoute } = storeToRefs(useAuthStore());
   const router = useRouter();
@@ -120,6 +121,7 @@
   const hasChanges = ref(false);
   const isStepDialogActive = ref(false);
   const formSchema = ref({});
+  const dialogTitle = ref('');
   const stepData = ref({});
   const editStepNodeId = ref("-1");
   let count = 0;
@@ -157,6 +159,7 @@
       isStepDialogActive.value = !isStepDialogActive.value;
       let step = selectedStep.value.form(stepData.value, onStepEdited);
       formSchema.value = step.formSchema;
+      dialogTitle.value = 'Create ' + camel2title(selectedStep.value.type) + ' Step';
       stepData.value = step.formkitData;
       stepData.value.group = selectedStep.value.group;
       stepData.value.type = selectedStep.value.type;
@@ -170,6 +173,7 @@
     stepData.value = { ...e.node.data }
     const formkitObject = getSchemaFromType(e.node.data.group, e.node.data.type).form({ ...e.node.data }, onStepEdited);
     formSchema.value = formkitObject.formSchema;
+    dialogTitle.value = 'Edit ' + camel2title(selectedStep.value.type) + ' Step';
     stepData.value = formkitObject.formkitData;
     count++;
   }
@@ -410,8 +414,7 @@
           </button>
         </Panel>
       </VueFlow>
-      <CardBoxModal v-model="isStepDialogActive" :has-submit="false" :has-cancel="false" title="Create Step"
-        @cancel="count++">
+      <CardBoxModal v-model="isStepDialogActive" :has-submit="false" :has-cancel="false" :title="dialogTitle" @cancel="count++">
         <UpsertStepDialog :key="'createStepDialog_' + count" :formSchema="formSchema" :formkitData="formkitData"
           :nodeId="editStepNodeId" :nodeData="stepData"
           @onSubmit="onStepEdited" @onCancel="onCancel" />

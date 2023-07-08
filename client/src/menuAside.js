@@ -1,18 +1,13 @@
 import {
-  mdiMonitor,
+  mdiChartTimelineVariant,
   mdiRun,
   mdiAccount
 } from "@mdi/js";
 
 export default [
-  // {
-  //   to: "/dashboard",
-  //   icon: mdiMonitor,
-  //   label: "Dashboard",
-  // },
   {
     to: "/pipelines",
-    icon: mdiMonitor,
+    icon: mdiChartTimelineVariant,
     label: "Pipelines",
   },
   {
@@ -26,36 +21,6 @@ export default [
     label: "Profile",
   },
   /*
-  {
-    to: "/tables",
-    label: "Tables",
-    icon: mdiTable,
-  },
-  {
-    to: "/forms",
-    label: "Forms",
-    icon: mdiSquareEditOutline,
-  },
-  {
-    to: "/ui",
-    label: "UI",
-    icon: mdiTelevisionGuide,
-  },
-  {
-    to: "/",
-    label: "Styles",
-    icon: mdiPalette,
-  },
-  {
-    to: "/profile",
-    label: "Profile",
-    icon: mdiAccountCircle,
-  },
-  {
-    to: "/error",
-    label: "Error",
-    icon: mdiAlertCircle,
-  },
   {
     label: "Dropdown",
     icon: mdiViewList,

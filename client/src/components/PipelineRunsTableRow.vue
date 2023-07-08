@@ -14,6 +14,7 @@
     import BaseIcon from "@/components/BaseIcon.vue";
     import { useToast } from 'primevue/usetoast';
     import Loading from "vue-loading-overlay";
+    import { formatDate } from '@/util';
 
     const { accessToken } = storeToRefs(useAuthStore());
     const toast = useToast();
@@ -197,19 +198,11 @@
             <BaseIcon :path="isRowOpen ? mdiChevronDown : mdiChevronRight"
                 @click.prevent="(e) => expandOrCollapseRow(e, parentRow.ID)" />
         </td>
-        <td class="border-b-0 lg:w-6 before:hidden">
-            <UserAvatar :username="parentRow.name" class="w-24 h-24 mx-auto lg:w-6 lg:h-6" />
-        </td>
         <td data-label="Name">
             {{ parentRow.name }}
         </td>
-        <td data-label="Progress" class="lg:w-32">
-            <progress class="flex w-2/5 self-center lg:w-full" max="100" :value="parentRow.progress">
-                {{ parentRow.progress }}
-            </progress>
-        </td>
         <td data-label="Created" class="lg:w-1 whitespace-nowrap">
-            <small class="text-gray-500 dark:text-slate-400" :title="parentRow.CreatedAt">{{ parentRow.CreatedAt }}</small>
+            <small class="text-gray-500 dark:text-slate-400" :title="formatDate(parentRow.CreatedAt)">{{ formatDate(parentRow.CreatedAt) }}</small>
         </td>
         <td class="before:hidden lg:w-1 whitespace-nowrap">
             <BaseButtons type="justify-start lg:justify-end" no-wrap>

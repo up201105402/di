@@ -1,4 +1,5 @@
 import axios from 'axios';
+import moment from 'moment';
 
 export const doRequest = async (reqOptions) => {
   let status;
@@ -68,4 +69,8 @@ export const removeDuplicates = (arr, uniqueProp) => {
     return false;
   });
 
+}
+
+export const formatDate = (date) => {
+  return moment(date).format('MMMM Do YYYY, h:mm:ss a');
 }

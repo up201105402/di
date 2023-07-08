@@ -56,7 +56,6 @@
             <tr>
                 <th />
                 <th>Name</th>
-                <th>Status</th>
                 <th>Last Run</th>
                 <th />
             </tr>

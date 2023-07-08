@@ -5,7 +5,7 @@ import TableCheckboxCell from "@/components/TableCheckboxCell.vue";
 import BaseLevel from "@/components/BaseLevel.vue";
 import BaseButtons from "@/components/BaseButtons.vue";
 import BaseButton from "@/components/BaseButton.vue";
-import UserAvatar from "@/components/UserAvatar.vue";
+import { formatDate } from '@/util';
 
 const props = defineProps({
     items: Array,
@@ -86,9 +86,7 @@ const checked = (isChecked, pipeline) => {
         <thead>
             <tr>
                 <th v-if="checkable" />
-                <th />
                 <th>Name</th>
-                <th>Progress</th>
                 <th>Created</th>
                 <th />
             </tr>
@@ -96,20 +94,11 @@ const checked = (isChecked, pipeline) => {
         <tbody>
             <tr v-for="pipeline in itemsPaginated" :key="pipeline.id">
                 <TableCheckboxCell v-if="checkable" @checked="checked($event, pipeline)" />
-                <td class="border-b-0 lg:w-6 before:hidden">
-                    <UserAvatar :username="pipeline.name" class="w-24 h-24 mx-auto lg:w-6 lg:h-6" />
-                </td>
                 <td data-label="Name">
                     {{ pipeline.name }}
                 </td>
-                <td data-label="Progress" class="lg:w-32">
-                    <progress class="flex w-2/5 self-center lg:w-full" max="100" :value="pipeline.progress">
-                        {{ pipeline.progress }}
-                    </progress>
-                </td>
                 <td data-label="Created" class="lg:w-1 whitespace-nowrap">
-                    <small class="text-gray-500 dark:text-slate-400" :title="pipeline.CreatedAt">{{ pipeline.CreatedAt
-                    }}</small>
+                    <small class="text-gray-500 dark:text-slate-400" :title="formatDate(pipeline.CreatedAt)">{{ formatDate(pipeline.CreatedAt) }}</small>
                 </td>
                 <td class="before:hidden lg:w-1 whitespace-nowrap">
                     <BaseButtons type="justify-start lg:justify-end" no-wrap>

@@ -1,5 +1,5 @@
 <script setup>
-  import { reactive, computed } from "vue";
+  import { ref, reactive, computed } from "vue";
   import { storeToRefs } from "pinia";
   import { useRouter } from "vue-router";
   import { mdiAccount, mdiAsterisk, mdiClose } from "@mdi/js";
@@ -15,10 +15,10 @@
   import SectionTitle from "@/components/SectionTitle.vue";
   import CardBoxComponentTitle from "@/components/CardBoxComponentTitle.vue";
   import ErrorModal from '@/components/ErrorModal.vue';
-
   import { useAuthStore } from '@/stores/auth.js';
+  import Loading from "vue-loading-overlay";
 
-  const { error } = storeToRefs(useAuthStore());
+  const { error, isLoading } = storeToRefs(useAuthStore());
 
   const form = reactive({
     username: "",
@@ -51,6 +51,7 @@
 
 <template>
   <LayoutGuest>
+    <loading v-model:active="isLoading" :is-full-page="false" />
     <SectionFullScreen v-slot="{ cardClass }" bg="purplePink">
       <CardBox :class="cardClass" is-form @submit.prevent="signInAndRedirect">
         <SectionTitle>{{ $t('pages.login.name') }}</SectionTitle>

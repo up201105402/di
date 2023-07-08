@@ -9,6 +9,7 @@ import BaseButton from "@/components/BaseButton.vue";
 import BaseIcon from "@/components/BaseIcon.vue";
 import { useToast } from 'primevue/usetoast';
 import { watch } from "vue";
+import { formatDate } from '@/util';
 
 const { accessToken } = storeToRefs(useAuthStore());
 const toast = useToast();
@@ -62,9 +63,7 @@ const onSubRowButtonClicked = (e, subRowID) => {
     <table>
         <thead>
             <tr>
-                <th />
-                <th>Name</th>
-                <th>Status</th>
+                <th>ID</th>
                 <th />
                 <th>Last Run</th>
             </tr>
@@ -74,19 +73,11 @@ const onSubRowButtonClicked = (e, subRowID) => {
                 <td class="border-b-0 text-center lg:w-6 before:hidden">
                     {{ row.ID }}
                 </td>
-                <td class="border-b-0 text-center lg:w-6 before:hidden">
-                    <BaseIcon :path="mdiRunFast" />
-                </td>
                 <td class="border-b-0 lg:w-6 before:hidden">
                     {{ row.Status.Name }}
                 </td>
-                <td data-label="Progress" class="lg:w-32">
-                    <progress class="flex w-2/5 self-center lg:w-full" max="100" :value="row.progress">
-                        {{ row.progress }}
-                    </progress>
-                </td>
                 <td data-label="Created" class="lg:w-1 whitespace-nowrap">
-                    <small class="text-gray-500 dark:text-slate-400" :title="row.CreatedAt">{{ row.CreatedAt }}</small>
+                    <small class="text-gray-500 dark:text-slate-400" :title="formatDate(row.CreatedAt)">{{ formatDate(row.CreatedAt) }}</small>
                 </td>
                 <td class="before:hidden lg:w-1 whitespace-nowrap">
                     <BaseButtons type="justify-start lg:justify-end" no-wrap>
