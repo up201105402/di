@@ -48,7 +48,8 @@ export const ridgeRegressionCVStepConfig = [
         $formkit: 'text',
         name: "alphas",
         label: "alphas",
-        validation: "required|floats"
+        validation: "required|floats",
+        help: "Example: 0.1 0.2 0.3"
     },
     {
         $formkit: 'checkbox',

@@ -1,347 +1,342 @@
 <script setup>
-import { Panel, PanelPosition, VueFlow, isNode, useVueFlow } from '@vue-flow/core';
-import { storeToRefs } from "pinia";
-import { Background } from '@vue-flow/background';
-import { Controls } from '@vue-flow/controls';
-import { MiniMap } from '@vue-flow/minimap';
-import { ref, computed, watch } from "vue";
-import { useAsyncState } from "@vueuse/core";
-import { doRequest } from "@/util";
-import { useAuthStore } from "@/stores/auth";
-import { onBeforeRouteLeave, onBeforeRouteUpdate, useRouter, useRoute } from 'vue-router';
-import {
-  mdiChartTimelineVariant,
-  mdiPlus
-} from "@mdi/js";
-import SectionMain from "@/components/SectionMain.vue";
-import LayoutAuthenticated from "@/layouts/LayoutAuthenticated.vue";
-import SectionTitleLineWithButton from "@/components/SectionTitleLineWithButton.vue";
-import BaseButtons from "@/components/BaseButtons.vue";
-import BaseButton from "@/components/BaseButton.vue";
-import SplitButton from 'primevue/splitbutton';
-import CascadeSelect from 'primevue/cascadeselect';
-import CardBoxModal from '@/components/CardBoxModal.vue';
-import UpsertStepDialog from '@/components/UpsertStepDialog.vue';
-import Toast from 'primevue/toast';
-import { useToast } from 'primevue/usetoast';
-import Loading from "vue-loading-overlay";
-import { nodeTypes } from "@/pipelines/steps";
-import deepEqual from 'deep-equal';
-import $ from 'jquery';
-import { steps } from '@/pipelines/steps';
+  import { Panel, PanelPosition, VueFlow, isNode, useVueFlow } from '@vue-flow/core';
+  import { storeToRefs } from "pinia";
+  import { Background } from '@vue-flow/background';
+  import { Controls } from '@vue-flow/controls';
+  import { MiniMap } from '@vue-flow/minimap';
+  import { ref, computed, watch } from "vue";
+  import { useAsyncState } from "@vueuse/core";
+  import { doRequest } from "@/util";
+  import { useAuthStore } from "@/stores/auth";
+  import { onBeforeRouteLeave, onBeforeRouteUpdate, useRouter, useRoute } from 'vue-router';
+  import {
+    mdiChartTimelineVariant,
+    mdiPlus
+  } from "@mdi/js";
+  import SectionMain from "@/components/SectionMain.vue";
+  import LayoutAuthenticated from "@/layouts/LayoutAuthenticated.vue";
+  import SectionTitleLineWithButton from "@/components/SectionTitleLineWithButton.vue";
+  import BaseButtons from "@/components/BaseButtons.vue";
+  import BaseButton from "@/components/BaseButton.vue";
+  import SplitButton from 'primevue/splitbutton';
+  import CascadeSelect from 'primevue/cascadeselect';
+  import CardBoxModal from '@/components/CardBoxModal.vue';
+  import UpsertStepDialog from '@/components/UpsertStepDialog.vue';
+  import Toast from 'primevue/toast';
+  import { useToast } from 'primevue/usetoast';
+  import Loading from "vue-loading-overlay";
+  import { nodeTypes } from "@/pipelines/steps";
+  import deepEqual from 'deep-equal';
+  import $ from 'jquery';
+  import { steps } from '@/pipelines/steps';
 
-const { accessToken, requireAuthRoute } = storeToRefs(useAuthStore());
-const router = useRouter();
-const route = useRoute();
-const elements = ref([]);
-const pipelineTitle = ref('');
-const toast = useToast();
+  const { accessToken, requireAuthRoute } = storeToRefs(useAuthStore());
+  const router = useRouter();
+  const route = useRoute();
+  const elements = ref([]);
+  const pipelineTitle = ref('');
+  const toast = useToast();
 
-const emit = defineEmits(["onUpdate", "onStepEdited"]);
+  const emit = defineEmits(["onUpdate", "onStepEdited"]);
 
-// FETCH PIPELINE
+  // FETCH PIPELINE
 
-const { isLoading: isFetching, state: fetchResponse, isReady: isFetchFinished, execute: fetchPipeline } = useAsyncState(
-  () => {
-    return doRequest({
-      url: `/api/pipeline/${route.params.id}`,
-      method: 'GET',
-      headers: {
-        Authorization: `${accessToken.value}`
-      },
-    })
-  },
-  {},
-  {
-    delay: 500,
-    resetOnExecute: false,
-  },
-);
+  const { isLoading: isFetching, state: fetchResponse, isReady: isFetchFinished, execute: fetchPipeline } = useAsyncState(
+    () => {
+      return doRequest({
+        url: `/api/pipeline/${route.params.id}`,
+        method: 'GET',
+        headers: {
+          Authorization: `${accessToken.value}`
+        },
+      })
+    },
+    {},
+    {
+      delay: 500,
+      resetOnExecute: false,
+    },
+  );
 
-// UPDATE PIPELINE
+  // UPDATE PIPELINE
 
-const { isLoading: isUpdating, state: updateResponse, isReady: isUpdateFinished, execute: updatePipeline } = useAsyncState(
-  () => {
-    return doRequest({
-      url: `/api/pipeline/${route.params.id}`,
-      method: 'POST',
-      data: {
-        id: parseInt(route.params.id),
-        definition: JSON.stringify(elements.value)
-      },
-      headers: {
-        Authorization: `${accessToken.value}`
-      },
-    })
-  },
-  {},
-  {
-    delay: 500,
-    resetOnExecute: false,
-    immediate: false,
-  },
-)
+  const { isLoading: isUpdating, state: updateResponse, isReady: isUpdateFinished, execute: updatePipeline } = useAsyncState(
+    () => {
+      return doRequest({
+        url: `/api/pipeline/${route.params.id}`,
+        method: 'POST',
+        data: {
+          id: parseInt(route.params.id),
+          definition: JSON.stringify(elements.value)
+        },
+        headers: {
+          Authorization: `${accessToken.value}`
+        },
+      })
+    },
+    {},
+    {
+      delay: 500,
+      resetOnExecute: false,
+      immediate: false,
+    },
+  )
 
-const selectedStep = ref();
-const cascadeOptions = ref(steps);
+  const selectedStep = ref();
+  const cascadeOptions = ref(steps);
 
-watch(fetchResponse, (newVal) => {
-  if (newVal.error) {
-    toast.add({ severity: 'error', summary: 'Error', detail: newVal.error.message, life: 3000 });
-  }
-})
+  watch(fetchResponse, (newVal) => {
+    if (newVal.error) {
+      toast.add({ severity: 'error', summary: 'Error', detail: newVal.error.message, life: 3000 });
+    }
+  })
 
-const parsePipelineDefinition = (pipeline) => {
-  try {
-    return JSON.parse(fetchResponse.value.data.pipeline.definition)
-  } catch (e) {
-    return [];
-  }
-}
-
-watch(isFetchFinished, () => {
-  elements.value = fetchResponse.value?.data ? parsePipelineDefinition(fetchResponse.value.data.pipeline) : [];
-  pipelineTitle.value = fetchResponse.value?.data ? fetchResponse.value.data.pipeline.name : 'Untitled';
-})
-
-watch(updateResponse, (newVal) => {
-  if (newVal.error) {
-    toast.add({ severity: 'error', summary: 'Error', detail: newVal.error.message, life: 3000 });
+  const parsePipelineDefinition = (pipeline) => {
+    try {
+      return JSON.parse(fetchResponse.value.data.pipeline.definition)
+    } catch (e) {
+      return [];
+    }
   }
 
-  if (newVal.status === 200) {
-    hasChanges.value = false;
-    router.push("/pipelines");
+  watch(isFetchFinished, () => {
+    elements.value = fetchResponse.value?.data ? parsePipelineDefinition(fetchResponse.value.data.pipeline) : [];
+    pipelineTitle.value = fetchResponse.value?.data ? fetchResponse.value.data.pipeline.name : 'Untitled';
+  })
+
+  watch(updateResponse, (newVal) => {
+    if (newVal.error) {
+      toast.add({ severity: 'error', summary: 'Error', detail: newVal.error.message, life: 3000 });
+    }
+
+    if (newVal.status === 200) {
+      hasChanges.value = false;
+      router.push("/pipelines");
+    }
+  })
+
+  const isLoading = computed(() => isFetching.value || isUpdating.value);
+
+  const hasChanges = ref(false);
+  const isStepDialogActive = ref(false);
+  const formSchema = ref({});
+  const stepData = ref({});
+  const editStepNodeId = ref("-1");
+  let count = 0;
+
+  onBeforeRouteLeave((to, from) => {
+    if (hasChanges.value) {
+      const answer = window.confirm(
+        'Do you really want to leave? you have unsaved changes!'
+      )
+      // cancel the navigation and stay on the same page
+      if (!answer) return false
+    }
+  })
+
+  onBeforeRouteUpdate((to, from) => {
+    if (hasChanges.value) {
+      const answer = window.confirm(
+        'Do you really want to leave? you have unsaved changes!'
+      )
+      // cancel the navigation and stay on the same page
+      if (!answer) return false
+    }
+  })
+
+  const getSchemaFromType = (searchGroup, searchType) => {
+    const group = steps.filter(e => e.type == searchGroup)[0]
+    return group.steps.filter(e => e.type == searchType)[0];
   }
-})
 
-const isLoading = computed(() => isFetching.value || isUpdating.value);
+  const onCreateStepClick = (e) => {
+    editStepNodeId.value = "-1";
+    stepData.value = {};
 
-const hasChanges = ref(false);
-const isStepDialogActive = ref(false);
-const stepData = ref({});
-const editStepNodeId = ref("-1");
-let count = 0;
-
-let formSchema = null;
-let formkitData = null;
-
-onBeforeRouteLeave((to, from) => {
-  if (hasChanges.value) {
-    const answer = window.confirm(
-      'Do you really want to leave? you have unsaved changes!'
-    )
-    // cancel the navigation and stay on the same page
-    if (!answer) return false
+    if (selectedStep.value) {
+      isStepDialogActive.value = !isStepDialogActive.value;
+      let step = selectedStep.value.form(stepData.value, onStepEdited);
+      formSchema.value = step.formSchema;
+      stepData.value = step.formkitData;
+      stepData.value.group = selectedStep.value.group;
+      stepData.value.type = selectedStep.value.type;
+      count++;
+    }
   }
-})
 
-onBeforeRouteUpdate((to, from) => {
-  if (hasChanges.value) {
-    const answer = window.confirm(
-      'Do you really want to leave? you have unsaved changes!'
-    )
-    // cancel the navigation and stay on the same page
-    if (!answer) return false
-  }
-})
-
-const onCreateStepClick = (e) => {
-  editStepNodeId.value = "-1";
-  stepData.value = {};
-
-  if (selectedStep.value) {
-    isStepDialogActive.value = !isStepDialogActive.value;
-    let steps = selectedStep.value.form(stepData.value, onStepEdited);
-    formSchema = steps.formSchema;
-    formkitData = steps.formkitData;
+  const onNodeDoubleClick = (e) => {
+    isStepDialogActive.value = true;
+    editStepNodeId.value = e.node.id;
+    stepData.value = { ...e.node.data }
+    const formkitObject = getSchemaFromType(e.node.data.group, e.node.data.type).form({ ...e.node.data }, onStepEdited);
+    formSchema.value = formkitObject.formSchema;
+    stepData.value = formkitObject.formkitData;
     count++;
   }
-}
 
-const stepCategories = [
-  {
-    label: 'Checkout Repo',
-    value: 'checkoutRepo',
-    icon: 'pi pi-refresh',
-    command: onCreateStepClick
-  },
-  {
-    label: 'SciKit - Load Training Dataset',
-    value: 'scikitTrainingDataset',
-    icon: 'pi pi-times',
-    command: onCreateStepClick
-  },
-  {
-    label: 'SciKit - Load Testing Dataset',
-    value: 'scikitTestingDataset',
-    icon: 'pi pi-external-link',
-    command: onCreateStepClick
-  },
-  {
-    label: 'SciKit - Run Unsupervised Model',
-    value: 'scikitUnsupervisedModel',
-    icon: 'pi pi-external-link',
-    command: onCreateStepClick
-  },
-];
+  $(document).on("onNodeDelete", function (e, details) {
+    onNodeDelete(details.id);
+  })
 
-const onNodeDoubleClick = (e) => {
-  isStepDialogActive.value = true;
-  editStepNodeId.value = e.node.id;
-  stepData.value = { ...e.node.data };
-  count++;
-}
+  const onNodeDelete = (id) => {
+    const index = elements.value.findIndex(element => element.id === id);
 
-$(document).on("onNodeDelete", function (e, details) {
-  onNodeDelete(details.id);
-})
+    if (index > -1) {
+      elements.value.splice(index, 1);
+      hasChanges.value = true;
+      count++;
+    }
+  }
 
-const onNodeDelete = (id) => {
-  const index = elements.value.findIndex(element => element.id === id);
+  const getNextId = () => {
+    const ids = elements.value.filter(element => isNode(element)).map(element => parseInt(element.id));
+    return ids.length == 0 ? '0' : (Math.max.apply(Math, ids) + 1) + '';
+  }
 
-  if (index > -1) {
-    elements.value.splice(index, 1);
+  const onStepCreate = (formData) => {
+    const newId = getNextId();
+    elements.value.push({
+      id: newId,
+      label: formData.name.nodeName,
+      type: selectedStep.value.group,
+      position: { x: 0, y: 0 },
+      class: 'light',
+      data: {
+        ...formData, 
+        id: newId,
+        isFirstStep: elements.value.length == 0,
+        group: selectedStep.value.group,
+        type: selectedStep.value.type,
+      },
+    });
+    isStepDialogActive.value = false;
     hasChanges.value = true;
     count++;
   }
-}
 
-const getNextId = () => {
-  const ids = elements.value.filter(element => isNode(element)).map(element => parseInt(element.id));
-  return ids.length == 0 ? '0' : (Math.max.apply(Math, ids) + 1) + '';
-}
-
-const onStepCreate = (formData) => {
-  elements.value.push({
-    id: getNextId(),
-    type: formData.data.name.nodeType,
-    label: formData.data.name.nodeName,
-    position: { x: 0, y: 0 },
-    class: 'light',
-    data: { ...formData.data, isFirstStep: elements.value.length == 0 },
-  });
-  isStepDialogActive.value = false;
-  hasChanges.value = true;
-  count++;
-}
-
-const onCancel = () => {
-  isStepDialogActive.value = false;
-  count++;
-}
-
-const onStepEdited = (formData) => {
-  const index = elements.value.findIndex(element => element.id === formData.id);
-
-  if (index === -1) {
-    onStepCreate(formData);
-  } else {
-    const oldStepData = elements.value[index].data;
-    const newStepData = { ...formData.data, isFirstStep: elements.value[index].data.isFirstStep };
-
-    if (!deepEqual(oldStepData, newStepData)) {
-      elements.value = elements.value.toSpliced(index, 1, {
-        id: formData.id,
-        type: formData.data.name.nodeType,
-        label: formData.data.name.nodeName,
-        position: { x: 0, y: 0 },
-        class: 'light',
-        data: { ...formData.data, isFirstStep: newStepData.isFirstStep },
-      });
-    }
-
+  const onCancel = () => {
     isStepDialogActive.value = false;
     count++;
   }
-}
 
-const onPipelineSave = () => {
-  updatePipeline();
-}
+  const onStepEdited = (formData) => {
+    const index = elements.value.findIndex(element => element.id === formData.id);
 
-const onPipelineCancel = () => {
-  hasChanges.value = false;
-  router.push('/pipelines');
-}
+    if (index === -1) {
+      onStepCreate(formData);
+    } else {
+      const oldStepData = elements.value[index].data;
+      const oldStepType = elements.value[index].type;
+      const newStepData = { 
+        ...formData, 
+        isFirstStep: elements.value[index].data.isFirstStep 
+      };
 
-/**
-   * useVueFlow provides all event handlers and store properties
-   * You can pass the composable an object that has the same properties as the VueFlow component props
-   */
-const { onPaneReady, onNodesChange, onEdgesChange, onConnect, addEdges, isEdge, setTransform, toObject } = useVueFlow();
-
-/**
- * This is a Vue Flow event-hook which can be listened to from anywhere you call the composable, instead of only on the main component
- *
- * onPaneReady is called when viewpane & nodes have visible dimensions
- */
-onPaneReady(({ fitView }) => {
-  fitView();
-})
-
-const onEdgeUpdate = (edge) => emit("onUpdate", elements.value);
-
-/**
- * onConnect is called when a new connection is created.
- * You can add additional properties to your new edge (like a type or label) or block the creation altogether
- */
-onConnect((edge) => {
-  edge.updatable = true;
-  edge.type = 'smoothstep',
-    addEdges([edge]);
-  hasChanges.value = true;
-  emit("onUpdate", elements.value);
-})
-
-onNodesChange(events => {
-  const removedNodeOrEdge = events.find(event => event.type == 'remove');
-  if (removedNodeOrEdge != null) {
-    hasChanges.value = true;
-  }
-})
-
-onEdgesChange(events => {
-  const removedNodeOrEdge = events.find(event => event.type == 'remove');
-  if (removedNodeOrEdge != null) {
-    hasChanges.value = true;
-  }
-})
-
-const dark = ref(false)
-
-/**
- * To update node properties you can simply use your elements v-model and mutate the elements directly
- * Changes should always be reflected on the graph reactively, without the need to overwrite the elements
- */
-function updatePos() {
-  return elements.value.forEach((el) => {
-    if (isNode(el)) {
-      el.position = {
-        x: Math.random() * 400,
-        y: Math.random() * 400,
+      if (!deepEqual(oldStepData, newStepData)) {
+        elements.value = elements.value.toSpliced(index, 1, {
+          id: formData.id,
+          type: oldStepType,
+          label: formData.name.nodeName,
+          position: { x: 0, y: 0 },
+          class: 'light',
+          data: { 
+            ...formData, 
+            isFirstStep: newStepData.isFirstStep 
+          },
+        });
       }
+
+      isStepDialogActive.value = false;
+      count++;
+    }
+  }
+
+  const onPipelineSave = () => {
+    updatePipeline();
+  }
+
+  const onPipelineCancel = () => {
+    hasChanges.value = false;
+    router.push('/pipelines');
+  }
+
+  /**
+     * useVueFlow provides all event handlers and store properties
+     * You can pass the composable an object that has the same properties as the VueFlow component props
+     */
+  const { onPaneReady, onNodesChange, onEdgesChange, onConnect, addEdges, isEdge, setTransform, toObject } = useVueFlow();
+
+  /**
+   * This is a Vue Flow event-hook which can be listened to from anywhere you call the composable, instead of only on the main component
+   *
+   * onPaneReady is called when viewpane & nodes have visible dimensions
+   */
+  onPaneReady(({ fitView }) => {
+    fitView();
+  })
+
+  const onEdgeUpdate = (edge) => emit("onUpdate", elements.value);
+
+  /**
+   * onConnect is called when a new connection is created.
+   * You can add additional properties to your new edge (like a type or label) or block the creation altogether
+   */
+  onConnect((edge) => {
+    edge.updatable = true;
+    edge.type = 'smoothstep',
+      addEdges([edge]);
+    hasChanges.value = true;
+    emit("onUpdate", elements.value);
+  })
+
+  onNodesChange(events => {
+    const removedNodeOrEdge = events.find(event => event.type == 'remove');
+    if (removedNodeOrEdge != null) {
+      hasChanges.value = true;
     }
   })
-}
 
-/**
- * toObject transforms your current graph data to an easily persist-able object
- */
-function logToObject() {
-  return console.log(toObject())
-}
+  onEdgesChange(events => {
+    const removedNodeOrEdge = events.find(event => event.type == 'remove');
+    if (removedNodeOrEdge != null) {
+      hasChanges.value = true;
+    }
+  })
 
-/**
- * Resets the current viewpane transformation (zoom & pan)
- */
-function resetTransform() {
-  return setTransform({ x: 0, y: 0, zoom: 1 })
-}
+  const dark = ref(false)
 
-function toggleClass() {
-  return (dark.value = !dark.value)
-}
+  /**
+   * To update node properties you can simply use your elements v-model and mutate the elements directly
+   * Changes should always be reflected on the graph reactively, without the need to overwrite the elements
+   */
+  function updatePos() {
+    return elements.value.forEach((el) => {
+      if (isNode(el)) {
+        el.position = {
+          x: Math.random() * 400,
+          y: Math.random() * 400,
+        }
+      }
+    })
+  }
+
+  /**
+   * toObject transforms your current graph data to an easily persist-able object
+   */
+  function logToObject() {
+    return console.log(toObject())
+  }
+
+  /**
+   * Resets the current viewpane transformation (zoom & pan)
+   */
+  function resetTransform() {
+    return setTransform({ x: 0, y: 0, zoom: 1 })
+  }
+
+  function toggleClass() {
+    return (dark.value = !dark.value)
+  }
 
 </script>
 
@@ -351,34 +346,16 @@ function toggleClass() {
       <loading v-model:active="isLoading" :is-full-page="false" />
 
       <SectionTitleLineWithButton :icon="mdiChartTimelineVariant" :title="pipelineTitle" main>
-        <!-- <SplitButton label="Add Step" severity="success" size="small" @click="save" :model="stepCategories" :pt="{
-          menu: {
-            root: { class: 'surface-ground' }
-          }
-        }" /> -->
         <div>
-          <!-- <CascadeSelect v-model="selectedCity" :options="countries" optionLabel="cname" optionGroupLabel="name"
-            :optionGroupChildren="['states', 'states']" style="min-width: 14rem" placeholder="Select a City">
-            <template #option="slotProps">
-              <div class="flex align-items-center">
-                <img v-if="slotProps.option.states" :alt="slotProps.option.name"
-                  src="https://primefaces.org/cdn/primevue/images/flag/flag_placeholder.png"
-                  :class="`flag flag-${slotProps.option.code.toLowerCase()} mr-2`" style="width: 18px" />
-                <i v-if="slotProps.option.cities" class="pi pi-compass mr-2"></i>
-                <i v-if="slotProps.option.cname" class="pi pi-map-marker mr-2"></i>
-                <span>{{ slotProps.option.name }}</span>
-              </div>
-            </template>
-          </CascadeSelect> -->
           <CascadeSelect v-model="selectedStep" :options="cascadeOptions" optionLabel="label" optionGroupLabel="name"
             :optionGroupChildren="['steps', 'subSteps']" style="min-width: 14rem" placeholder="Select a Step Type">
             <template #option="slotProps">
               <div class="flex align-items-center">
-                <img v-if="slotProps.option.states" :alt="slotProps.option.name"
+                <!-- <img v-if="slotProps.option.states" :alt="slotProps.option.name"
                   src="https://primefaces.org/cdn/primevue/images/flag/flag_placeholder.png"
                   :class="`flag flag-${slotProps.option.code.toLowerCase()} mr-2`" style="width: 18px" />
                 <i v-if="slotProps.option.cities" class="pi pi-compass mr-2"></i>
-                <i v-if="slotProps.option.cname" class="pi pi-map-marker mr-2"></i>
+                <i v-if="slotProps.option.cname" class="pi pi-map-marker mr-2"></i> -->
                 <span>{{ slotProps.option.label }}</span>
               </div>
             </template>
@@ -387,8 +364,8 @@ function toggleClass() {
         </div>
       </SectionTitleLineWithButton>
       <VueFlow v-model="elements" :class="{ dark }" class="basicflow" :node-types="nodeTypes"
-        @nodeDoubleClick="onNodeDoubleClick" @edge-update="onEdgeUpdate" :default-viewport="{ zoom: 1.5 }" :min-zoom="0.2"
-        :max-zoom="4">
+        @nodeDoubleClick="onNodeDoubleClick" @edge-update="onEdgeUpdate" :default-viewport="{ zoom: 1.5 }"
+        :min-zoom="0.2" :max-zoom="4">
         <Background :pattern-color="dark ? '#FFFFFB' : '#aaa'" gap="8" />
         <MiniMap />
         <Controls />
@@ -436,7 +413,8 @@ function toggleClass() {
       <CardBoxModal v-model="isStepDialogActive" :has-submit="false" :has-cancel="false" title="Create Step"
         @cancel="count++">
         <UpsertStepDialog :key="'createStepDialog_' + count" :formSchema="formSchema" :formkitData="formkitData"
-          :nodeId="editStepNodeId" :nodeData="stepData" @onSubmit="onStepEdited" @onCancel="onCancel" />
+          :nodeId="editStepNodeId" :nodeData="stepData"
+          @onSubmit="onStepEdited" @onCancel="onCancel" />
       </CardBoxModal>
       <BaseButtons style="float:right">
         <BaseButton :disabled="!hasChanges" :label="'Save'" color="success" @click="onPipelineSave" />

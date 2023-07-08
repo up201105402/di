@@ -174,6 +174,7 @@ export const logisticRegressionCVStepConfig = [
         $formkit: 'number',
         name: "l1_ratios",
         label: "l1_ratios",
-        validation: 'floats'
+        validation: "floats",
+        help: "Example: 0.1 0.2 0.3"
     },
 ]

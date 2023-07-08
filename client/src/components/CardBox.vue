@@ -30,6 +30,7 @@ const componentClass = computed(() => {
     props.rounded,
     props.flex,
     props.isModal ? "dark:bg-slate-900" : "dark:bg-slate-900/70",
+    "overflow-y-auto"
   ];
 
   if (props.isHoverable) {

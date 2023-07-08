@@ -401,7 +401,7 @@ def lasso_lars_ic(
 
     # Create lasso lars regressor using BIC or AIC object
     regr = LassoLarsIC(
-        criterion=criterion
+        criterion=criterion,
         fit_intercept=fit_intercept,
         verbose=verbose,
         normalize=normalize,

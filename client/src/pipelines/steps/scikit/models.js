@@ -4,35 +4,19 @@ import { getNode, createMessage } from '@formkit/core';
 
 import { leastSquaresStepConfig } from './leastSquares';
 import { ridgeRegressionStepConfig, ridgeRegressionCVStepConfig } from './ridgeRegression';
-
-export const learningTypes = [
-    { id: 0, value: "unsupervised", label: "Unsupervised" },
-    { id: 1, value: "supervised", label: "Supervised" },
-];
-
-export const scikitUnsupervisedModelOptions = [
-    { id: 0, value: "leastSquares", label: "Ordinary Least Squares" },
-    { id: 1, value: "ridgeRegression", label: "Ridge Regression" },
-    { id: 2, value: "ridgeRegressionCV", label: "Ridge Regression CV" },
-    { id: 3, value: "lasso", label: "Lasso" },
-    { id: 4, value: "multiTaskLasso", label: "Multi-task Lasso" },
-    { id: 5, value: "elasticNet", label: "Elastic-Net" },
-    { id: 6, value: "multiTaskElasticNet", label: "Multi-task Elastic-Net" },
-    { id: 7, value: "leastAngleRegression", label: "Least Angle Regression" },
-    { id: 8, value: "larsLasso", label: "LARS Lasso" },
-    { id: 9, value: "omp", label: "Orthogonal Matching Pursuit" },
-    { id: 10, value: "bayesianRegression", label: "Bayesian Regression" },
-    { id: 11, value: "logisticRegression", label: "Logistic regression" },
-    // { id: 11, value: "generalizedLinearModels", label: "Generalized Linear Models" },
-    { id: 12, value: "sgd", label: "Stochastic Gradient Descent" },
-    { id: 13, value: "perceptron", label: "Perceptron" },
-    { id: 14, value: "passiveAgressiveAlgorithms", label: "Passive Aggressive Algorithms" },
-    { id: 15, value: "robustnessRegression", label: "Robustness regression" },
-    { id: 16, value: "quantileRegression", label: "Quantile Regression" },
-    { id: 17, value: "polynomialRegression", label: "Polynomial regression" },
-];
-
-export const scikitSupervisedModelOptions = [];
+import { ridgeClassifierStepConfig, ridgeClassifierCVStepConfig } from './ridgeClassifier';
+import { lassoStepConfig, lassoCVStepConfig, lassoLarsStepConfig, lassoLarsCVStepConfig, lassoLarsICStepConfig, multiTaskLassoStepConfig, multiTaskLassoCVStepConfig } from './lasso';
+import { elasticNetStepConfig, elasticNetCVStepConfig, multiTaskElasticNetStepConfig, multiTaskElasticNetCVStepConfig } from './elastic';
+import { larsStepConfig, larsCVStepConfig } from './lars';
+import { ompStepConfig, ompCVStepConfig } from './omp';
+import { bayesianRidgeStepConfig, bayesianARDStepConfig } from './bayesian';
+import { logisticRegressionStepConfig, logisticRegressionCVStepConfig } from './logistic';
+import { tweedieRegressorStepConfig, poissonRegressorStepConfig, gammaRegressorStepConfig } from './generalizedLinears';
+import { sgdClassifierStepConfig, sgdRegressorStepConfig } from './sgd';
+import { perceptronStepConfig } from './perceptron';
+import { passiveAgressiveClassifierStepConfig, passiveAgressiveRegressorStepConfig } from './passiveAgressive';
+import { huberRegressorStepConfig, ransacRegressorStepConfig, theilSenRegressorStepConfig } from './robustnessRegression';
+import { quantileRegressionStepConfig } from './quantileRegression';
 
 const scikitUnsupervisedModelsForm = (stepConfigFields) => function (data, onSubmit) {
     const activeStep = ref('');
@@ -273,6 +257,41 @@ const scikitUnsupervisedModelsForm = (stepConfigFields) => function (data, onSub
     return { formSchema, formkitData }
 };
 
-export const scikitLeastSquaresForm = scikitUnsupervisedModelsForm(leastSquaresStepConfig);
-export const ridgeRegressionForm = scikitUnsupervisedModelsForm(ridgeRegressionStepConfig);
-export const ridgeRegressionCVForm = scikitUnsupervisedModelsForm(ridgeRegressionCVStepConfig);
+export const scikitUnsupervisedModels = {
+    leastSquares: scikitUnsupervisedModelsForm(leastSquaresStepConfig),
+    ridgeRegression: scikitUnsupervisedModelsForm(ridgeRegressionStepConfig),
+    ridgeRegressionCV: scikitUnsupervisedModelsForm(ridgeRegressionCVStepConfig),
+    ridgeClassifier: scikitUnsupervisedModelsForm(ridgeClassifierStepConfig),
+    ridgeClassifierCV: scikitUnsupervisedModelsForm(ridgeClassifierCVStepConfig),
+    lasso: scikitUnsupervisedModelsForm(lassoStepConfig),
+    lassoCV: scikitUnsupervisedModelsForm(lassoCVStepConfig),
+    lassoLars: scikitUnsupervisedModelsForm(lassoLarsStepConfig),
+    lassoLarsCV: scikitUnsupervisedModelsForm(lassoLarsCVStepConfig),
+    lassoLarsIC: scikitUnsupervisedModelsForm(lassoLarsICStepConfig),
+    multiTaskLasso: scikitUnsupervisedModelsForm(multiTaskLassoStepConfig),
+    multiTaskLassoCV: scikitUnsupervisedModelsForm(multiTaskLassoCVStepConfig),
+    elasticNet: scikitUnsupervisedModelsForm(elasticNetStepConfig),
+    elasticNetCV: scikitUnsupervisedModelsForm(elasticNetCVStepConfig),
+    multiTaskElasticNet: scikitUnsupervisedModelsForm(multiTaskElasticNetStepConfig),
+    multiTaskElasticNetCV: scikitUnsupervisedModelsForm(multiTaskElasticNetCVStepConfig),
+    lars: scikitUnsupervisedModelsForm(larsStepConfig),
+    larsCV: scikitUnsupervisedModelsForm(larsCVStepConfig),
+    omp: scikitUnsupervisedModelsForm(ompStepConfig),
+    ompCV: scikitUnsupervisedModelsForm(ompCVStepConfig),
+    bayesianRidge: scikitUnsupervisedModelsForm(bayesianRidgeStepConfig),
+    bayesianARD: scikitUnsupervisedModelsForm(bayesianARDStepConfig),
+    logisticRegression: scikitUnsupervisedModelsForm(logisticRegressionStepConfig),
+    logisticRegressionCV: scikitUnsupervisedModelsForm(logisticRegressionCVStepConfig),
+    tweedieRegressor: scikitUnsupervisedModelsForm(tweedieRegressorStepConfig),
+    poissonRegressor: scikitUnsupervisedModelsForm(poissonRegressorStepConfig),
+    gammaRegressor: scikitUnsupervisedModelsForm(gammaRegressorStepConfig),
+    sgdClassifier: scikitUnsupervisedModelsForm(sgdClassifierStepConfig),
+    sgdRegressor: scikitUnsupervisedModelsForm(sgdRegressorStepConfig),
+    perceptron: scikitUnsupervisedModelsForm(perceptronStepConfig),
+    passiveAgressiveClassifier: scikitUnsupervisedModelsForm(passiveAgressiveClassifierStepConfig),
+    passiveAgressiveRegressor: scikitUnsupervisedModelsForm(passiveAgressiveRegressorStepConfig),
+    huberRegression: scikitUnsupervisedModelsForm(huberRegressorStepConfig),
+    ransacRegression: scikitUnsupervisedModelsForm(ransacRegressorStepConfig),
+    theilSenRegression: scikitUnsupervisedModelsForm(theilSenRegressorStepConfig),
+    quantileRegression: scikitUnsupervisedModelsForm(quantileRegressionStepConfig),
+}

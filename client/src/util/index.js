@@ -49,6 +49,8 @@ const customDelay = () => {
 const camel2title = (str) => str
   .replace(/([A-Z])/g, (match) => ` ${match}`)
   .replace(/^./, (match) => match.toUpperCase())
+  .replace('C V', 'CV')
+  .replace('I C', 'IC')
   .trim()
 
 export const removeDuplicates = (arr, uniqueProp) => {

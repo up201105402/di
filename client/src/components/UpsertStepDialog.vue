@@ -37,16 +37,13 @@
   const emit = defineEmits(["onSubmit", "onCancel"]);
 
   const onSubmit = (formData) => {
-    emit("onSubmit", { id: props.nodeId, data: formData });
+    emit("onSubmit", { id: props.nodeId, group: props.group, type: props.type, data: formData });
   }
-
-  let stepCategory = props.stepCategory != '' ? props.stepCategory : 'default';
-  // let { formSchema, formkitData } = useSteps[stepCategory](props.nodeData, onSubmit);
 
 </script>
 
 <template>
-  <FormKitSchema v-if="formSchema" :schema="formSchema" :data="formkitData" />
+  <FormKitSchema v-if="formSchema" :schema="formSchema" :data="nodeData" />
 </template>
 
 <style>

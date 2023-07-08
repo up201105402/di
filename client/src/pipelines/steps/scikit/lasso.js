@@ -64,7 +64,8 @@ export const lassoCVStepConfig = [
         $formkit: 'text',
         name: "alphas",
         label: "alphas",
-        validation: 'floats'
+        validation: "floats",
+        help: "Example: 0.1 0.2 0.3"
     },
     {
         $formkit: 'checkbox',
@@ -345,7 +346,8 @@ export const multiTaskLassoCVStepConfig = [
         $formkit: 'text',
         name: "alphas",
         label: "alphas",
-        validation: 'floats'
+        validation: "floats",
+        help: "Example: 0.1 0.2 0.3"
     },
     {
         $formkit: 'checkbox',
