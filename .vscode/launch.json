@@ -12,10 +12,14 @@
             "console": "integratedTerminal",
             "justMyCode": true,
             "args": [
-                "-d", 
-                "backend/scikit/python/datasets/data.csv",
-                "-t",
-                "backend/scikit/python/datasets/target.csv"
+                "-f1", "backend/scikit/python/datasets/data.csv",
+                "-f2", "backend/scikit/python/datasets/target.csv",
+                "-d", "backend/scikit/python/datasets/filtered_data.csv",
+                "-t", "backend/scikit/python/datasets/filtered_target.csv",
+                "-l1", "0",
+                "-u1", "100",
+                "-l2", "0",
+                "-u2", "100"
             ]
         },
         {

@@ -2,7 +2,6 @@ package steps
 
 import (
 	"di/model"
-	"fmt"
 	"os"
 )
 
@@ -10,7 +9,7 @@ type ScikitTrainingModel struct {
 	ID         uint
 	PipelineID uint
 	RunID      uint
-	ScikitStep Step
+	DataConfig model.StepDataConfig
 }
 
 func (step ScikitTrainingModel) GetID() int {
@@ -18,7 +17,8 @@ func (step ScikitTrainingModel) GetID() int {
 }
 
 func (step *ScikitTrainingModel) SetConfig(stepConfig model.StepDataConfig) error {
-	return step.ScikitStep.SetConfig(stepConfig)
+	step.DataConfig = stepConfig
+	return nil
 }
 
 func (step *ScikitTrainingModel) SetPipelineID(pipelineID uint) error {
@@ -43,11 +43,15 @@ func (step *ScikitTrainingModel) GetRunID() uint {
 
 func (step ScikitTrainingModel) Execute(logFile *os.File) error {
 
-	pipelinesWorkDir := os.Getenv("PIPELINES_WORK_DIR")
-	currentPipelineWorkDir := pipelinesWorkDir + "/" + fmt.Sprint(step.PipelineID) + "/" + fmt.Sprint(step.RunID) + "/"
-	if err := os.MkdirAll(currentPipelineWorkDir, os.ModePerm); err != nil {
-		return err
-	}
+	// cmd := exec.Command("python3",
+	// 	"/usr/src/di/backend/scikit/python/datasets/load_dataset_from_csv.py",
+	// 	"-f1", "backend/scikit/python/datasets/data.csv",
+	// 	"-f2", "backend/scikit/python/datasets/target.csv",
+	// 	"-d", "backend/scikit/python/datasets/filtered_data.csv")
 
-	return step.ScikitStep.Execute(logFile)
+	// if err := cmd.Run(); err != nil {
+	// 	return err
+	// }
+
+	return nil
 }

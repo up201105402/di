@@ -8,6 +8,8 @@ import (
 	"log"
 	"reflect"
 	"strings"
+
+	"github.com/iancoleman/strcase"
 )
 
 type nodeServiceImpl struct {
@@ -57,15 +59,17 @@ func (nodeService *nodeServiceImpl) NewEdgeInstance(pipelineID uint, runID uint,
 func initStepTypeRegistry() map[string]reflect.Type {
 	var stepTypeRegistry = make(map[string]reflect.Type)
 
-	stepTypes := []interface{}{steps.CheckoutRepo{}}
+	stepTypes := []interface{}{steps.CheckoutRepo{}, steps.ScikitTrainingModel{}, steps.ScikitTrainingModel{}}
 
 	for _, v := range stepTypes {
 		splitString := strings.SplitAfter(fmt.Sprintf("%T", v), ".")
-		stepTypeRegistry[splitString[len(splitString)-1]] = reflect.TypeOf(v)
+		camelCased := strcase.ToLowerCamel(splitString[len(splitString)-1])
+		stepTypeRegistry[camelCased] = reflect.TypeOf(v)
 	}
 
 	for _, v := range steps.ScikitUnsupervisedModelTypes {
-		stepTypeRegistry[v] = reflect.TypeOf(steps.ScikitUnsupervisedModel{})
+		camelCased := strcase.ToLowerCamel(v)
+		stepTypeRegistry[camelCased] = reflect.TypeOf(steps.ScikitUnsupervisedModel{})
 	}
 
 	return stepTypeRegistry
