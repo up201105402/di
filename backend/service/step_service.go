@@ -64,6 +64,10 @@ func initStepTypeRegistry() map[string]reflect.Type {
 		stepTypeRegistry[splitString[len(splitString)-1]] = reflect.TypeOf(v)
 	}
 
+	for _, v := range steps.ScikitUnsupervisedModelTypes {
+		stepTypeRegistry[v] = reflect.TypeOf(steps.ScikitUnsupervisedModel{})
+	}
+
 	return stepTypeRegistry
 }
 

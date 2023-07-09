@@ -40,7 +40,6 @@
         backgroundColor: props.data.color,
         filter: 'invert(100%)',
     }))
-    
 </script>
 
 <template>
@@ -52,18 +51,19 @@
     </NodeToolbar>
 
     <div class="node-type">
-        <span class="node-id">{{ parseInt(props.id) + 1 }}</span>
-        <span class="node-type-label">Checkout Repo</span>
-        <span class="scikit-logo"><img src="/assets/1200px-scikit_learn_logo.png" width="20px" height="11px"></span>
+        <span class="node-id">{{ parseInt(props.data.id) + 1 }}</span>
+        <img class="scikit-logo" style="display: inline" src="/assets/1200px-scikit_learn_logo.png" width="40"
+            height="22">
+        <span class="node-type-label">{{ camel2title(props.data.type) }}</span>
     </div>
     <div>
         <div>{{ props.label }}</div>
 
-        <Handle v-if="props.data.isFirstStep === false" id="a" type="source" :position="Position.Left"
-            :style="sourceHandleStyle" />
+        <Handle v-if="props.data.nameAndType.isFirstStep === false" id="a" type="source" :position="Position.Left" :style="sourceHandleStyle" />
         <Handle id="b" type="target" :position="Position.Right" :style="sourceHandleStyle" />
     </div>
 </template>
+
 
 <style>
     .node-type {
@@ -76,6 +76,10 @@
         color: blue;
         padding: 0 2px;
         border-right: 2px solid;
+    }
+
+    .scikit-logo {
+        display: inline;
     }
 
     .node-type-label {

@@ -22,6 +22,7 @@ export const checkoutRepoForm = function (data, onSubmit) {
     const activeStep = ref('');
     const steps = reactive({});
     const visitedSteps = ref([]); // track visited steps
+    const showIsFirstStep = data.nameAndType == null || data?.nameAndType?.isFirstStep == false;
 
     // watch our activeStep and store visited steps
     // to know when to show errors
@@ -86,6 +87,7 @@ export const checkoutRepoForm = function (data, onSubmit) {
         steps,
         visitedSteps,
         activeStep,
+        showIsFirstStep,
         plugins: [
             stepPlugin
         ],
@@ -172,22 +174,28 @@ export const checkoutRepoForm = function (data, onSubmit) {
                             $el: 'section',
                             attrs: {
                                 style: {
-                                    if: '$activeStep !== "name"',
+                                    if: '$activeStep !== "nameAndType"',
                                     then: 'display: none;'
                                 }
                             },
                             children: [
                                 {
                                     $formkit: 'group',
-                                    id: 'name',
-                                    name: 'name',
+                                    id: 'nameAndType',
+                                    name: 'nameAndType',
                                     children: [
                                         {
                                             $formkit: 'text',
-                                            name: 'nodeName',
+                                            name: 'name',
                                             label: 'Step Name',
                                             placeholder: 'Step Name',
                                             validation: 'required'
+                                        },
+                                        {
+                                            $formkit: 'checkbox',
+                                            name: 'isFirstStep',
+                                            label: 'Is First Step?',
+                                            if: '$showIsFirstStep == true',
                                         },
                                     ]
                                 }
@@ -213,7 +221,7 @@ export const checkoutRepoForm = function (data, onSubmit) {
                             children: [
                                 {
                                     $formkit: 'button',
-                                    disabled: '$activeStep === "name"',
+                                    disabled: '$activeStep === "nameAndType"',
                                     onClick: '$setStep(-1)',
                                     children: 'Back'
                                 },

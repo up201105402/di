@@ -199,16 +199,22 @@
 
   const onStepCreate = (formData) => {
     const newId = getNextId();
+
+    if (elements.value.length == 0) {
+      formData.nameAndType.isFirstStep = true;
+    } else if (formData.nameAndType.isFirstStep == null) {
+      formData.nameAndType.isFirstStep = false;
+    }
+    
     elements.value.push({
       id: newId,
-      label: formData.name.nodeName,
+      label: formData.nameAndType.name,
       type: selectedStep.value.group,
       position: { x: 0, y: 0 },
       class: 'light',
       data: {
-        ...formData, 
+        ...formData,
         id: newId,
-        isFirstStep: elements.value.length == 0,
         group: selectedStep.value.group,
         type: selectedStep.value.type,
       },
@@ -224,6 +230,10 @@
   }
 
   const onStepEdited = (formData) => {
+    if (formData.nameAndType.isFirstStep) {
+      elements.value.forEach(element => element.data.nameAndType.isFirstStep = false)
+    }
+
     const index = elements.value.findIndex(element => element.id === formData.id);
 
     if (index === -1) {
@@ -232,20 +242,18 @@
       const oldStepData = elements.value[index].data;
       const oldStepType = elements.value[index].type;
       const newStepData = { 
-        ...formData, 
-        isFirstStep: elements.value[index].data.isFirstStep 
+        ...formData,
       };
 
       if (!deepEqual(oldStepData, newStepData)) {
         elements.value = elements.value.toSpliced(index, 1, {
           id: formData.id,
           type: oldStepType,
-          label: formData.name.nodeName,
+          label: formData.nameAndType.name,
           position: { x: 0, y: 0 },
           class: 'light',
           data: { 
-            ...formData, 
-            isFirstStep: newStepData.isFirstStep 
+            ...formData,
           },
         });
 

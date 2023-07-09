@@ -58,7 +58,7 @@
         isEditStepModalActive.value = false;
         const index = elements.value.findIndex(element => element.id === step.id);
         const oldStepData = elements.value[index].data;
-        const newStepData = { ...step.data, isFirstStep: elements.value[index].data.isFirstStep };
+        const newStepData = { ...step.data };
         if (!deepEqual(oldStepData, newStepData)) {
             emit("onStepEdited", step);
         }

@@ -23,3 +23,12 @@ func Map[T, U any](data []T, f func(T) U) []U {
 
 	return res
 }
+
+func StringArrayContains(array []string, str string) bool {
+	for _, a := range array {
+		if a == str {
+			return true
+		}
+	}
+	return false
+}

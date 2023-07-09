@@ -62,7 +62,7 @@
     <div>
         <div>{{ props.label }}</div>
 
-        <Handle v-if="props.data.isFirstStep === false" :id="props.id + '_input'" type="source" :position="Position.Left" :style="sourceHandleStyle" />
+        <Handle v-if="props.data.nameAndType.isFirstStep === false" :id="props.id + '_input'" type="source" :position="Position.Left" :style="sourceHandleStyle" />
         <Handle :id="props.id + '_output'" type="target" :position="Position.Right" :style="outputHandleStyle" />
     </div>
 </template>

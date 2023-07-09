@@ -25,9 +25,11 @@ type PipelineReq struct {
 	Definition string `json:"definition"`
 }
 
-type StepDataName struct {
-	NodeName string `json:"nodeName"`
-	NodeType string `json:"nodeType"`
+type StepDataNameAndType struct {
+	Name string `json:"name"`
+	// Scikit Datasets
+	Dataset     string `json:"dataset"`
+	IsFirstStep bool   `json:"isFirstStep"`
 }
 
 type StepDataConfig struct {
@@ -106,11 +108,10 @@ type StepDataConfig struct {
 type NodeDescription struct {
 	ID    string `json:"id"`
 	Label string `json:"label"`
-	Type  string `json:"type"`
-	Group string `json:"group"`
 	Data  struct {
-		Name        StepDataName   `json:"name"`
-		StepConfig  StepDataConfig `json:"stepConfig"`
-		IsFirstStep bool           `json:"isFirstStep"`
+		Name        StepDataNameAndType `json:"nameAndType"`
+		StepConfig  StepDataConfig      `json:"stepConfig"`
+		Type        string              `json:"type"`
+		IsFirstStep bool                `json:"isFirstStep"`
 	} `json:"data"`
 }

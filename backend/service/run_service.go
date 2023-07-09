@@ -131,7 +131,7 @@ func (service *runServiceImpl) HandleRunPipelineTask(ctx context.Context, t *asy
 	pipelineGraph := graph.New(stepHash, graph.Directed(), graph.Acyclic())
 
 	stps := util.Map(stepDescriptions, func(stepDescription model.NodeDescription) steps.Step {
-		step, _ := service.NodeTypeService.NewStepInstance(runPipelinePayload.PipelineID, runPipelinePayload.RunID, stepDescription.Group, stepDescription.Data.StepConfig)
+		step, _ := service.NodeTypeService.NewStepInstance(runPipelinePayload.PipelineID, runPipelinePayload.RunID, stepDescription.Data.Type, stepDescription.Data.StepConfig)
 
 		if step != nil {
 			return *step
@@ -141,7 +141,7 @@ func (service *runServiceImpl) HandleRunPipelineTask(ctx context.Context, t *asy
 	})
 
 	edgs := util.Map(stepDescriptions, func(stepDescription model.NodeDescription) steps.Edge {
-		edge, _ := service.NodeTypeService.NewEdgeInstance(runPipelinePayload.PipelineID, runPipelinePayload.RunID, stepDescription.Group, stepDescription.Data.StepConfig)
+		edge, _ := service.NodeTypeService.NewEdgeInstance(runPipelinePayload.PipelineID, runPipelinePayload.RunID, stepDescription.Data.Type, stepDescription.Data.StepConfig)
 
 		if edge != nil {
 			return *edge

@@ -58,6 +58,7 @@ export const scikitDatasetForm = function (data, onSubmit) {
     const activeDataset = ref(scikitDatasetOptions[0].value);
     const steps = reactive({});
     const visitedSteps = ref([]); // track visited steps
+    const showIsFirstStep = data.nameAndType == null || data?.nameAndType?.isFirstStep == false;
 
     // watch our activeStep and store visited steps
     // to know when to show errors
@@ -122,6 +123,7 @@ export const scikitDatasetForm = function (data, onSubmit) {
         steps,
         visitedSteps,
         activeStep,
+        showIsFirstStep,
         activeDataset,
         plugins: [
             stepPlugin
@@ -215,19 +217,19 @@ export const scikitDatasetForm = function (data, onSubmit) {
                             $el: 'section',
                             attrs: {
                                 style: {
-                                    if: '$activeStep !== "name"',
+                                    if: '$activeStep !== "nameAndType"',
                                     then: 'display: none;'
                                 }
                             },
                             children: [
                                 {
                                     $formkit: 'group',
-                                    id: 'name',
-                                    name: 'name',
+                                    id: 'nameAndType',
+                                    name: 'nameAndType',
                                     children: [
                                         {
                                             $formkit: 'text',
-                                            name: 'nodeName',
+                                            name: 'name',
                                             label: 'Step Name',
                                             placeholder: 'Step Name',
                                             validation: 'required'
@@ -240,6 +242,12 @@ export const scikitDatasetForm = function (data, onSubmit) {
                                           options: scikitDatasetOptions,
                                           validation: 'required',
                                           onChange: "$setActiveDataset",
+                                        },
+                                        {
+                                            $formkit: 'checkbox',
+                                            name: 'isFirstStep',
+                                            label: 'Is First Step?',
+                                            if: '$showIsFirstStep == true',
                                         },
                                     ]
                                 }
@@ -265,7 +273,7 @@ export const scikitDatasetForm = function (data, onSubmit) {
                             children: [
                                 {
                                     $formkit: 'button',
-                                    disabled: '$activeStep === "name"',
+                                    disabled: '$activeStep === "nameAndType"',
                                     onClick: '$setStep(-1)',
                                     children: 'Back'
                                 },

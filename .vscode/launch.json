@@ -5,6 +5,20 @@
     "version": "0.2.0",
     "configurations": [
         {
+            "name": "Python: Current File",
+            "type": "python",
+            "request": "launch",
+            "program": "${file}",
+            "console": "integratedTerminal",
+            "justMyCode": true,
+            "args": [
+                "-d", 
+                "backend/scikit/python/datasets/data.csv",
+                "-t",
+                "backend/scikit/python/datasets/target.csv"
+            ]
+        },
+        {
             "name": "Launch file",
             "type": "go",
             "request": "launch",

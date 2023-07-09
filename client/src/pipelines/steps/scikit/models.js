@@ -22,6 +22,7 @@ const scikitUnsupervisedModelsForm = (stepConfigFields) => function (data, onSub
     const activeStep = ref('');
     const steps = reactive({});
     const visitedSteps = ref([]); // track visited steps
+    const showIsFirstStep = data.nameAndType == null || data?.nameAndType?.isFirstStep == false;
 
     // watch our activeStep and store visited steps
     // to know when to show errors
@@ -86,6 +87,7 @@ const scikitUnsupervisedModelsForm = (stepConfigFields) => function (data, onSub
         steps,
         visitedSteps,
         activeStep,
+        showIsFirstStep,
         plugins: [
             stepPlugin
         ],
@@ -172,22 +174,28 @@ const scikitUnsupervisedModelsForm = (stepConfigFields) => function (data, onSub
                             $el: 'section',
                             attrs: {
                                 style: {
-                                    if: '$activeStep !== "name"',
+                                    if: '$activeStep !== "nameAndType"',
                                     then: 'display: none;'
                                 }
                             },
                             children: [
                                 {
                                     $formkit: 'group',
-                                    id: 'name',
-                                    name: 'name',
+                                    id: 'nameAndType',
+                                    name: 'nameAndType',
                                     children: [
                                         {
                                             $formkit: 'text',
-                                            name: 'nodeName',
+                                            name: 'name',
                                             label: 'Step Name',
                                             placeholder: 'Step Name',
                                             validation: 'required'
+                                        },
+                                        {
+                                            $formkit: 'checkbox',
+                                            name: 'isFirstStep',
+                                            label: 'Is First Step?',
+                                            if: '$showIsFirstStep == true',
                                         },
                                     ]
                                 }
@@ -218,7 +226,7 @@ const scikitUnsupervisedModelsForm = (stepConfigFields) => function (data, onSub
                             children: [
                                 {
                                     $formkit: 'button',
-                                    disabled: '$activeStep === "name"',
+                                    disabled: '$activeStep === "nameAndType"',
                                     onClick: '$setStep(-1)',
                                     children: 'Back'
                                 },
