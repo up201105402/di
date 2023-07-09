@@ -9,12 +9,6 @@ export const checkoutRepoStepConfigFields = [
         name: 'repoURL',
         validation: 'required|url',
     },
-    {
-        $formkit: 'text',
-        label: 'File Path',
-        name: 'filePath',
-        validation: 'required',
-    },
 ]
 
 export const checkoutRepoConfigSection = {

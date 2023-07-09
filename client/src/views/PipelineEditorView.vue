@@ -173,7 +173,7 @@
     stepData.value = { ...e.node.data }
     const formkitObject = getSchemaFromType(e.node.data.group, e.node.data.type).form({ ...e.node.data }, onStepEdited);
     formSchema.value = formkitObject.formSchema;
-    dialogTitle.value = 'Edit ' + camel2title(selectedStep.value.type) + ' Step';
+    dialogTitle.value = 'Edit ' + camel2title(e.node.data.type) + ' Step';
     stepData.value = formkitObject.formkitData;
     count++;
   }
@@ -248,6 +248,8 @@
             isFirstStep: newStepData.isFirstStep 
           },
         });
+
+        hasChanges.value = true
       }
 
       isStepDialogActive.value = false;
@@ -415,7 +417,7 @@
         </Panel>
       </VueFlow>
       <CardBoxModal v-model="isStepDialogActive" :has-submit="false" :has-cancel="false" :title="dialogTitle" @cancel="count++">
-        <UpsertStepDialog :key="'createStepDialog_' + count" :formSchema="formSchema" :formkitData="formkitData"
+        <UpsertStepDialog :key="'createStepDialog_' + count" :formSchema="formSchema"
           :nodeId="editStepNodeId" :nodeData="stepData"
           @onSubmit="onStepEdited" @onCancel="onCancel" />
       </CardBoxModal>

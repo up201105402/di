@@ -1,6 +1,10 @@
 <script setup>
     import { Handle, Position, NodeIdInjection } from '@vue-flow/core';
+    import { NodeToolbar } from '@vue-flow/node-toolbar';
     import { computed } from 'vue';
+    import BaseIcon from "@/components/BaseIcon.vue";
+    import { mdiCloseCircle } from "@mdi/js";
+    import { camel2title } from '@/util';
 
     const props = defineProps({
         data: {
@@ -11,6 +15,10 @@
             type: String,
             required: true,
         },
+    })
+
+    defineOptions({
+        inheritAttrs: false
     })
 
     const emit = defineEmits(['change', 'gradient'])
@@ -32,6 +40,7 @@
         backgroundColor: props.data.color,
         filter: 'invert(100%)',
     }))
+    
 </script>
 
 <template>
@@ -51,7 +60,7 @@
         <div>{{ props.label }}</div>
 
         <Handle v-if="props.data.isFirstStep === false" id="a" type="source" :position="Position.Left"
-            :style="sourceHandleStyleA" />
+            :style="sourceHandleStyle" />
         <Handle id="b" type="target" :position="Position.Right" :style="sourceHandleStyle" />
     </div>
 </template>

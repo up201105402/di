@@ -1,7 +1,10 @@
 <script setup>
-    import { camel2title } from '@/util';
     import { Handle, Position, NodeIdInjection } from '@vue-flow/core';
+    import { NodeToolbar } from '@vue-flow/node-toolbar';
     import { computed } from 'vue';
+    import BaseIcon from "@/components/BaseIcon.vue";
+    import { mdiCloseCircle } from "@mdi/js";
+    import { camel2title } from '@/util';
 
     const props = defineProps({
         data: {
@@ -12,6 +15,10 @@
             type: String,
             required: true,
         },
+    })
+
+    defineOptions({
+        inheritAttrs: false
     })
 
     const emit = defineEmits(['change', 'gradient'])
@@ -45,14 +52,14 @@
 
     <div class="node-type">
         <span class="node-id">{{ parseInt(props.data.id) + 1 }}</span>
-        <img class="scikit-logo" style="display: inline" src="/assets/1200px-scikit_learn_logo.png" width="40" height="22">
+        <img class="scikit-logo" style="display: inline" src="/assets/1200px-scikit_learn_logo.png" width="40"
+            height="22">
         <span class="node-type-label">{{ camel2title(props.data.type) }}</span>
     </div>
     <div>
         <div>{{ props.label }}</div>
 
-        <Handle v-if="props.data.isFirstStep === false" id="a" type="source" :position="Position.Left"
-            :style="sourceHandleStyleA" />
+        <Handle v-if="props.data.isFirstStep === false" id="a" type="source" :position="Position.Left" :style="sourceHandleStyle" />
         <Handle id="b" type="target" :position="Position.Right" :style="sourceHandleStyle" />
     </div>
 </template>

@@ -33,6 +33,12 @@ type StepDataName struct {
 type StepDataConfig struct {
 	// CheckoutRepo
 	RepoURL string `json:"repoURL"`
+	// Scikit Datasets
+	File_path        string `json:"file_path"`
+	LowerXRangeIndex string `json:"lowerXRangeIndex"`
+	UpperXRangeIndex string `json:"upperXRangeIndex"`
+	LowerYRangeIndex string `json:"lowerYRangeIndex"`
+	UpperYRangeIndex string `json:"upperYRangeIndex"`
 	// Scikit Unsupervised Models
 	Fit_intercept       bool    `json:"fit_intercept"`
 	Copy_X              bool    `json:"copy_X"`
@@ -101,6 +107,7 @@ type NodeDescription struct {
 	ID    string `json:"id"`
 	Label string `json:"label"`
 	Type  string `json:"type"`
+	Group string `json:"group"`
 	Data  struct {
 		Name        StepDataName   `json:"name"`
 		StepConfig  StepDataConfig `json:"stepConfig"`

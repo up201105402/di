@@ -17,10 +17,6 @@
       type: Object,
       required: false
     },
-    formkitData: {
-      type: Object,
-      required: false
-    },
   });
 
   const data = computed({

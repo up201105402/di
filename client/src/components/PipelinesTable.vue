@@ -87,6 +87,7 @@ const checked = (isChecked, pipeline) => {
             <tr>
                 <th v-if="checkable" />
                 <th>Name</th>
+                <th>Modified</th>
                 <th>Created</th>
                 <th />
             </tr>
@@ -96,6 +97,9 @@ const checked = (isChecked, pipeline) => {
                 <TableCheckboxCell v-if="checkable" @checked="checked($event, pipeline)" />
                 <td data-label="Name">
                     {{ pipeline.name }}
+                </td>
+                <td data-label="Modified" class="lg:w-1 whitespace-nowrap">
+                    <small class="text-gray-500 dark:text-slate-400" :title="formatDate(pipeline.UpdatedAt)">{{ formatDate(pipeline.UpdatedAt) }}</small>
                 </td>
                 <td data-label="Created" class="lg:w-1 whitespace-nowrap">
                     <small class="text-gray-500 dark:text-slate-400" :title="formatDate(pipeline.CreatedAt)">{{ formatDate(pipeline.CreatedAt) }}</small>

@@ -1,7 +1,7 @@
 <script setup>
     import { Handle, Position } from '@vue-flow/core';
     import { NodeToolbar } from '@vue-flow/node-toolbar';
-    import { mdiLogout, mdiCloseCircle  } from "@mdi/js";
+    import { mdiCloseCircle  } from "@mdi/js";
     import { computed } from 'vue';
     import BaseIcon from "@/components/BaseIcon.vue";
     import $ from 'jquery';
@@ -23,6 +23,10 @@
             type: Object,
             required: true,
         },
+    })
+
+    defineOptions({
+        inheritAttrs: false
     })
 
     const emit = defineEmits(['change', 'gradient'])
@@ -58,8 +62,7 @@
     <div>
         <div>{{ props.label }}</div>
 
-        <Handle v-if="props.data.isFirstStep === false" :id="props.id + '_input'" type="source"
-            :position="Position.Left" :style="sourceHandleStyle" />
+        <Handle v-if="props.data.isFirstStep === false" :id="props.id + '_input'" type="source" :position="Position.Left" :style="sourceHandleStyle" />
         <Handle :id="props.id + '_output'" type="target" :position="Position.Right" :style="outputHandleStyle" />
     </div>
 </template>
