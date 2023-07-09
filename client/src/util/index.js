@@ -74,3 +74,23 @@ export const removeDuplicates = (arr, uniqueProp) => {
 export const formatDate = (date) => {
   return moment(date).format('MMMM Do YYYY, h:mm:ss a');
 }
+
+export const golangType = function(type) {
+  if (type == 'text') {
+      return 'string';
+  }
+  if (type == 'number') {
+      return 'float64';
+  }
+  if (type == 'select') {
+      return 'string';
+  }
+  if (type == 'text') {
+      return 'string';
+  }
+  if (type == 'checkbox') {
+    return 'bool';
+  }
+          
+  return type
+}
