@@ -5,8 +5,15 @@ import { getNode, createMessage } from '@formkit/core';
 export const datasetConfigFields = [
     {
         $formkit: 'text',
-        name: "filePath",
-        label: "File Path",
+        name: "dataFilePath",
+        label: "Data File Path",
+        validation: 'required',
+        if: '$isActiveDataset("scikitLoadFile")'
+    },
+    {
+        $formkit: 'text',
+        name: "targetFilePath",
+        label: "Target File Path",
         validation: 'required',
         if: '$isActiveDataset("scikitLoadFile")'
     },

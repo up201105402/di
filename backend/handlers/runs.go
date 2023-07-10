@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+	"os"
 	"strconv"
 
 	"github.com/gin-gonic/gin"
@@ -270,9 +271,15 @@ func FindRunResulstById(services *service.Services) gin.HandlerFunc {
 			return
 		}
 
+		runLogsDir := os.Getenv("RUN_LOGS_DIR")
+		logFileName := os.Getenv("LOG_FILE_NAME")
+		runLogDir := runLogsDir + "/" + fmt.Sprint(run.PipelineID) + "/" + fmt.Sprint(run.ID) + "/"
+		logFile, _ := os.ReadFile(runLogDir + logFileName)
+
 		context.JSON(http.StatusOK, gin.H{
 			"run":             run,
 			"runStepStatuses": runStepStatuses,
+			"log":             string(logFile),
 		})
 	}
 }

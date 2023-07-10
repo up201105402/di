@@ -18,6 +18,9 @@
                 "ID_TOKEN_DURATION": "900",
                 "REFRESH_TOKEN_DURATION": "259200",
                 "PIPELINES_WORK_DIR": "/usr/src/di/work/pipelines",
+                "RUN_LOGS_DIR": "/usr/src/di/logs",
+                "LOG_FILE_NAME": "run.log",
+                "SCIKIT_SNIPPETS_DIR": "/usr/src/di/backend/scikit/python/",
                 "SCIKIT_VERSION": "1.2.2",
             }
         }

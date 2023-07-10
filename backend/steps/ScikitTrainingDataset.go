@@ -2,7 +2,10 @@ package steps
 
 import (
 	"di/model"
+	"fmt"
+	"log"
 	"os"
+	"os/exec"
 	"strconv"
 )
 
@@ -59,17 +62,73 @@ func (step *ScikitTrainingDataset) GetRunID() uint {
 
 func (step ScikitTrainingDataset) Execute(logFile *os.File) error {
 
-	logFile.WriteString("Executing...")
+	runLogger := log.New(logFile, "", log.Ldate|log.Ltime|log.Lmicroseconds|log.Llongfile)
 
-	// cmd := exec.Command("python3",
-	// 	"/usr/src/di/backend/scikit/python/datasets/load_dataset_from_csv.py",
-	// 	"-f1", "backend/scikit/python/datasets/data.csv",
-	// 	"-f2", "backend/scikit/python/datasets/target.csv",
-	// 	"-d", "backend/scikit/python/datasets/filtered_data.csv")
+	pipelinesWorkDir := os.Getenv("PIPELINES_WORK_DIR")
+	currentPipelineWorkDir := pipelinesWorkDir + "/" + fmt.Sprint(step.PipelineID) + "/" + fmt.Sprint(step.RunID) + "/"
 
-	// if err := cmd.Run(); err != nil {
-	// 	return err
-	// }
+	scikitSnippetsDir := os.Getenv("SCIKIT_SNIPPETS_DIR") + "datasets/"
 
-	return nil
+	var args []string
+
+	switch step.Dataset {
+	case "scikitBreastCancer":
+		args = append(args, scikitSnippetsDir+"load_breast_cancer.py")
+	case "scikitDiabetes":
+		args = append(args, scikitSnippetsDir+"load_diabetes.py")
+	case "scikitDigits":
+		args = append(args, scikitSnippetsDir+"load_digits.py")
+	case "scikitIris":
+		args = append(args, scikitSnippetsDir+"load_iris.py")
+	case "scikitLinerrud":
+		args = append(args, scikitSnippetsDir+"load_linnerrud.py")
+	case "scikitWine":
+		args = append(args, scikitSnippetsDir+"load_wine.py")
+	case "scikitLoadFile":
+		args = append(args, scikitSnippetsDir+"load_dataset_from_csv.py")
+	}
+
+	args = append(args, "-d")
+	args = append(args, currentPipelineWorkDir+"filtered_training_data.csv")
+
+	args = append(args, "-t")
+	args = append(args, currentPipelineWorkDir+"filtered_training_target.csv")
+
+	if step.DataConfig.LowerXRangeIndex != 0 {
+		args = append(args, "-l1")
+		args = append(args, string(step.DataConfig.LowerXRangeIndex))
+	}
+
+	if step.DataConfig.UpperXRangeIndex != 0 {
+		args = append(args, "-u1")
+		args = append(args, string(step.DataConfig.UpperXRangeIndex))
+	}
+
+	if step.DataConfig.LowerYRangeIndex != 0 {
+		args = append(args, "-l2")
+		args = append(args, string(step.DataConfig.LowerYRangeIndex))
+	}
+
+	if step.DataConfig.UpperYRangeIndex != 0 {
+		args = append(args, "-u2")
+		args = append(args, string(step.DataConfig.UpperYRangeIndex))
+	}
+
+	if step.DataConfig.DataFilePath != "" {
+		args = append(args, "-f1")
+		args = append(args, currentPipelineWorkDir+string(step.DataConfig.DataFilePath))
+	}
+
+	if step.DataConfig.TargetFilePath != "" {
+		args = append(args, "-f2")
+		args = append(args, currentPipelineWorkDir+string(step.DataConfig.TargetFilePath))
+	}
+
+	cmd := exec.Command("python3", args...)
+	cmd.Dir = currentPipelineWorkDir
+
+	out, err := cmd.Output()
+	runLogger.Println(out)
+
+	return err
 }

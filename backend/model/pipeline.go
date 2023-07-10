@@ -40,7 +40,9 @@ type StepDataConfig struct {
 	RepoURL string `json:"repoURL"`
 	// Scikit Datasets
 
-	File_path        string `json:"file_path"`
+	FilePath         string `json:"filePath"`
+	DataFilePath     string `json:"dataFilePath"`
+	TargetFilePath   string `json:"targetFilePath"`
 	LowerXRangeIndex int    `json:"lowerXRangeIndex"`
 	UpperXRangeIndex int    `json:"upperXRangeIndex"`
 	LowerYRangeIndex int    `json:"lowerYRangeIndex"`

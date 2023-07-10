@@ -216,7 +216,7 @@ func (service *runServiceImpl) HandleRunPipelineTask(ctx context.Context, t *asy
 	}
 
 	pipelinesWorkDir := os.Getenv("PIPELINES_WORK_DIR")
-	runLogskDir := os.Getenv("RUN_LOGS_DIR")
+	runLogsDir := os.Getenv("RUN_LOGS_DIR")
 
 	if pipelinesWorkDir == "" {
 		service.UpdateRunStatus(runPipelinePayload.RunID, 3, "PIPELINES_WORK_DIR is not defined!")
@@ -224,7 +224,7 @@ func (service *runServiceImpl) HandleRunPipelineTask(ctx context.Context, t *asy
 	}
 
 	currentPipelineWorkDir := pipelinesWorkDir + "/" + fmt.Sprint(runPipelinePayload.PipelineID) + "/" + fmt.Sprint(runPipelinePayload.RunID) + "/"
-	currentRunLogDir := runLogskDir + "/" + fmt.Sprint(runPipelinePayload.PipelineID) + "/" + fmt.Sprint(runPipelinePayload.RunID) + "/"
+	currentRunLogDir := runLogsDir + "/" + fmt.Sprint(runPipelinePayload.PipelineID) + "/" + fmt.Sprint(runPipelinePayload.RunID) + "/"
 
 	if err := os.RemoveAll(currentPipelineWorkDir); err != nil {
 		service.UpdateRunStatus(runPipelinePayload.RunID, 3, "Error removing files from "+currentPipelineWorkDir)
@@ -246,7 +246,7 @@ func (service *runServiceImpl) HandleRunPipelineTask(ctx context.Context, t *asy
 		return asynq.SkipRetry
 	}
 
-	logFileName := "run.log"
+	logFileName := os.Getenv("LOG_FILE_NAME")
 	logFile, err := os.Create(currentRunLogDir + logFileName)
 
 	if err != nil {

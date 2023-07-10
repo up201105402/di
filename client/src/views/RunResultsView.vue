@@ -29,11 +29,13 @@
     import $ from 'jquery';
     import { steps } from '@/pipelines/steps';
     import { camel2title } from '@/util';
+    import Editor from 'primevue/editor';
     
     const { accessToken, requireAuthRoute } = storeToRefs(useAuthStore());
     const router = useRouter();
     const route = useRoute();
     const elements = ref([]);
+    const log = ref('');
     const runTitle = ref('');
     const toast = useToast();
     
@@ -79,11 +81,12 @@
         element.data.readonly = true;
         fetchResponse.value.data.runStepStatuses.forEach(stepStatus => {
             if (element.data.id == stepStatus.StepID) {
-                element.data.status = stepStatus.StatusID
+                element.data.status = stepStatus.RunStatusID
             }
         })
       });
       runTitle.value = fetchResponse.value?.data ? fetchResponse.value.data.run.Pipeline.name + " - " + "Run " + fetchResponse.value.data.run.ID : 'Untitled';
+      log.value = fetchResponse.value?.data ? fetchResponse.value.data.log : "";
     })
 
     const isLoading = computed(() => isFetching.value);
@@ -229,11 +232,11 @@
               </button>
             </Panel>
           </VueFlow>
-          <CardBoxModal v-model="isStepDialogActive" :has-submit="false" :has-cancel="false" :title="dialogTitle"
-            @cancel="count++">
+          <CardBoxModal v-model="isStepDialogActive" :has-submit="false" :has-cancel="false" :title="dialogTitle" @cancel="count++">
             <UpsertStepDialog :key="'createStepDialog_' + count" :formSchema="formSchema" :nodeId="editStepNodeId"
               :nodeData="stepData" @onCancel="onCancel" />
           </CardBoxModal>
+          <Editor v-model="log" editorStyle="height: 320px" readonly />
         </SectionMain>
         <Toast />
       </LayoutAuthenticated>
