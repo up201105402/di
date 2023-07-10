@@ -37,9 +37,9 @@ const { isLoading: isFetching, state: fetchResponse, isReady: isFetchFinished, e
   },
 )
 
-watch(fetchResponse, (newVal) => {
-  if (newVal.error) {
-    toast.add({ severity: 'error', summary: 'Error', detail: newVal.error.message, life: 3000 });
+watch(fetchResponse, (value) => {
+  if (value.error) {
+    toast.add({ severity: 'error', summary: 'Error', detail: value.error.message, life: 3000 });
   }
 })
 
@@ -52,7 +52,7 @@ const isLoading = computed(() => isFetching.value)
   <LayoutAuthenticated>
     <SectionMain>
       <loading v-model:active="isLoading" :is-full-page="false" />
-      <SectionTitleLineWithButton :icon="mdiRunFast" :title="'Runs'" main />
+      <SectionTitleLineWithButton :hasButton="false" :icon="mdiRunFast" :title="'Runs'" main />
       <PipelinesRunsTable :items="pipelines" checkable />
     </SectionMain>
     <Toast />

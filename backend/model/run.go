@@ -1,6 +1,8 @@
 package model
 
 import (
+	"time"
+
 	"gorm.io/gorm"
 )
 
@@ -18,6 +20,7 @@ type Run struct {
 	StatusID    uint
 	Status      RunStatus
 	Description string
+	LastRun     time.Time
 }
 
 type CreateRunReq struct {

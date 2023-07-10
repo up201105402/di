@@ -121,21 +121,23 @@
     const requestError = ref("");
     const subRows = computed(() => fetchSubrowsResponse.value?.data ? fetchSubrowsResponse.value.data.runs : []);
 
-    watch(fetchSubrowsResponse, (newVal) => {
-        if (newVal.error) {
+    watch(fetchSubrowsResponse, (value) => {
+        if (value.error) {
             isRequestError.value = true;
-            requestError.value = newVal.error.message;
-            toast.add({ severity: 'error', summary: 'Error', detail: newVal.error.message, life: 3000 });
+            requestError.value = value.error.message;
+            toast.add({ severity: 'error', summary: 'Error', detail: value.error.message, life: 3000 });
         } else {
             slideDownSubRow();
         }
     })
 
-    watch(createSubrowResponse, (newVal) => {
-        if (newVal.error) {
+    watch(createSubrowResponse, (value) => {
+        if (value.error) {
             isRequestError.value = true;
-            requestError.value = newVal.error.message;
-            toast.add({ severity: 'error', summary: 'Error', detail: newVal.error.message, life: 3000 });
+            requestError.value = value.error.message;
+            toast.add({ severity: 'error', summary: 'Error', detail: value.error.message, life: 3000 });
+        } else {
+            fetchSubrows(null, props.parentRow.ID);   
         }
     })
 
@@ -168,7 +170,6 @@
 
     const onCreateSubrow = (e) => {
         createSubrow(null, props.parentRow.ID);
-        fetchSubrows(null, props.parentRow.ID);
     }
 
     const acknowledgeError = (e) => {
@@ -202,7 +203,7 @@
             {{ parentRow.name }}
         </td>
         <td data-label="Created" class="lg:w-1 whitespace-nowrap">
-            <small class="text-gray-500 dark:text-slate-400" :title="formatDate(parentRow.CreatedAt)">{{ formatDate(parentRow.CreatedAt) }}</small>
+            <small class="text-gray-500 dark:text-slate-400" :title="formatDate(parentRow.LastRun)">{{ formatDate(parentRow.LastRun) }}</small>
         </td>
         <td class="before:hidden lg:w-1 whitespace-nowrap">
             <BaseButtons type="justify-start lg:justify-end" no-wrap>

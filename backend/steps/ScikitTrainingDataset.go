@@ -5,43 +5,47 @@ import (
 	"os"
 )
 
-type ScikitTrainingModel struct {
+type ScikitTrainingDataset struct {
 	ID         uint
 	PipelineID uint
 	RunID      uint
+	Dataset    string
 	DataConfig model.StepDataConfig
 }
 
-func (step ScikitTrainingModel) GetID() int {
+func (step ScikitTrainingDataset) GetID() int {
 	return int(step.ID)
 }
 
-func (step *ScikitTrainingModel) SetConfig(stepConfig model.StepDataConfig) error {
-	step.DataConfig = stepConfig
+func (step *ScikitTrainingDataset) SetData(stepData model.StepData) error {
+	step.Dataset = stepData.NameAndType.Dataset
+	step.DataConfig = stepData.StepConfig
 	return nil
 }
 
-func (step *ScikitTrainingModel) SetPipelineID(pipelineID uint) error {
+func (step *ScikitTrainingDataset) SetPipelineID(pipelineID uint) error {
 	step.PipelineID = pipelineID
 
 	return nil
 }
 
-func (step *ScikitTrainingModel) SetRunID(runID uint) error {
+func (step *ScikitTrainingDataset) SetRunID(runID uint) error {
 	step.RunID = runID
 
 	return nil
 }
 
-func (step *ScikitTrainingModel) GetPipelineID() uint {
+func (step *ScikitTrainingDataset) GetPipelineID() uint {
 	return step.PipelineID
 }
 
-func (step *ScikitTrainingModel) GetRunID() uint {
+func (step *ScikitTrainingDataset) GetRunID() uint {
 	return step.RunID
 }
 
-func (step ScikitTrainingModel) Execute(logFile *os.File) error {
+func (step ScikitTrainingDataset) Execute(logFile *os.File) error {
+
+	logFile.WriteString("Executing...")
 
 	// cmd := exec.Command("python3",
 	// 	"/usr/src/di/backend/scikit/python/datasets/load_dataset_from_csv.py",

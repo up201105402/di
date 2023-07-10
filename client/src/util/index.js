@@ -72,6 +72,12 @@ export const removeDuplicates = (arr, uniqueProp) => {
 }
 
 export const formatDate = (date) => {
+  const m = moment(date);
+
+  if (!date || m.year() == 0) {
+    return "-"
+  }
+  
   return moment(date).format('MMMM Do YYYY, h:mm:ss a');
 }
 

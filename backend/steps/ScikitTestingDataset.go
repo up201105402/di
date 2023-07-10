@@ -5,44 +5,47 @@ import (
 	"os"
 )
 
-type ScikitTestingModel struct {
+type ScikitTestingDataset struct {
 	ID         uint
 	PipelineID uint
 	RunID      uint
+	Dataset    string
 	DataConfig model.StepDataConfig
 }
 
-func (step ScikitTestingModel) GetID() int {
+func (step ScikitTestingDataset) GetID() int {
 	return int(step.ID)
 }
 
-func (step *ScikitTestingModel) SetConfig(stepConfig model.StepDataConfig) error {
-	step.DataConfig = stepConfig
-
+func (step *ScikitTestingDataset) SetData(stepData model.StepData) error {
+	step.Dataset = stepData.NameAndType.Dataset
+	step.DataConfig = stepData.StepConfig
 	return nil
 }
 
-func (step *ScikitTestingModel) SetPipelineID(pipelineID uint) error {
+func (step *ScikitTestingDataset) SetPipelineID(pipelineID uint) error {
 	step.PipelineID = pipelineID
 
 	return nil
 }
 
-func (step *ScikitTestingModel) SetRunID(runID uint) error {
+func (step *ScikitTestingDataset) SetRunID(runID uint) error {
 	step.RunID = runID
 
 	return nil
 }
 
-func (step *ScikitTestingModel) GetPipelineID() uint {
+func (step *ScikitTestingDataset) GetPipelineID() uint {
 	return step.PipelineID
 }
 
-func (step *ScikitTestingModel) GetRunID() uint {
+func (step *ScikitTestingDataset) GetRunID() uint {
 	return step.RunID
 }
 
-func (step ScikitTestingModel) Execute(logFile *os.File) error {
+func (step ScikitTestingDataset) Execute(logFile *os.File) error {
+
+	logFile.WriteString("Executing...")
 
 	return nil
 }

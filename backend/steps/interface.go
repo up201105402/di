@@ -8,7 +8,7 @@ import (
 type Step interface {
 	GetID() int
 	Execute(logFile *os.File) error
-	SetConfig(stepConfig model.StepDataConfig) error
+	SetData(stepConfig model.StepData) error
 	SetPipelineID(pipelineID uint) error
 	SetRunID(runID uint) error
 	GetPipelineID() uint

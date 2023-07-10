@@ -8,6 +8,7 @@ import (
 	"log"
 	"net/http"
 	"strconv"
+	"time"
 
 	"github.com/gin-gonic/gin"
 )
@@ -32,6 +33,11 @@ func GetPipelines(services *service.Services) gin.HandlerFunc {
 				"error": errorMessage,
 			})
 			return
+		}
+
+		for i := 0; i < len(pipelines); i++ {
+			lastRun := getLastRun(services, pipelines[i].ID)
+			pipelines[i].LastRun = lastRun
 		}
 
 		context.JSON(http.StatusOK, gin.H{
@@ -68,6 +74,8 @@ func GetPipeline(services *service.Services) gin.HandlerFunc {
 			})
 			return
 		}
+
+		pipeline.LastRun = getLastRun(services, pipeline.ID)
 
 		context.JSON(http.StatusOK, gin.H{
 			"pipeline": pipeline,
@@ -196,4 +204,21 @@ func getUser(context *gin.Context) (*model.User, *errors.Error) {
 	}
 
 	return contextUser.(*model.User), nil
+}
+
+func getLastRun(services *service.Services, pipelineID uint) time.Time {
+	runs, _ := services.RunService.GetByPipeline(pipelineID)
+
+	var lastRun time.Time
+	if runs != nil && len(runs) > 0 {
+		lastRun = runs[0].LastRun
+
+		for _, run := range runs {
+			if run.LastRun.After(lastRun) {
+				lastRun = run.LastRun
+			}
+		}
+	}
+
+	return lastRun
 }

@@ -18,13 +18,13 @@ func NewPipelineService(gormDB *gorm.DB) PipelineService {
 }
 
 func (service *pipelineServiceImpl) Get(id uint) (*model.Pipeline, error) {
-	pipeline, error := service.PipelineRepository.FindByID(id)
-	return pipeline, error
+	pipeline, err := service.PipelineRepository.FindByID(id)
+	return pipeline, err
 }
 
 func (service *pipelineServiceImpl) GetByOwner(ownerId uint) ([]model.Pipeline, error) {
-	pipelines, error := service.PipelineRepository.FindByOwner(ownerId)
-	return pipelines, error
+	pipelines, err := service.PipelineRepository.FindByOwner(ownerId)
+	return pipelines, err
 }
 
 func (service *pipelineServiceImpl) Create(userId uint, name string, definition string) error {

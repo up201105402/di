@@ -86,9 +86,9 @@
   const selectedStep = ref();
   const cascadeOptions = ref(steps);
 
-  watch(fetchResponse, (newVal) => {
-    if (newVal.error) {
-      toast.add({ severity: 'error', summary: 'Error', detail: newVal.error.message, life: 3000 });
+  watch(fetchResponse, (value) => {
+    if (value.error) {
+      toast.add({ severity: 'error', summary: 'Error', detail: value.error.message, life: 3000 });
     }
   })
 
@@ -105,12 +105,12 @@
     pipelineTitle.value = fetchResponse.value?.data ? fetchResponse.value.data.pipeline.name : 'Untitled';
   })
 
-  watch(updateResponse, (newVal) => {
-    if (newVal.error) {
-      toast.add({ severity: 'error', summary: 'Error', detail: newVal.error.message, life: 3000 });
+  watch(updateResponse, (value) => {
+    if (value.error) {
+      toast.add({ severity: 'error', summary: 'Error', detail: value.error.message, life: 3000 });
     }
 
-    if (newVal.status === 200) {
+    if (value.status === 200) {
       hasChanges.value = false;
       router.push("/pipelines");
     }
@@ -297,8 +297,8 @@
    */
   onConnect((edge) => {
     edge.updatable = true;
-    edge.type = 'smoothstep',
-      addEdges([edge]);
+    edge.type = 'smoothstep';
+    addEdges([edge]);
     hasChanges.value = true;
     emit("onUpdate", elements.value);
   })
@@ -359,7 +359,7 @@
     <SectionMain>
       <loading v-model:active="isLoading" :is-full-page="false" />
 
-      <SectionTitleLineWithButton :icon="mdiChartTimelineVariant" :title="pipelineTitle" main>
+      <SectionTitleLineWithButton :hasButton="false" :icon="mdiChartTimelineVariant" :title="pipelineTitle" main>
         <div>
           <CascadeSelect v-model="selectedStep" :options="cascadeOptions" optionLabel="label" optionGroupLabel="name"
             :optionGroupChildren="['steps', 'subSteps']" style="min-width: 14rem" placeholder="Select a Step Type">

@@ -131,7 +131,7 @@ func (service *runServiceImpl) HandleRunPipelineTask(ctx context.Context, t *asy
 	pipelineGraph := graph.New(stepHash, graph.Directed(), graph.Acyclic())
 
 	stps := util.Map(stepDescriptions, func(stepDescription model.NodeDescription) steps.Step {
-		step, _ := service.NodeTypeService.NewStepInstance(runPipelinePayload.PipelineID, runPipelinePayload.RunID, stepDescription.Data.Type, stepDescription.Data.StepConfig)
+		step, _ := service.NodeTypeService.NewStepInstance(runPipelinePayload.PipelineID, runPipelinePayload.RunID, stepDescription.Data.Type, stepDescription.Data)
 
 		if step != nil {
 			return *step
@@ -141,7 +141,7 @@ func (service *runServiceImpl) HandleRunPipelineTask(ctx context.Context, t *asy
 	})
 
 	edgs := util.Map(stepDescriptions, func(stepDescription model.NodeDescription) steps.Edge {
-		edge, _ := service.NodeTypeService.NewEdgeInstance(runPipelinePayload.PipelineID, runPipelinePayload.RunID, stepDescription.Data.Type, stepDescription.Data.StepConfig)
+		edge, _ := service.NodeTypeService.NewEdgeInstance(runPipelinePayload.PipelineID, runPipelinePayload.RunID, stepDescription.Type, stepDescription.Data)
 
 		if edge != nil {
 			return *edge
@@ -170,8 +170,17 @@ func (service *runServiceImpl) HandleRunPipelineTask(ctx context.Context, t *asy
 
 	pipelinesWorkDir := os.Getenv("PIPELINES_WORK_DIR")
 	currentPipelineWorkDir := pipelinesWorkDir + "/" + fmt.Sprint(runPipelinePayload.PipelineID) + "/" + fmt.Sprint(runPipelinePayload.RunID) + "/"
+
+	if err := os.RemoveAll(currentPipelineWorkDir); err != nil {
+		return asynq.SkipRetry
+	}
+
+	if err := os.MkdirAll(currentPipelineWorkDir, os.ModePerm); err != nil {
+		return asynq.SkipRetry
+	}
+
 	logFileName := "run.log"
-	logFile, err := os.Open(currentPipelineWorkDir + logFileName)
+	logFile, err := os.Create(currentPipelineWorkDir + logFileName)
 
 	if err != nil {
 		log.Print(err.Error())

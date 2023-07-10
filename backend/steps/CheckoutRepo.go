@@ -19,8 +19,8 @@ func (step CheckoutRepo) GetID() int {
 	return int(step.ID)
 }
 
-func (step *CheckoutRepo) SetConfig(stepConfig model.StepDataConfig) error {
-	step.RepoURL = stepConfig.RepoURL
+func (step *CheckoutRepo) SetData(stepConfig model.StepData) error {
+	step.RepoURL = stepConfig.NameAndType.Name
 
 	return nil
 }

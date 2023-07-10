@@ -24,7 +24,7 @@ func NewNodeService() NodeTypeService {
 	}
 }
 
-func (nodeService *nodeServiceImpl) NewStepInstance(pipelineID uint, runID uint, stepType string, stepConfig model.StepDataConfig) (*steps.Step, error) {
+func (nodeService *nodeServiceImpl) NewStepInstance(pipelineID uint, runID uint, stepType string, stepData model.StepData) (*steps.Step, error) {
 	stepTypeStructName := nodeService.StepTypeRegistry[stepType]
 
 	if stepTypeStructName == nil {
@@ -35,14 +35,14 @@ func (nodeService *nodeServiceImpl) NewStepInstance(pipelineID uint, runID uint,
 	stepPtr := reflect.New(stepTypeStructName)
 
 	setupStep := stepPtr.Interface().(steps.Step)
-	setupStep.SetConfig(stepConfig)
+	setupStep.SetData(stepData)
 	setupStep.SetPipelineID(pipelineID)
 	setupStep.SetRunID(runID)
 
 	return &setupStep, nil
 }
 
-func (nodeService *nodeServiceImpl) NewEdgeInstance(pipelineID uint, runID uint, edgeType string, stepConfig model.StepDataConfig) (*steps.Edge, error) {
+func (nodeService *nodeServiceImpl) NewEdgeInstance(pipelineID uint, runID uint, edgeType string, stepConfig model.StepData) (*steps.Edge, error) {
 	edgeTypeStructName := nodeService.EdgeTypeRegistry[edgeType]
 
 	if edgeTypeStructName == nil {
@@ -59,7 +59,7 @@ func (nodeService *nodeServiceImpl) NewEdgeInstance(pipelineID uint, runID uint,
 func initStepTypeRegistry() map[string]reflect.Type {
 	var stepTypeRegistry = make(map[string]reflect.Type)
 
-	stepTypes := []interface{}{steps.CheckoutRepo{}, steps.ScikitTrainingModel{}, steps.ScikitTrainingModel{}}
+	stepTypes := []interface{}{steps.CheckoutRepo{}, steps.ScikitTestingDataset{}, steps.ScikitTrainingDataset{}}
 
 	for _, v := range stepTypes {
 		splitString := strings.SplitAfter(fmt.Sprintf("%T", v), ".")

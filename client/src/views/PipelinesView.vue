@@ -44,9 +44,9 @@
     },
   )
 
-  watch(fetchResponse, (newVal) => {
-    if (newVal.error) {
-      toast.add({ severity: 'error', summary: 'Error', detail: newVal.error.message, life: 3000 });
+  watch(fetchResponse, (value) => {
+    if (value.error) {
+      toast.add({ severity: 'error', summary: 'Error', detail: value.error.message, life: 3000 });
     }
   })
 
@@ -84,9 +84,9 @@
     },
   )
 
-  watch(createResponse, (newVal) => {
-    if (newVal.error) {
-      toast.add({ severity: 'error', summary: 'Error', detail: newVal.error.message, life: 3000 });
+  watch(createResponse, (value) => {
+    if (value.error) {
+      toast.add({ severity: 'error', summary: 'Error', detail: value.error.message, life: 3000 });
     } else {
       fetchPipelines();
     }
@@ -127,9 +127,9 @@
     },
   )
 
-  watch(deleteResponse, (newVal) => {
-    if (newVal.error) {
-      toast.add({ severity: 'error', summary: 'Error', detail: newVal.error.message, life: 3000 });
+  watch(deleteResponse, (value) => {
+    if (value.error) {
+      toast.add({ severity: 'error', summary: 'Error', detail: value.error.message, life: 3000 });
     } else {
       fetchPipelines();
     }
@@ -145,7 +145,7 @@
     <SectionMain>
       <loading v-model:active="isLoading" :is-full-page="false" />
 
-      <SectionTitleLineWithButton :icon="mdiChartTimelineVariant" :title="$t('pages.pipelines.name')" main>
+      <SectionTitleLineWithButton :hasButton="false" :icon="mdiChartTimelineVariant" :title="$t('pages.pipelines.name')" main>
         <BaseButton :icon="mdiPlus" color="success" @click="onNewPipelineClicked" />
       </SectionTitleLineWithButton>
 

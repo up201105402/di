@@ -1,6 +1,8 @@
 package model
 
 import (
+	"time"
+
 	"gorm.io/gorm"
 )
 
@@ -8,8 +10,9 @@ type Pipeline struct {
 	gorm.Model
 	UserID     uint `json:"userId"`
 	User       User
-	Name       string `json:"name"`
-	Definition string `json:"definition"`
+	Name       string    `json:"name"`
+	Definition string    `json:"definition"`
+	LastRun    time.Time `gorm:"-:all"`
 }
 
 type CreatePipelineReq struct {
@@ -36,11 +39,12 @@ type StepDataConfig struct {
 	// CheckoutRepo
 	RepoURL string `json:"repoURL"`
 	// Scikit Datasets
+
 	File_path        string `json:"file_path"`
-	LowerXRangeIndex string `json:"lowerXRangeIndex"`
-	UpperXRangeIndex string `json:"upperXRangeIndex"`
-	LowerYRangeIndex string `json:"lowerYRangeIndex"`
-	UpperYRangeIndex string `json:"upperYRangeIndex"`
+	LowerXRangeIndex int    `json:"lowerXRangeIndex"`
+	UpperXRangeIndex int    `json:"upperXRangeIndex"`
+	LowerYRangeIndex int    `json:"lowerYRangeIndex"`
+	UpperYRangeIndex int    `json:"upperYRangeIndex"`
 	// Scikit Unsupervised Models
 	Fit_intercept       bool    `json:"fit_intercept"`
 	Copy_X              bool    `json:"copy_X"`
@@ -105,13 +109,16 @@ type StepDataConfig struct {
 	Solver_options      string  `json:"solver_options"`
 }
 
+type StepData struct {
+	NameAndType StepDataNameAndType `json:"nameAndType"`
+	StepConfig  StepDataConfig      `json:"stepConfig"`
+	Type        string              `json:"type"`
+	IsFirstStep bool                `json:"isFirstStep"`
+}
+
 type NodeDescription struct {
-	ID    string `json:"id"`
-	Label string `json:"label"`
-	Data  struct {
-		Name        StepDataNameAndType `json:"nameAndType"`
-		StepConfig  StepDataConfig      `json:"stepConfig"`
-		Type        string              `json:"type"`
-		IsFirstStep bool                `json:"isFirstStep"`
-	} `json:"data"`
+	ID    string   `json:"id"`
+	Label string   `json:"label"`
+	Type  string   `json:"type"`
+	Data  StepData `json:"data"`
 }

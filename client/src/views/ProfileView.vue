@@ -48,7 +48,7 @@
 <template>
   <LayoutAuthenticated>
     <SectionMain>
-      <SectionTitleLineWithButton :icon="mdiAccount" title="Profile" main />
+      <SectionTitleLineWithButton :hasButton="false" :icon="mdiAccount" title="Profile" main />
 
       <UserCard class="mb-6" />
 
