@@ -24,7 +24,7 @@ func NewNodeService() NodeTypeService {
 	}
 }
 
-func (nodeService *nodeServiceImpl) NewStepInstance(pipelineID uint, runID uint, stepType string, stepData model.StepData) (*steps.Step, error) {
+func (nodeService *nodeServiceImpl) NewStepInstance(pipelineID uint, runID uint, stepType string, nodeDescription model.NodeDescription) (*steps.Step, error) {
 	stepTypeStructName := nodeService.StepTypeRegistry[stepType]
 
 	if stepTypeStructName == nil {
@@ -33,16 +33,16 @@ func (nodeService *nodeServiceImpl) NewStepInstance(pipelineID uint, runID uint,
 	}
 
 	stepPtr := reflect.New(stepTypeStructName)
-
 	setupStep := stepPtr.Interface().(steps.Step)
-	setupStep.SetData(stepData)
+
+	setupStep.SetData(nodeDescription)
 	setupStep.SetPipelineID(pipelineID)
 	setupStep.SetRunID(runID)
 
 	return &setupStep, nil
 }
 
-func (nodeService *nodeServiceImpl) NewEdgeInstance(pipelineID uint, runID uint, edgeType string, stepConfig model.StepData) (*steps.Edge, error) {
+func (nodeService *nodeServiceImpl) NewEdgeInstance(pipelineID uint, runID uint, edgeType string, nodeDescription model.NodeDescription) (*steps.Edge, error) {
 	edgeTypeStructName := nodeService.EdgeTypeRegistry[edgeType]
 
 	if edgeTypeStructName == nil {
@@ -50,8 +50,9 @@ func (nodeService *nodeServiceImpl) NewEdgeInstance(pipelineID uint, runID uint,
 		return nil, errors.NewNotFound("edgeType", edgeType)
 	}
 
-	step := reflect.New(edgeTypeStructName)
-	setupEdge := step.Interface().(steps.Edge)
+	edge := reflect.New(edgeTypeStructName)
+	setupEdge := edge.Interface().(steps.Edge)
+	setupEdge.SetData(nodeDescription)
 
 	return &setupEdge, nil
 }
@@ -78,10 +79,12 @@ func initStepTypeRegistry() map[string]reflect.Type {
 func initEdgeTypeRegistry() map[string]reflect.Type {
 	var edgeTypeRegistry = make(map[string]reflect.Type)
 
-	stepTypes := []interface{}{steps.SmoothStep{}}
+	stepTypes := []interface{}{steps.Smoothstep{}}
 
 	for _, v := range stepTypes {
-		edgeTypeRegistry[fmt.Sprintf("%T", v)] = reflect.TypeOf(v)
+		splitString := strings.SplitAfter(fmt.Sprintf("%T", v), ".")
+		camelCased := strcase.ToLowerCamel(splitString[len(splitString)-1])
+		edgeTypeRegistry[camelCased] = reflect.TypeOf(v)
 	}
 
 	return edgeTypeRegistry

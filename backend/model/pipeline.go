@@ -117,8 +117,10 @@ type StepData struct {
 }
 
 type NodeDescription struct {
-	ID    string   `json:"id"`
-	Label string   `json:"label"`
-	Type  string   `json:"type"`
-	Data  StepData `json:"data"`
+	ID       string   `json:"id"`
+	Label    string   `json:"label"`
+	Type     string   `json:"type"`
+	SourceID string   `json:"source"`
+	TargetID string   `json:"target"`
+	Data     StepData `json:"data"`
 }

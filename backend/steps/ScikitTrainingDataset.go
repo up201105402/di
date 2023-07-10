@@ -3,10 +3,11 @@ package steps
 import (
 	"di/model"
 	"os"
+	"strconv"
 )
 
 type ScikitTrainingDataset struct {
-	ID         uint
+	ID         int
 	PipelineID uint
 	RunID      uint
 	Dataset    string
@@ -17,9 +18,10 @@ func (step ScikitTrainingDataset) GetID() int {
 	return int(step.ID)
 }
 
-func (step *ScikitTrainingDataset) SetData(stepData model.StepData) error {
-	step.Dataset = stepData.NameAndType.Dataset
-	step.DataConfig = stepData.StepConfig
+func (step *ScikitTrainingDataset) SetData(stepDescription model.NodeDescription) error {
+	step.ID, _ = strconv.Atoi(stepDescription.ID)
+	step.Dataset = stepDescription.Data.NameAndType.Dataset
+	step.DataConfig = stepDescription.Data.StepConfig
 	return nil
 }
 

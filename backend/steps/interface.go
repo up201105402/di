@@ -8,7 +8,7 @@ import (
 type Step interface {
 	GetID() int
 	Execute(logFile *os.File) error
-	SetData(stepConfig model.StepData) error
+	SetData(stepDescription model.NodeDescription) error
 	SetPipelineID(pipelineID uint) error
 	SetRunID(runID uint) error
 	GetPipelineID() uint
@@ -16,7 +16,7 @@ type Step interface {
 }
 
 type Edge interface {
-	GetID() int
-	GetNextStep() *Step
-	GetPreviousStep() *Step
+	SetData(stepDescription model.NodeDescription)
+	GetSourceID() int
+	GetTargetID() int
 }

@@ -4,12 +4,13 @@ import (
 	"di/model"
 	"fmt"
 	"os"
+	"strconv"
 
 	"github.com/go-git/go-git/v5"
 )
 
 type CheckoutRepo struct {
-	ID         uint
+	ID         int
 	PipelineID uint
 	RunID      uint
 	RepoURL    string `json:"repoURL"`
@@ -19,8 +20,9 @@ func (step CheckoutRepo) GetID() int {
 	return int(step.ID)
 }
 
-func (step *CheckoutRepo) SetData(stepConfig model.StepData) error {
-	step.RepoURL = stepConfig.NameAndType.Name
+func (step *CheckoutRepo) SetData(stepDescription model.NodeDescription) error {
+	step.ID, _ = strconv.Atoi(stepDescription.ID)
+	step.RepoURL = stepDescription.Data.StepConfig.RepoURL
 
 	return nil
 }

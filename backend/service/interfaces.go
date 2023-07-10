@@ -51,8 +51,8 @@ type RunService interface {
 }
 
 type NodeTypeService interface {
-	NewStepInstance(pipelineID uint, runID uint, nodeType string, stepData model.StepData) (*steps.Step, error)
-	NewEdgeInstance(pipelineID uint, runID uint, edgeType string, stepData model.StepData) (*steps.Edge, error)
+	NewStepInstance(pipelineID uint, runID uint, nodeType string, nodeDescription model.NodeDescription) (*steps.Step, error)
+	NewEdgeInstance(pipelineID uint, runID uint, edgeType string, nodeDescription model.NodeDescription) (*steps.Edge, error)
 }
 
 type TaskService interface {

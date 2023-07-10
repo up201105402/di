@@ -231,7 +231,11 @@
 
   const onStepEdited = (formData) => {
     if (formData.nameAndType.isFirstStep) {
-      elements.value.forEach(element => element.data.nameAndType.isFirstStep = false)
+      elements.value.forEach(element => {
+        if (element.data.nameAndType) {
+          element.data.nameAndType.isFirstStep = false;
+        }
+      })
     }
 
     const index = elements.value.findIndex(element => element.id === formData.id);

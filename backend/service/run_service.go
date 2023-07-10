@@ -131,7 +131,7 @@ func (service *runServiceImpl) HandleRunPipelineTask(ctx context.Context, t *asy
 	pipelineGraph := graph.New(stepHash, graph.Directed(), graph.Acyclic())
 
 	stps := util.Map(stepDescriptions, func(stepDescription model.NodeDescription) steps.Step {
-		step, _ := service.NodeTypeService.NewStepInstance(runPipelinePayload.PipelineID, runPipelinePayload.RunID, stepDescription.Data.Type, stepDescription.Data)
+		step, _ := service.NodeTypeService.NewStepInstance(runPipelinePayload.PipelineID, runPipelinePayload.RunID, stepDescription.Data.Type, stepDescription)
 
 		if step != nil {
 			return *step
@@ -141,7 +141,7 @@ func (service *runServiceImpl) HandleRunPipelineTask(ctx context.Context, t *asy
 	})
 
 	edgs := util.Map(stepDescriptions, func(stepDescription model.NodeDescription) steps.Edge {
-		edge, _ := service.NodeTypeService.NewEdgeInstance(runPipelinePayload.PipelineID, runPipelinePayload.RunID, stepDescription.Type, stepDescription.Data)
+		edge, _ := service.NodeTypeService.NewEdgeInstance(runPipelinePayload.PipelineID, runPipelinePayload.RunID, stepDescription.Type, stepDescription)
 
 		if edge != nil {
 			return *edge
@@ -163,9 +163,7 @@ func (service *runServiceImpl) HandleRunPipelineTask(ctx context.Context, t *asy
 	}
 
 	for _, edge := range edgs {
-		previousStepID := (*edge.GetPreviousStep()).GetID()
-		nextStepID := (*edge.GetNextStep()).GetID()
-		pipelineGraph.AddEdge(previousStepID, nextStepID)
+		pipelineGraph.AddEdge(edge.GetSourceID(), edge.GetTargetID())
 	}
 
 	pipelinesWorkDir := os.Getenv("PIPELINES_WORK_DIR")
