@@ -43,11 +43,24 @@ type RunService interface {
 	Get(id uint) (*model.Run, error)
 	GetByPipeline(pipelineId uint) ([]model.Run, error)
 	Create(pipelineId uint) error
+	CreateRunStepStatus(runID uint, stepID int, runStatusID uint, errorMessage string) error
 	Execute(runID uint) error
 	Update(run *model.Run) error
+	UpdateRunStepStatus(run *model.RunStepStatus) error
 	Delete(id uint) error
+	DeleteRunStepStatus(id uint) error
 	NewRunPipelineTask(pipelineID uint, runID uint, graph string, stepIndex uint) (*asynq.Task, error)
 	HandleRunPipelineTask(ctx context.Context, t *asynq.Task) error
+	UpdateRunStatus(runID uint, statusID uint, errorMessage string)
+}
+
+type RunStepStatusService interface {
+	Get(id uint) (*model.Run, error)
+	GetByRun(runID uint) ([]model.Run, error)
+	Create(runID uint, runStatus model.RunStatus, errorMessage string) error
+	Update(run *model.RunStepStatus) error
+	Delete(id uint) error
+	UpdateRunStatus()
 }
 
 type NodeTypeService interface {

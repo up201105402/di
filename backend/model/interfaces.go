@@ -22,7 +22,12 @@ type PipelineRepository interface {
 type RunRepository interface {
 	FindByID(id uint) (*Run, error)
 	FindByPipeline(pipelineId uint) ([]Run, error)
+	FindRunStepStatusesByRun(runID uint) ([]RunStepStatus, error)
 	Create(u *Run) error
+	CreateRunStepStatus(u *RunStepStatus) error
 	Update(u *Run) error
+	UpdateRunStepStatus(u *RunStepStatus) error
 	Delete(id uint) error
+	DeleteRunStepStatus(id uint) error
+	DeleteAllRunStepStatuses(runId uint) error
 }

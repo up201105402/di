@@ -60,6 +60,11 @@ func CreateOrUpdateSchema(db *gorm.DB) error {
 		return err
 	}
 
+	if err := db.AutoMigrate(&model.RunStepStatus{}); err != nil {
+		log.Fatalln(err)
+		return err
+	}
+
 	return nil
 }
 

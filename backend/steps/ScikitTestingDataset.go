@@ -11,6 +11,7 @@ type ScikitTestingDataset struct {
 	PipelineID  uint
 	RunID       uint
 	Dataset     string
+	Name        string
 	IsFirstStep bool
 	DataConfig  model.StepDataConfig
 }
@@ -19,12 +20,17 @@ func (step ScikitTestingDataset) GetID() int {
 	return int(step.ID)
 }
 
+func (step ScikitTestingDataset) GetName() string {
+	return step.Name
+}
+
 func (step *ScikitTestingDataset) GetIsFirstStep() bool {
 	return step.IsFirstStep
 }
 
 func (step *ScikitTestingDataset) SetData(stepDescription model.NodeDescription) error {
 	step.ID, _ = strconv.Atoi(stepDescription.ID)
+	step.Name = stepDescription.Data.NameAndType.Name
 	step.IsFirstStep = stepDescription.Data.NameAndType.IsFirstStep
 	step.Dataset = stepDescription.Data.NameAndType.Dataset
 	step.DataConfig = stepDescription.Data.StepConfig

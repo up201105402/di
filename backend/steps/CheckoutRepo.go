@@ -14,11 +14,16 @@ type CheckoutRepo struct {
 	PipelineID  uint
 	RunID       uint
 	IsFirstStep bool
+	Name        string
 	RepoURL     string `json:"repoURL"`
 }
 
 func (step CheckoutRepo) GetID() int {
 	return int(step.ID)
+}
+
+func (step CheckoutRepo) GetName() string {
+	return step.Name
 }
 
 func (step *CheckoutRepo) GetIsFirstStep() bool {
@@ -27,6 +32,7 @@ func (step *CheckoutRepo) GetIsFirstStep() bool {
 
 func (step *CheckoutRepo) SetData(stepDescription model.NodeDescription) error {
 	step.ID, _ = strconv.Atoi(stepDescription.ID)
+	step.Name = stepDescription.Data.NameAndType.Name
 	step.IsFirstStep = stepDescription.Data.NameAndType.IsFirstStep
 	step.RepoURL = stepDescription.Data.StepConfig.RepoURL
 
@@ -57,9 +63,6 @@ func (step CheckoutRepo) Execute(logFile *os.File) error {
 
 	pipelinesWorkDir := os.Getenv("PIPELINES_WORK_DIR")
 	currentPipelineWorkDir := pipelinesWorkDir + "/" + fmt.Sprint(step.PipelineID) + "/" + fmt.Sprint(step.RunID) + "/"
-	if err := os.MkdirAll(currentPipelineWorkDir, os.ModePerm); err != nil {
-		return err
-	}
 
 	if _, err := git.PlainClone(currentPipelineWorkDir, false, &git.CloneOptions{
 		URL:      step.RepoURL,

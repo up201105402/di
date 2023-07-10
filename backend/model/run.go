@@ -15,12 +15,24 @@ type RunStatus struct {
 
 type Run struct {
 	gorm.Model
-	PipelineID  uint `json:"pipelineId"`
-	Pipeline    Pipeline
-	StatusID    uint
-	Status      RunStatus
-	Description string
-	LastRun     time.Time
+	PipelineID   uint `json:"pipelineId"`
+	Pipeline     Pipeline
+	StatusID     uint
+	Status       RunStatus
+	ErrorMessage string
+	Description  string
+	LastRun      time.Time
+}
+
+type RunStepStatus struct {
+	gorm.Model
+	StepID       int  `gorm:"primaryKey"`
+	RunID        uint `gorm:"primaryKey"`
+	Run          Run
+	StatusID     uint
+	Status       RunStatus
+	ErrorMessage string
+	LastRun      time.Time
 }
 
 type CreateRunReq struct {

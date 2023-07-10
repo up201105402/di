@@ -4,13 +4,12 @@
     import { useAsyncState } from "@vueuse/core";
     import { doRequest } from "@/util";
     import { useAuthStore } from "@/stores/auth";
-    import { mdiEye, mdiPlus, mdiChevronRight, mdiChevronDown } from "@mdi/js";
+    import { mdiReload, mdiEye, mdiPlus, mdiChevronRight, mdiChevronDown } from "@mdi/js";
     import $ from 'jquery';
     import RunsTable from "@/components/RunsTable.vue";
     import CardBoxModal from "@/components/CardBoxModal.vue";
     import BaseButtons from "@/components/BaseButtons.vue";
     import BaseButton from "@/components/BaseButton.vue";
-    import UserAvatar from "@/components/UserAvatar.vue";
     import BaseIcon from "@/components/BaseIcon.vue";
     import { useToast } from 'primevue/usetoast';
     import Loading from "vue-loading-overlay";
@@ -90,32 +89,6 @@
         },
     );
 
-    // EXECUTE RUN
-
-    const {
-        isLoading: isExecutingSubrow,
-        state: executeSubrowResponse,
-        isReady: executeSubrowFinished,
-        error: executeError,
-        execute: executeSubrow
-    } = useAsyncState(
-        (subRowID) => {
-            return doRequest({
-                url: `/api/run/execute/${subRowID}`,
-                method: 'POST',
-                headers: {
-                    Authorization: `${accessToken.value}`,
-                },
-            });
-        },
-        {},
-        {
-            delay: 500,
-            resetOnExecute: false,
-            immediate: false,
-        },
-    );
-
     const isLoading = computed(() => isFetchingSubrows.value || isCreatingSubrow.value);
     const isRequestError = ref(false);
     const requestError = ref("");
@@ -137,7 +110,7 @@
             requestError.value = value.error.message;
             toast.add({ severity: 'error', summary: 'Error', detail: value.error.message, life: 3000 });
         } else {
-            fetchSubrows(null, props.parentRow.ID);   
+            fetchSubrows(null, props.parentRow.ID);
         }
     })
 
@@ -147,7 +120,7 @@
 
     const emit = defineEmits(["expand-collapse-row", "create-subrow"]);
 
-    const expandOrCollapseRow = (e) => {
+    const expandOrCollapseRow = () => {
         isRowOpen.value = !isRowOpen.value;
 
         if (isRowOpen.value) {
@@ -164,28 +137,27 @@
         emit("create-subrow", props.parentRow.ID);
     }
 
-    const onSubRowButtonClicked = (e, subRowID) => {
-        executeSubrow(null, subRowID);
-    }
-
-    const onCreateSubrow = (e) => {
+    const onCreateSubrow = () => {
         createSubrow(null, props.parentRow.ID);
     }
 
-    const acknowledgeError = (e) => {
-        isRequestError.value = null
-    }
-
-    const slideDownSubRow = (subRowID) => {
+    const slideDownSubRow = () => {
         const subRow = $("#subrow-" + props.parentRow.ID);
         subRow.removeClass("hidden-subrow");
         subRow.addClass("show-subrow");
     }
 
-    const slideUpSubRow = (subRowID) => {
+    const slideUpSubRow = () => {
         const subRow = $("#subrow-" + props.parentRow.ID);
         subRow.removeClass("show-subrow");
         subRow.addClass("hidden-subrow");
+    }
+    
+    const onReloadClicked = () => {
+        if (isRowOpen.value) {
+            fetchSubrows(null, props.parentRow.ID)
+            emit("expand-collapse-row", props.parentRow.ID, isRowOpen.value);
+        }
     }
 
 </script>
@@ -196,8 +168,7 @@
 
     <tr :key="parentRow.ID">
         <td class="border-b-0 lg:w-6 before:hidden">
-            <BaseIcon :path="isRowOpen ? mdiChevronDown : mdiChevronRight"
-                @click.prevent="(e) => expandOrCollapseRow(e, parentRow.ID)" />
+            <BaseIcon :path="isRowOpen ? mdiChevronDown : mdiChevronRight" @click.prevent="(e) => expandOrCollapseRow(e, parentRow.ID)" />
         </td>
         <td data-label="Name">
             {{ parentRow.name }}
@@ -207,6 +178,7 @@
         </td>
         <td class="before:hidden lg:w-1 whitespace-nowrap">
             <BaseButtons type="justify-start lg:justify-end" no-wrap>
+                <BaseButton color="success" :icon="mdiReload" @click="onReloadClicked" />
                 <BaseButton color="info" :icon="mdiEye" small :to="'/pipelines/runs/' + parentRow.ID" />
                 <BaseButton color="success" :icon="mdiPlus" small @click.prevent="onRowCreateButtonClicked" />
             </BaseButtons>

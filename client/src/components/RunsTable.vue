@@ -6,11 +6,11 @@ import { useAuthStore } from "@/stores/auth";
 import { mdiPlayOutline, mdiRunFast } from "@mdi/js";
 import BaseButtons from "@/components/BaseButtons.vue";
 import BaseButton from "@/components/BaseButton.vue";
-import BaseIcon from "@/components/BaseIcon.vue";
 import BaseLevel from "@/components/BaseLevel.vue";
 import { useToast } from 'primevue/usetoast';
 import { ref, computed, watch } from "vue";
 import { formatDate } from '@/util';
+import Loading from "vue-loading-overlay";
 
 const { accessToken } = storeToRefs(useAuthStore());
 const toast = useToast();
@@ -21,6 +21,8 @@ const props = defineProps({
         required: true,
     }
 });
+
+const disabledRuns = ref([])
 
 // EXECUTE RUN
 
@@ -55,11 +57,12 @@ watch(executeSubrowResponse, (value) => {
 })
 
 const onSubRowButtonClicked = (e, subRowID) => {
+    disabledRuns.value.push(subRowID);
     executeSubrow(null, subRowID);
 }
 
 const isRunButtonDisabled = (run) => {
-    return run.Status.ID != 1;
+    return run.Status.ID != 1 || disabledRuns.value.includes(run.ID);
 }
 
 const perPage = ref(5);
@@ -87,9 +90,12 @@ const pagesList = computed(() => {
     return pagesList;
 });
 
+const isLoading = computed(() => isExecutingSubrow.value);
+
 </script>
 
 <template>
+    <loading v-model:active="isLoading" :is-full-page="false" />
     <table>
         <thead>
             <tr>

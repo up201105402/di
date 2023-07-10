@@ -51,11 +51,16 @@ type ScikitUnsupervisedModel struct {
 	PipelineID uint
 	RunID      uint
 	Model      string
+	Name       string
 	DataConfig model.StepDataConfig
 }
 
 func (step ScikitUnsupervisedModel) GetID() int {
 	return int(step.ID)
+}
+
+func (step ScikitUnsupervisedModel) GetName() string {
+	return step.Name
 }
 
 func (step *ScikitUnsupervisedModel) SetModel(model string) error {

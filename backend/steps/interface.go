@@ -7,6 +7,7 @@ import (
 
 type Step interface {
 	GetID() int
+	GetName() string
 	Execute(logFile *os.File) error
 	SetData(stepDescription model.NodeDescription) error
 	SetPipelineID(pipelineID uint) error
