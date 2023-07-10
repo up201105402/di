@@ -3,7 +3,7 @@
     import { NodeToolbar } from '@vue-flow/node-toolbar';
     import { computed } from 'vue';
     import BaseIcon from "@/components/BaseIcon.vue";
-    import { mdiCloseCircle } from "@mdi/js";
+    import { mdiCloseCircle, mdiAlertCircle, mdiCancel, mdiCheckCircleOutline, mdiDotsCircle } from "@mdi/js";
     import { camel2title } from '@/util';
 
     const props = defineProps({
@@ -40,10 +40,23 @@
         backgroundColor: props.data.color,
         filter: 'invert(100%)',
     }))
+
+    const getIcon = () => {
+        if (props.data.status == 1) {
+            return mdiCancel;
+        } else if (props.data.status == 2) {
+            return mdiDotsCircle;
+        } else if (props.data.status == 3) {
+            return mdiAlertCircle;
+        } else if (props.data.status == 4) {
+            return mdiCheckCircleOutline;
+        }
+    }
+
 </script>
 
 <template>
-    <NodeToolbar style="display: flex; gap: 0.5rem; align-items: center" :is-visible="data.toolbarVisible"
+    <NodeToolbar v-if="!props.data.readonly" style="display: flex; gap: 0.5rem; align-items: center" :is-visible="data.toolbarVisible"
         :position="Position.Top">
         <button class="lg" @click.prevent="onDeleteClick">
             <BaseIcon :path="mdiCloseCircle " />
@@ -57,8 +70,8 @@
         <span class="node-type-label">{{ camel2title(props.data.type) }}</span>
     </div>
     <div>
-        <div>{{ props.label }}</div>
-
+        <span>{{ props.label }}</span>
+        <span v-if="props.data.status"><BaseIcon :path="getIcon()" /></span>
         <Handle v-if="props.data.nameAndType.isFirstStep === false" id="a" type="source" :position="Position.Left" :style="sourceHandleStyle" />
         <Handle id="b" type="target" :position="Position.Right" :style="sourceHandleStyle" />
     </div>

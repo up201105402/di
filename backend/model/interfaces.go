@@ -30,4 +30,5 @@ type RunRepository interface {
 	Delete(id uint) error
 	DeleteRunStepStatus(id uint) error
 	DeleteAllRunStepStatuses(runId uint) error
+	GetRunStatusByID(id uint) (*RunStatus, error)
 }

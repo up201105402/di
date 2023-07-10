@@ -43,9 +43,14 @@ func (service *runServiceImpl) GetByPipeline(pipelineId uint) ([]model.Run, erro
 	return pipelines, error
 }
 
-func (service *runServiceImpl) Create(pipelineId uint) error {
+func (service *runServiceImpl) FindRunStepStatusesByRun(runID uint) ([]model.RunStepStatus, error) {
+	runStepStatuses, error := service.RunRepository.FindRunStepStatusesByRun(runID)
+	return runStepStatuses, error
+}
+
+func (service *runServiceImpl) Create(pipeline model.Pipeline) error {
 	// Add Initial Status
-	newRun := &model.Run{PipelineID: pipelineId, StatusID: 1}
+	newRun := &model.Run{PipelineID: pipeline.ID, RunStatusID: 1, Definition: pipeline.Definition}
 	if err := service.RunRepository.Create(newRun); err != nil {
 		return err
 	}
@@ -304,7 +309,7 @@ func (service *runServiceImpl) HandleRunPipelineTask(ctx context.Context, t *asy
 		log.Println(msg)
 		runLogger.Println(msg)
 	} else {
-		service.UpdateRunStatus(runPipelinePayload.RunID, 4, msg)
+		service.UpdateRunStatus(runPipelinePayload.RunID, 4, "")
 		msg := fmt.Sprintf("Execution of run %d successful!", runPipelinePayload.RunID)
 		log.Println(msg)
 		runLogger.Println(msg)
@@ -317,7 +322,8 @@ func (service *runServiceImpl) HandleRunPipelineTask(ctx context.Context, t *asy
 
 func (service *runServiceImpl) UpdateRunStatus(runID uint, statusID uint, errorMessage string) {
 	run, _ := service.RunRepository.FindByID(runID)
-	run.StatusID = statusID
+	runStatus, _ := service.RunRepository.GetRunStatusByID(4)
+	run.RunStatus = *runStatus
 	run.ErrorMessage = errorMessage
 	run.LastRun = time.Now()
 	service.RunRepository.Update(run)

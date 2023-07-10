@@ -40,7 +40,7 @@ func GetRuns(services *service.Services) gin.HandlerFunc {
 	}
 }
 
-func FindByPipeline(services *service.Services) gin.HandlerFunc {
+func FindRunsByPipeline(services *service.Services) gin.HandlerFunc {
 	return func(context *gin.Context) {
 
 		id := context.Param("id")
@@ -138,7 +138,7 @@ func CreateRun(services *service.Services) gin.HandlerFunc {
 			return
 		}
 
-		serviceError = services.RunService.Create(pipeline.ID)
+		serviceError = services.RunService.Create(*pipeline)
 
 		if serviceError != nil {
 			log.Printf("Failed to create run for pipeline: %v\n", err.Error())
@@ -226,5 +226,53 @@ func ExecuteRun(services *service.Services) gin.HandlerFunc {
 		}
 
 		context.JSON(http.StatusOK, gin.H{})
+	}
+}
+
+func FindRunResulstById(services *service.Services) gin.HandlerFunc {
+	return func(context *gin.Context) {
+
+		id := context.Param("id")
+
+		runID, parseError := strconv.ParseUint(id, 10, 64)
+
+		if parseError != nil {
+			log.Printf("Failed to convert runId into uint: %v\n", parseError)
+			errorMessage := fmt.Sprint("Failed to convert runId into uint: %v\n", parseError)
+			err := errors.NewInternal()
+			context.JSON(err.Status(), gin.H{
+				"error": errorMessage,
+			})
+			return
+		}
+
+		run, serviceError := services.RunService.Get(uint(runID))
+
+		if serviceError != nil {
+			log.Printf("Failed to get run with id %v: %v\n", runID, serviceError)
+			errorMessage := fmt.Sprint("Failed to get run with id %v: %v\n", runID, serviceError)
+			err := errors.NewInternal()
+			context.JSON(err.Status(), gin.H{
+				"error": errorMessage,
+			})
+			return
+		}
+
+		runStepStatuses, getError := services.RunService.FindRunStepStatusesByRun(run.ID)
+
+		if serviceError != nil {
+			log.Printf("Failed to get runs for pipeline with id %v: %v\n", runID, getError)
+			errorMessage := fmt.Sprint("Failed to get runs for pipeline with id %v: %v\n", runID, getError)
+			err := errors.NewInternal()
+			context.JSON(err.Status(), gin.H{
+				"error": errorMessage,
+			})
+			return
+		}
+
+		context.JSON(http.StatusOK, gin.H{
+			"run":             run,
+			"runStepStatuses": runStepStatuses,
+		})
 	}
 }

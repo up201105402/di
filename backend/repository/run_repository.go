@@ -38,7 +38,7 @@ func (repo *runRepositoryImpl) FindByPipeline(pipelineId uint) ([]model.Run, err
 
 	var runs []model.Run
 
-	result := repo.DB.Preload("Pipeline").Preload("Status").Where("pipeline_id = ?", pipelineId).Find(&runs)
+	result := repo.DB.Preload("Pipeline").Preload("RunStatus").Where("pipeline_id = ?", pipelineId).Find(&runs)
 
 	if errors.Is(result.Error, gorm.ErrRecordNotFound) {
 		log.Printf("Failed to get runs for pipeline %v. Reason: %v\n", pipelineId, result.Error)
@@ -134,4 +134,17 @@ func (repo *runRepositoryImpl) DeleteAllRunStepStatuses(runId uint) error {
 	}
 
 	return nil
+}
+
+func (repo *runRepositoryImpl) GetRunStatusByID(id uint) (*model.RunStatus, error) {
+	var runStatus = model.RunStatus{}
+
+	result := repo.DB.First(&runStatus, id)
+
+	if errors.Is(result.Error, gorm.ErrRecordNotFound) {
+		log.Printf("Failed to get run status with id: %v. Reason: %v\n", id, result.Error)
+		return nil, result.Error
+	}
+
+	return &runStatus, nil
 }

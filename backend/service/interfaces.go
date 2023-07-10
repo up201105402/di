@@ -25,7 +25,7 @@ type UserService interface {
 
 type TokenService interface {
 	NewFirstPairFromUser(ctx context.Context, u *model.User) (*model.TokenPair, error)
-	NewPairFromUser(ctx context.Context, u *model.User, prevTokenID uint) (*model.TokenPair, error)
+	NewPairFromUser(ctx context.Context, u *model.User, refreshToken model.RefreshToken) (*model.TokenPair, error)
 	Signout(ctx context.Context, uid uint) error
 	ValidateIDToken(tokenString string) (*model.User, error)
 	ValidateRefreshToken(refreshTokenString string) (*model.RefreshToken, error)
@@ -42,7 +42,8 @@ type PipelineService interface {
 type RunService interface {
 	Get(id uint) (*model.Run, error)
 	GetByPipeline(pipelineId uint) ([]model.Run, error)
-	Create(pipelineId uint) error
+	FindRunStepStatusesByRun(runID uint) ([]model.RunStepStatus, error)
+	Create(pipeline model.Pipeline) error
 	CreateRunStepStatus(runID uint, stepID int, runStatusID uint, errorMessage string) error
 	Execute(runID uint) error
 	Update(run *model.Run) error

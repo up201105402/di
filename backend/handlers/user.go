@@ -160,7 +160,7 @@ func NewAccessToken(services *service.Services) gin.HandlerFunc {
 			return
 		}
 
-		tokens, err := services.TokenService.NewPairFromUser(ctx, user, refreshToken.ID)
+		tokens, err := services.TokenService.NewPairFromUser(ctx, user, *refreshToken)
 
 		if err != nil {
 			log.Printf("Failed to create tokens for user: %+v. Error: %v\n", user, err.Error())

@@ -149,14 +149,18 @@ func (service *tokenService) NewFirstPairFromUser(ctx context.Context, u *model.
 // NewPairFromUser creates fresh id and refresh tokens for the current user
 // If a previous token is included, the previous token is removed from
 // the tokens repository
-func (service *tokenService) NewPairFromUser(ctx context.Context, u *model.User, prevTokenID uint) (*model.TokenPair, error) {
-	if err := service.TokenRepository.DeleteRefreshToken(ctx, u.ID, prevTokenID); err != nil {
-		log.Printf("Could not delete previous refreshToken for uid: %v, tokenID: %v\n", u.ID, prevTokenID)
+func (service *tokenService) NewPairFromUser(ctx context.Context, u *model.User, refreshToken model.RefreshToken) (*model.TokenPair, error) {
+	idToken, err := generateIDToken(u, service.PrivKey, service.IDExpirationSecs)
 
-		return nil, err
+	if err != nil {
+		log.Printf("Error generating idToken for uid: %v. Error: %v\n", u.ID, err.Error())
+		return nil, errors.NewInternal()
 	}
 
-	return service.NewFirstPairFromUser(ctx, u)
+	return &model.TokenPair{
+		IDToken:      model.IDToken{SignedString: idToken},
+		RefreshToken: model.RefreshToken{SignedString: refreshToken.SignedString, ID: refreshToken.ID, UID: refreshToken.ID},
+	}, nil
 }
 
 // Signout reaches out to the repository layer to delete all valid tokens for a user

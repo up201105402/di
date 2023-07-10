@@ -17,10 +17,10 @@ type Run struct {
 	gorm.Model
 	PipelineID   uint `json:"pipelineId"`
 	Pipeline     Pipeline
-	StatusID     uint
-	Status       RunStatus
+	RunStatusID  uint
+	RunStatus    RunStatus
 	ErrorMessage string
-	Description  string
+	Definition   string
 	LastRun      time.Time
 }
 

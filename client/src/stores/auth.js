@@ -170,6 +170,7 @@ export const getNewAccessToken = async () => {
         url: '/api/user/tokens',
         method: 'POST',
         data: {
+            accessToken: store.accessToken.value,
             refreshToken: store.refreshToken.value,
         },
     }, false);

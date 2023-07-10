@@ -93,7 +93,7 @@ watch(fetchResponse, (value) => {
 
 const parsePipelineDefinition = (pipeline) => {
   try {
-    return JSON.parse(fetchResponse.value.data.pipeline.definition)
+    return JSON.parse(pipeline.definition)
   } catch (e) {
     return [];
   }

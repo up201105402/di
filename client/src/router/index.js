@@ -4,6 +4,7 @@ import Pipelines from "@/views/PipelinesView.vue";
 import Runs from "@/views/RunsView.vue";
 import PipelineRuns from "@/views/PipelineRunsView.vue";
 import PipelineEditor from "@/views/PipelineEditorView.vue";
+import RunResults from "@/views/RunResultsView.vue";
 
 const routes = [
   // {
@@ -57,6 +58,15 @@ const routes = [
     path: "/pipelines/runs/:id",
     name: "pipelineruns",
     component: PipelineRuns,
+    private: true,
+  },
+  {
+    meta: {
+      title: "Run Results",
+    },
+    path: "/runresults/:id",
+    name: "runsresults",
+    component: RunResults,
     private: true,
   },
   {

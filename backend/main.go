@@ -82,9 +82,12 @@ func setupRouter(services *service.Services) *gin.Engine {
 
 	runAPI := router.Group("/api/run")
 	runAPI.GET("", middleware.Auth(services.TokenService), handlers.GetRuns(services))
-	runAPI.GET("/:id", middleware.Auth(services.TokenService), handlers.FindByPipeline(services))
+	runAPI.GET("/:id", middleware.Auth(services.TokenService), handlers.FindRunsByPipeline(services))
 	runAPI.POST("/:id", middleware.Auth(services.TokenService), handlers.CreateRun(services))
 	runAPI.POST("/execute/:runID", middleware.Auth(services.TokenService), handlers.ExecuteRun(services))
+
+	runResultsAPI := router.Group("/api/runresults")
+	runResultsAPI.GET("/:id", middleware.Auth(services.TokenService), handlers.FindRunResulstById(services))
 
 	return router
 }
