@@ -13,6 +13,7 @@ type Step interface {
 	SetRunID(runID uint) error
 	GetPipelineID() uint
 	GetRunID() uint
+	GetIsFirstStep() bool
 }
 
 type Edge interface {

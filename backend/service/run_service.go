@@ -158,7 +158,12 @@ func (service *runServiceImpl) HandleRunPipelineTask(ctx context.Context, t *asy
 		return edge != nil
 	})
 
+	firstStepID := 0
+
 	for _, step := range stps {
+		if step.GetIsFirstStep() {
+			firstStepID = step.GetID()
+		}
 		pipelineGraph.AddVertex(step)
 	}
 
@@ -185,7 +190,7 @@ func (service *runServiceImpl) HandleRunPipelineTask(ctx context.Context, t *asy
 		return asynq.SkipRetry
 	}
 
-	graph.BFS(pipelineGraph, 0, func(id int) bool {
+	graph.BFS(pipelineGraph, firstStepID, func(id int) bool {
 		step, _ := pipelineGraph.Vertex(id)
 		log.Printf("BFS  %v\n", step)
 

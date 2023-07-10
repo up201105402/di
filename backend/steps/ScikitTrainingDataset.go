@@ -7,19 +7,25 @@ import (
 )
 
 type ScikitTrainingDataset struct {
-	ID         int
-	PipelineID uint
-	RunID      uint
-	Dataset    string
-	DataConfig model.StepDataConfig
+	ID          int
+	PipelineID  uint
+	RunID       uint
+	Dataset     string
+	IsFirstStep bool
+	DataConfig  model.StepDataConfig
 }
 
 func (step ScikitTrainingDataset) GetID() int {
 	return int(step.ID)
 }
 
+func (step *ScikitTrainingDataset) GetIsFirstStep() bool {
+	return step.IsFirstStep
+}
+
 func (step *ScikitTrainingDataset) SetData(stepDescription model.NodeDescription) error {
 	step.ID, _ = strconv.Atoi(stepDescription.ID)
+	step.IsFirstStep = stepDescription.Data.NameAndType.IsFirstStep
 	step.Dataset = stepDescription.Data.NameAndType.Dataset
 	step.DataConfig = stepDescription.Data.StepConfig
 	return nil

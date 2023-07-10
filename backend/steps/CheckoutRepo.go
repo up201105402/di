@@ -10,18 +10,24 @@ import (
 )
 
 type CheckoutRepo struct {
-	ID         int
-	PipelineID uint
-	RunID      uint
-	RepoURL    string `json:"repoURL"`
+	ID          int
+	PipelineID  uint
+	RunID       uint
+	IsFirstStep bool
+	RepoURL     string `json:"repoURL"`
 }
 
 func (step CheckoutRepo) GetID() int {
 	return int(step.ID)
 }
 
+func (step *CheckoutRepo) GetIsFirstStep() bool {
+	return step.IsFirstStep
+}
+
 func (step *CheckoutRepo) SetData(stepDescription model.NodeDescription) error {
 	step.ID, _ = strconv.Atoi(stepDescription.ID)
+	step.IsFirstStep = stepDescription.Data.NameAndType.IsFirstStep
 	step.RepoURL = stepDescription.Data.StepConfig.RepoURL
 
 	return nil
