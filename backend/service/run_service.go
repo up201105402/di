@@ -168,7 +168,7 @@ func (service *runServiceImpl) HandleRunPipelineTask(ctx context.Context, t *asy
 	}
 
 	for _, edge := range edgs {
-		pipelineGraph.AddEdge(edge.GetSourceID(), edge.GetTargetID())
+		pipelineGraph.AddEdge(edge.GetTargetID(), edge.GetSourceID())
 	}
 
 	pipelinesWorkDir := os.Getenv("PIPELINES_WORK_DIR")
