@@ -61,5 +61,22 @@ func (step ScikitTestingDataset) Execute(logFile *os.File) error {
 
 	logFile.WriteString("Executing...")
 
+	switch step.Dataset {
+	case "scikitBreastCancer":
+
+	case "scikitDiabetes":
+
+	case "scikitDigits":
+
+	case "scikitIris":
+
+	case "scikitLinerrud":
+
+	case "scikitWine":
+
+	case "scikitLoadFile":
+
+	}
+
 	return nil
 }

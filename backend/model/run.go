@@ -26,11 +26,11 @@ type Run struct {
 
 type RunStepStatus struct {
 	gorm.Model
-	StepID       int  `gorm:"primaryKey"`
-	RunID        uint `gorm:"primaryKey"`
+	StepID       int
+	RunID        uint
 	Run          Run
-	StatusID     uint
-	Status       RunStatus
+	RunStatusID  uint
+	RunStatus    RunStatus
 	ErrorMessage string
 	LastRun      time.Time
 }

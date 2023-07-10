@@ -59,7 +59,7 @@ func (service *runServiceImpl) Create(pipeline model.Pipeline) error {
 }
 
 func (service *runServiceImpl) CreateRunStepStatus(runID uint, stepID int, runStatusID uint, errorMessage string) error {
-	newRunStepStatus := &model.RunStepStatus{RunID: runID, StepID: stepID, StatusID: runStatusID, LastRun: time.Now()}
+	newRunStepStatus := &model.RunStepStatus{RunID: runID, StepID: stepID, RunStatusID: runStatusID, LastRun: time.Now()}
 	if err := service.RunRepository.CreateRunStepStatus(newRunStepStatus); err != nil {
 		return err
 	}
@@ -270,14 +270,17 @@ func (service *runServiceImpl) HandleRunPipelineTask(ctx context.Context, t *asy
 		log.Println(msg)
 		runLogger.Println(msg)
 
-		service.RunRepository.CreateRunStepStatus(&model.RunStepStatus{RunID: runPipelinePayload.RunID, StepID: id, StatusID: 2, LastRun: time.Now()})
+		runStepStatus := &model.RunStepStatus{RunID: runPipelinePayload.RunID, StepID: id, RunStatusID: 2, LastRun: time.Now()}
+		service.RunRepository.CreateRunStepStatus(runStepStatus)
 
 		if err != nil {
 			msg = fmt.Sprintf("Error updating step %d status: %s", step.GetID(), err.Error())
 			log.Println(msg)
 			runLogger.Println(msg)
 
-			service.RunRepository.UpdateRunStepStatus(&model.RunStepStatus{StepID: id, RunID: runPipelinePayload.RunID, StatusID: 3, ErrorMessage: err.Error()})
+			runStepStatus.RunStatusID = 3
+			runStepStatus.ErrorMessage = err.Error()
+			service.RunRepository.UpdateRunStepStatus(runStepStatus)
 
 			hasError = true
 
@@ -290,7 +293,9 @@ func (service *runServiceImpl) HandleRunPipelineTask(ctx context.Context, t *asy
 			runLogger.Println(msg)
 			log.Println(msg)
 
-			service.RunRepository.UpdateRunStepStatus(&model.RunStepStatus{StepID: id, RunID: runPipelinePayload.RunID, StatusID: 3, ErrorMessage: err.Error()})
+			runStepStatus.RunStatusID = 3
+			runStepStatus.ErrorMessage = err.Error()
+			service.RunRepository.UpdateRunStepStatus(runStepStatus)
 
 			hasError = true
 
@@ -299,7 +304,9 @@ func (service *runServiceImpl) HandleRunPipelineTask(ctx context.Context, t *asy
 			runLogger.Println(fmt.Sprintf("Step %s (%d) executed successfully!", step.GetName(), step.GetID()))
 		}
 
-		service.RunRepository.UpdateRunStepStatus(&model.RunStepStatus{StepID: id, RunID: runPipelinePayload.RunID, StatusID: 4})
+		runStepStatus.RunStatusID = 4
+		runStepStatus.ErrorMessage = ""
+		service.RunRepository.UpdateRunStepStatus(runStepStatus)
 		return false
 	})
 
@@ -322,8 +329,8 @@ func (service *runServiceImpl) HandleRunPipelineTask(ctx context.Context, t *asy
 
 func (service *runServiceImpl) UpdateRunStatus(runID uint, statusID uint, errorMessage string) {
 	run, _ := service.RunRepository.FindByID(runID)
-	runStatus, _ := service.RunRepository.GetRunStatusByID(4)
-	run.RunStatus = *runStatus
+	// runStatus, _ := service.RunRepository.GetRunStatusByID(4)
+	run.RunStatusID = statusID
 	run.ErrorMessage = errorMessage
 	run.LastRun = time.Now()
 	service.RunRepository.Update(run)

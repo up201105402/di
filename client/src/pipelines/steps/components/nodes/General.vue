@@ -57,6 +57,7 @@
             return mdiCheckCircleOutline;
         }
     }
+    
 </script>
 
 <template>
