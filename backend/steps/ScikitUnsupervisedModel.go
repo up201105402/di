@@ -1,10 +1,14 @@
 package steps
 
 import (
+	"bytes"
 	"di/model"
 	"di/util"
 	"di/util/errors"
+	"fmt"
+	"log"
 	"os"
+	"os/exec"
 )
 
 var ScikitUnsupervisedModelTypes = []string{
@@ -98,7 +102,35 @@ func (step *ScikitUnsupervisedModel) GetRunID() uint {
 
 func (step ScikitUnsupervisedModel) Execute(logFile *os.File) error {
 
+	runLogger := log.New(logFile, "", log.Ldate|log.Ltime|log.Lmicroseconds|log.Llongfile)
+
 	var args []string
+
+	args = step.appendArgs(args)
+
+	pipelinesWorkDir := os.Getenv("PIPELINES_WORK_DIR")
+	currentPipelineWorkDir := pipelinesWorkDir + "/" + fmt.Sprint(step.PipelineID) + "/" + fmt.Sprint(step.RunID) + "/"
+
+	cmd := exec.Command("python3", args...)
+	cmd.Dir = currentPipelineWorkDir
+	var stdout, stderr bytes.Buffer
+	cmd.Stdout = &stdout
+	cmd.Stderr = &stderr
+
+	err := cmd.Run()
+	runLogger.Println(stderr.String())
+	runLogger.Println(stdout.String())
+
+	return err
+}
+
+func (step ScikitUnsupervisedModel) appendArgs(args []string) []string {
+
+	scikitSnippetsDir := os.Getenv("SCIKIT_SNIPPETS_DIR") + "models/"
+
+	args = append(args, scikitSnippetsDir+"linear_models.py")
+	args = append(args, "--model")
+	args = append(args, step.Model)
 
 	if step.DataConfig.Fit_intercept.Valid {
 		args = append(args, "--fit_intercept")
@@ -391,5 +423,5 @@ func (step ScikitUnsupervisedModel) Execute(logFile *os.File) error {
 		args = append(args, step.DataConfig.Solver_options.String)
 	}
 
-	return nil
+	return args
 }

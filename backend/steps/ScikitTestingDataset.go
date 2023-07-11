@@ -1,6 +1,7 @@
 package steps
 
 import (
+	"bytes"
 	"di/model"
 	"fmt"
 	"log"
@@ -126,9 +127,13 @@ func (step ScikitTestingDataset) Execute(logFile *os.File) error {
 
 	cmd := exec.Command("python3", args...)
 	cmd.Dir = currentPipelineWorkDir
+	var stdout, stderr bytes.Buffer
+	cmd.Stdout = &stdout
+	cmd.Stderr = &stderr
 
-	out, err := cmd.Output()
-	runLogger.Println(out)
+	err := cmd.Run()
+	runLogger.Println(stderr.String())
+	runLogger.Println(stdout.String())
 
 	return err
 }

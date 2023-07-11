@@ -1,4 +1,5 @@
 import numpy as np
+import argparse
 
 DEFAULT_EPSILON = 0.1
 
@@ -1554,3 +1555,619 @@ def quantile_regression(
 
     return regr, y_pred
 
+def get_alphas_arg(alphas, default):
+    if not alphas:
+        return default
+    
+    str_list = alphas.replace(" ", "").split(",")
+    return tuple([float(i) for i in str_list])
+
+def get_int_arg(arg, default):
+    return int(arg) if arg else default
+
+def get_float_arg(arg, default):
+    return float(arg) if arg else default
+
+def get_class_weights(arg, default):
+    if not arg:
+        return default
+    
+    entries = [i.split(":") for i in arg.replace(" ", "").split(",")]
+    
+    class_weights = {}
+    for entry in entries:
+        class_weights[entry[0].replace('"', "")] = float(entry[1])
+
+    return class_weights
+
+def get_bool_arg(arg, default):
+    return arg if arg else default
+
+
+def call_liner_model(args, X_train, y_train, X_test):
+    if args.model == 'leastSquares':
+        model = least_squares(
+            X_train=X_train,
+            y_train=y_train,
+            X_test=X_test,
+            fit_intercept=args.fit_intercept,
+            copy_X=args.copy_X,
+            n_jobs=args.n_jobs,
+            positive=args.positive
+        )
+    if args.model == 'ridgeRegression':
+        model = ridge_regression(
+            X_train=X_train,
+            y_train=y_train,
+            X_test=X_test,
+            alpha=get_float_arg(args.alpha, 1.0),
+            fit_intercept=args.fit_intercept,
+            copy_X=args.copy_X,
+            max_iter=get_int_arg(args.max_iter, None),
+            tol=get_float_arg(args.tol, 1e-4),
+            solver=args.solver,
+            positive=args.positive,
+            random_state=get_int_arg(args.random_state, None)
+        )
+    if args.model == 'ridgeRegressionCV':
+        model = ridge_regression_cv(
+            X_train=X_train, 
+            y_train=y_train, 
+            X_test=X_test,
+            alphas=get_alphas_arg(args.alphas, (0.1, 1.0, 10.0)),
+            fit_intercept=args.fit_intercept,
+            scoring=args.scoring,
+            cv=args.cv,
+            gcv_mode=args.gcv_mode,
+            store_cv_values=args.store_cv_values,
+            alpha_per_target=args.alpha_per_target
+        )
+    if args.model == 'ridgeClassifier':
+        model = ridge_classifier(
+            X_train=X_train, 
+            y_train=y_train, 
+            X_test=X_test,
+            alpha=get_float_arg(args.alpha, 1.0),
+            fit_intercept=args.fit_intercept,
+            copy_X=args.copy_X,
+            max_iter=get_int_arg(args.max_iter, None),
+            tol=get_float_arg(args.tol, 1e-4),
+            class_weight=get_class_weights(args.class_weight, 'balanced'),
+            solver=args.solver,
+            positive=args.positive,
+            random_state=get_int_arg(args.random_state, None)
+        )
+    if args.model == 'ridgeClassifierCV':
+        model = ridge_classifier_cv(
+            X_train=X_train, 
+            y_train=y_train, 
+            X_test=X_test,
+            alphas=get_alphas_arg(args.alphas, (0.1, 1.0, 10.0)),
+            fit_intercept=args.fit_intercept,
+            scoring=args.scoring,
+            cv=get_int_arg(args.cv, None),
+            class_weight=get_class_weights(args.class_weight, 'balanced'),
+            store_cv_values=args.store_cv_values
+        )
+    if args.model == 'lasso':
+        model = lasso(
+            X_train=X_train, 
+            y_train=y_train, 
+            X_test=X_test,
+            alpha=get_float_arg(args.alpha, 1.0),
+            fit_intercept=args.fit_intercept,
+            precompute=args.precompute,
+            copy_X=args.copy_X,
+            max_iter=get_int_arg(args.max_iter, 1000),
+            tol=get_float_arg(args.tol, 1e-4),
+            warm_start=args.warm_start,
+            positive=args.positive,
+            random_state=get_int_arg(args.random_state, None),
+            selection=args.selection
+        )
+    if args.model == 'lassoCV':
+        model = lasso_cv(
+            X_train=X_train, 
+            y_train=y_train, 
+            X_test=X_test,
+            eps=get_float_arg(args.eps, 1e-3),
+            n_alphas=get_int_arg(args.n_alphas, 100),
+            alphas=get_alphas_arg(args.alphas, None),
+            fit_intercept=args.fit_intercept,
+            precompute=args.precompute,
+            max_iter=get_int_arg(args.max_iter, 1000),
+            tol=get_float_arg(args.tol, 1e-4),
+            copy_X=args.copy_X,
+            cv=get_int_arg(args.cv, None),
+            verbose=args.verbose,
+            n_jobs=get_int_arg(args.n_jobs, None),
+            positive=args.positive,
+            random_state=get_int_arg(args.random_state, None),
+            selection=args.selection
+        )
+    if args.model == 'lassoLars':
+        model = lasso_lars(
+            X_train=X_train, 
+            y_train=y_train, 
+            X_test=X_test,
+            alpha=get_float_arg(args.alpha, 1.0),
+            fit_intercept=args.fit_intercept,
+            verbose=args.verbose,
+            precompute=get_bool_arg(args.precompute, "auto"),
+            max_iter=get_int_arg(args.max_iter, 500),
+            eps=get_float_arg(args.eps, np.finfo(float).eps),
+            copy_X=args.copy_X,
+            fit_path=args.fit_path,
+            positive=args.positive,
+            jitter=get_float_arg(args.fitter, None),
+            random_state=get_int_arg(args.random_state, None)
+        )
+    if args.model == 'lassoLarsCV':
+        model = lasso_lars_cv(
+            X_train=X_train, 
+            y_train=y_train, 
+            X_test=X_test,
+            fit_intercept=args.fit_intercept,
+            verbose=args.verbose,
+            max_iter=get_int_arg(args.max_iter, 500),
+            precompute=get_bool_arg(args.precompute, "auto"),
+            cv=get_int_arg(args.cv, None),
+            max_n_alphas=get_int_arg(args.max_n_alphas, 1000),
+            n_jobs=get_int_arg(args.n_jobs, None),
+            eps=get_float_arg(args.eps, np.finfo(float).eps),
+            copy_X=args.copy_X,
+            positive=args.positive
+        )
+    if args.model == 'lassoLarsIC':
+        model = lasso_lars_ic(
+            X_train=X_train, 
+            y_train=y_train, 
+            X_test=X_test,
+            criterion=args.criterion,
+            fit_intercept=args.fit_intercept,
+            verbose=args.verbose,
+            precompute=get_bool_arg(args.precompute, "auto"),
+            max_iter=get_int_arg(args.max_iter, 500),
+            eps=get_float_arg(args.eps, np.finfo(float).eps),
+            copy_X=args.copy_X,
+            positive=args.positive,
+            noise_variance=get_float_arg(args.noise_variance, None)
+        )
+    if args.model == 'multiTaskLasso':
+        model = multi_task_lasso(
+            X_train=X_train, 
+            y_train=y_train, 
+            X_test=X_test,
+            alpha=get_int_arg(args.alpha, 1.0),
+            fit_intercept=args.fit_intercept,
+            copy_X=args.copy_X,
+            max_iter=get_int_arg(args.max_iter, 1000),
+            tol=get_float_arg(args.tol, 1e-4),
+            warm_start=args.warm_start,
+            random_state=get_int_arg(args.random_state, None),
+            selection=args.selection
+        )
+    if args.model == 'multiTaskLassoCV':
+        model = multi_task_lasso_cv(
+            X_train=X_train, 
+            y_train=y_train, 
+            X_test=X_test,
+            eps=get_float_arg(args.eps, 1e-3),
+            n_alphas=get_int_arg(args.n_alphas, 100),
+            alphas=get_alphas_arg(args.alphas, None),
+            fit_intercept=args.fit_intercept,
+            max_iter=get_int_arg(args.max_iter, 1000),
+            tol=get_float_arg(args.tol, 1e-4),
+            copy_X=args.copy_X,
+            cv=get_int_arg(args.cv, None),
+            verbose=args.verbose,
+            n_jobs=get_int_arg(args.n_jobs, None),
+            random_state=get_int_arg(args.random_state),
+            selection=args.selection
+        )
+    if args.model == 'elasticNet':
+        model = elastic_net(
+            X_train=X_train, 
+            y_train=y_train, 
+            X_test=X_test,
+            alpha=get_float_arg(args.alpha, 1.0),
+            l1_ratio=get_float_arg(args.l1_ratio, 0.5),
+            fit_intercept=args.fit_intercept,
+            precompute=args.precompute,
+            max_iter=get_int_arg(args.max_iter, 1000),
+            copy_X=args.copy_X,
+            tol=get_float_arg(args.tol, 1e-4),
+            warm_start=args.warm_start,
+            positive=args.positive,
+            random_state=get_int_arg(args.random_state, None),
+            selection=args.selection
+        )
+    if args.model == 'elasticNetCV':
+        model = elastic_net_cv(
+            X_train=X_train, 
+            y_train=y_train, 
+            X_test=X_test,
+            l1_ratio=get_float_arg(args.l1_ratio, 0.5),
+            eps=get_float_arg(args.eps, 1e-3),
+            n_alphas=get_int_arg(args.n_alphas, 100),
+            alphas=get_alphas_arg(args.alphas, None),
+            fit_intercept=args.fit_intercept,
+            precompute=args.precompute,
+            max_iter=get_int_arg(args.max_iter, 1000),
+            tol=get_float_arg(args.tol, 1e-4),
+            cv=get_int_arg(args.cv, None),
+            copy_X=args.copy_X,
+            verbose=args.verbose,
+            n_jobs=get_int_arg(args.n_jobs, None),
+            positive=args.positive,
+            random_state=get_int_arg(args.random_state, None),
+            selection=args.selection
+        )
+    if args.model == 'multiTaskElasticNet':
+        model = multi_task_elastic_net(
+            X_train=X_train, 
+            y_train=y_train, 
+            X_test=X_test,
+            l1_ratio=get_float_arg(args.l1_ratio, 0.5),
+            eps=get_float_arg(args.eps, 1e-3),
+            n_alphas=get_int_arg(args.n_alphas, 100),
+            alphas=get_alphas_arg(args.alphas, None),
+            fit_intercept=args.fit_intercept,
+            max_iter=get_int_arg(args.max_iter, 1000),
+            tol=get_float_arg(args.tol, 1e-4),
+            cv=get_int_arg(args.cv, None),
+            copy_X=args.copy_X,
+            verbose=args.verbose,
+            n_jobs=get_int_arg(args.n_jobs, None),
+            random_state=get_int_arg(args.random_state, None),
+            selection=args.selection
+        )
+    if args.model == 'multiTaskElasticNetCV':
+        model = multi_task_elastic_net_cv(
+            X_train=X_train, 
+            y_train=y_train, 
+            X_test=X_test,
+            l1_ratio=get_float_arg(args.l1_ratio, 0.5),
+            eps=get_float_arg(args.eps, 1e-3),
+            n_alphas=100,
+            alphas=get_alphas_arg(args.alphas, None),
+            fit_intercept=args.fit_intercept,
+            max_iter=get_int_arg(args.max_iter, 1000),
+            tol=get_float_arg(args.tol, 1e-4),
+            cv=get_int_arg(args.cv, None),
+            copy_X=args.copy_X,
+            verbose=args.verbose,
+            n_jobs=get_int_arg(args.n_jobs, None),
+            random_state=get_int_arg(args.random_state, None),
+            selection=args.selection
+        )
+    if args.model == 'lars':
+        model = lars(
+            X_train=X_train, 
+            y_train=y_train, 
+            X_test=X_test,
+            fit_intercept=args.fit_intercept,
+            verbose=args.verbose,
+            precompute=get_bool_arg(args.precompute, "auto"),
+            n_nonzero_coefs=get_int_arg(args.n_nonzero_coefs, 500),
+            eps=get_float_arg(args.eps, np.finfo(float).eps),
+            copy_X=args.copy_X,
+            fit_path=args.fit_path,
+            jitter=get_float_arg(args.jitter, None),
+            random_state=get_int_arg(args.random_state, None)
+        )
+    if args.model == 'larsCV':
+        model = lars_cv(
+            X_train=X_train, 
+            y_train=y_train, 
+            X_test=X_test,
+            fit_intercept=args.fit_intercept,
+            verbose=args.verbose,
+            max_iter=get_int_arg(args.max_iter, 500),
+            precompute=get_bool_arg(args.precompute, "auto"),
+            cv=get_int_arg(args.cv, None),
+            max_n_alphas=1000,
+            n_jobs=get_int_arg(args.n_jobs, None),
+            eps=get_float_arg(args.eps, np.finfo(float).eps),
+            copy_X=args.copy_X
+        )
+    if args.model == 'omp':
+        model = orthogonal_matching_pursuit(
+            X_train=X_train, 
+            y_train=y_train, 
+            X_test=X_test,
+            n_nonzero_coefs=get_int_arg(args.n_nonzero_coefs, None),
+            tol=get_float_arg(args.tol, None),
+            fit_intercept=args.fit_intercept,
+            precompute=get_bool_arg(args.precompute, "auto")
+        )
+    if args.model == 'ompCV':
+        model = orthogonal_matching_pursuit_cv(
+            X_train=X_train, 
+            y_train=y_train, 
+            X_test=X_test,
+            copy=args.copy,
+            fit_intercept=args.fit_intercept,
+            max_iter=get_int_arg(args.max_iter, None),
+            cv=get_int_arg(args.cv, None),
+            n_jobs=get_int_arg(args.n_jobs, None),
+            verbose=args.verbose
+        )
+    if args.model == 'bayesianRidge':
+        model = bayesian_ridge_regression(
+            X_train=X_train, 
+            y_train=y_train, 
+            X_test=X_test,
+            n_iter=get_int_arg(args.n_iter, 300),
+            tol=get_float_arg(args.tol, 1.0e-3),
+            alpha_1=get_float_arg(args.alpha_1, 1.0e-6),
+            alpha_2=get_float_arg(args.alpha_2, 1.0e-6),
+            lambda_1=get_float_arg(args.lambda_1, 1.0e-6),
+            lambda_2=get_float_arg(args.lambda_2, 1.0e-6),
+            alpha_init=get_float_arg(args.alpha_init, None),
+            lambda_init=get_float_arg(args.lambda_init, None),
+            compute_score=args.compute_score,
+            fit_intercept=args.fit_intercept,
+            copy_X=args.copy_X,
+            verbose=args.verbose
+        )
+    if args.model == 'bayesianARD':
+        model = bayesian_ard_regression(
+            X_train=X_train, 
+            y_train=y_train, 
+            X_test=X_test,
+            n_iter=get_int_arg(args.n_iter, 300),
+            tol=get_float_arg(args.tol, 1.0e-3),
+            alpha_1=get_float_arg(args.alpha_1, 1.0e-6),
+            alpha_2=get_float_arg(args.alpha_2, 1.0e-6),
+            lambda_1=get_float_arg(args.lambda_1, 1.0e-6),
+            lambda_2=get_float_arg(args.lambda_2, 1.0e-6),
+            compute_score=args.compute_score,
+            threshold_lambda=get_float_arg(args.threshold_lambda, 1.0e4),
+            fit_intercept=args.fit_intercept,
+            copy_X=args.copy_X,
+            verbose=args.verbose
+        )
+    if args.model == 'logisticRegression':
+        model = logistic_regression(
+            X_train=X_train, 
+            y_train=y_train, 
+            X_test=X_test,
+            penalty=args.penalty,
+            dual=args.dual,
+            tol=get_float_arg(args.tol, 1e-4),
+            C=get_float_arg(args.C, 1.0),
+            fit_intercept=args.fit_intercept,
+            intercept_scaling=get_float_arg(args.intercept_scaling, 1.0),
+            class_weight=get_class_weights(args.class_weight, None),
+            random_state=get_int_arg(args.random_state, None),
+            solver=args.solver, 
+            max_iter=get_int_arg(args.max_iter, 100),
+            multi_class=args.multi_class,
+            verbose=args.verbose,
+            warm_start=args.warm_start,
+            n_jobs=get_int_arg(args.n_iter, None),
+            l1_ratio=get_float_arg(args.l1_ratio, None)
+        )
+    if args.model == 'logisticRegressionCV':
+        model = logistic_regression_cv(
+            X_train=X_train, 
+            y_train=y_train, 
+            X_test=X_test,
+            Cs=get_int_arg(args.Cs, 10),
+            fit_intercept=args.fit_intercept,
+            cv=get_int_arg(args.cv, None),
+            dual=args.dual,
+            penalty=args.penalty,
+            scoring=args.scoring,
+            solver=args.solver,
+            tol=get_float_arg(args.tol, 1e-4),
+            max_iter=get_int_arg(args.max_iter, 100),
+            class_weight=get_class_weights(args.class_weight, None),
+            n_jobs=get_int_arg(args.n_iter, None),
+            verbose=args.verbose,
+            refit=args.refit,
+            intercept_scaling=get_float_arg(args.intercept_scaling, 1.0),
+            multi_class=args.multi_class,
+            random_state=get_int_arg(args.random_state, None),
+            l1_ratios=get_float_arg(args.l1_ratios, None)
+        )
+    if args.model == 'tweedieRegressor':
+        model = tweedie_regressor(
+            X_train=X_train, 
+            y_train=y_train, 
+            X_test=X_test,
+            power=get_float_arg(args.power, 0.0),
+            alpha=get_float_arg(args.alpha, 1.0),
+            fit_intercept=args.fit_intercept,
+            link=args.link,
+            solver=args.solver,
+            max_iter=get_int_arg(args.max_iter, 100),
+            tol=get_float_arg(args.tol, 1e-4),
+            warm_start=args.warm_start,
+            verbose=args.verbose
+        )
+    if args.model == 'poissonRegressor':
+        model = poisson_regressor(
+            X_train=X_train, 
+            y_train=y_train, 
+            X_test=X_test,
+            alpha=get_float_arg(args.alpha, 1.0),
+            fit_intercept=args.fit_intercept,
+            solver=args.solver,
+            max_iter=get_int_arg(args.max_iter, 100),
+            tol=get_float_arg(args.tol, 1e-4),
+            warm_start=args.warm_start,
+            verbose=args.verbose
+        )
+    if args.model == 'gammaRegressor':
+        model = gamma_regressor(
+            X_train=X_train, 
+            y_train=y_train, 
+            X_test=X_test,
+            alpha=get_float_arg(args.alpha, 1.0),
+            fit_intercept=args.fit_intercept,
+            solver=args.solver,
+            max_iter=get_int_arg(args.max_iter, 100),
+            tol=get_float_arg(args.tol, 1e-4),
+            warm_start=args.warm_start,
+            verbose=args.verbose
+        )
+    if args.model == 'sgdClassifier':
+        model = sgd_classifier(
+            X_train=X_train, 
+            y_train=y_train, 
+            X_test=X_test,
+            loss=args.loss,
+            penalty=args.penalty,
+            alpha=get_float_arg(args.alpha, 0.0001),
+            l1_ratio=get_float_arg(args.l1_ratio, 0.15),
+            fit_intercept=args.fit_intercept,
+            max_iter=get_int_arg(args.max_iter, 1000),
+            tol=get_float_arg(args.tol, 1e-3),
+            shuffle=args.shuffle,
+            verbose=get_bool_arg(args.verbose, 0),
+            epsilon=get_float_arg(args.epsilon, DEFAULT_EPSILON),
+            n_jobs=get_int_arg(args.n_jobs, None),
+            random_state=get_int_arg(args.random_state, None),
+            learning_rate=args.learning_rate,
+            eta0=get_float_arg(args.eta0, 0.0),
+            power_t=get_float_arg(args.power_t, 0.5),
+            early_stopping=args.early_stopping,
+            validation_fraction=get_float_arg(args.validation_fraction, 0.1),
+            n_iter_no_change=get_int_arg(args.n_iter_no_change, 5),
+            class_weight=get_class_weights(args.class_weight, None),
+            warm_start=args.warm_start,
+            average=args.average
+        )
+    if args.model == 'sgdRegressor':
+        model = sgd_regressor(
+            X_train=X_train, 
+            y_train=y_train, 
+            X_test=X_test,
+            loss=args.loss,
+            penalty=args.penalty,
+            alpha=get_float_arg(args.alpha, 0.0001),
+            l1_ratio=get_float_arg(args.l1_ratio, 0.15),
+            fit_intercept=args.fit_intercept,
+            max_iter=get_int_arg(args.max_iter, 1000),
+            tol=get_float_arg(args.tol, 1e-3),
+            shuffle=args.shuffle,
+            verbose=get_bool_arg(args.verbose, 0),
+            epsilon=get_float_arg(args.epsilon, DEFAULT_EPSILON),
+            random_state=get_int_arg(args.random_state, None),
+            learning_rate=args.learning_rate,
+            eta0=get_float_arg(args.eta0, 0.01),
+            power_t=get_float_arg(args.power_t, 0.25),
+            early_stopping=args.early_stopping,
+            validation_fraction=get_float_arg(args.validation_fraction, 0.1),
+            n_iter_no_change=get_int_arg(args.n_iter_no_change, 5),
+            warm_start=args.warm_start,
+            average=args.average
+        )
+    if args.model == 'perceptron':
+        model = perceptron(
+            X_train=X_train, 
+            y_train=y_train, 
+            X_test=X_test,
+            penalty=args.penalty,
+            alpha=get_float_arg(args.alpha, 0.0001),
+            l1_ratio=get_float_arg(args.l1_ratio, 0.15),
+            fit_intercept=args.fit_intercept,
+            max_iter=get_int_arg(args.max_iter, 1000),
+            tol=get_float_arg(args.tol, 1e-3),
+            shuffle=args.shuffle,
+            verbose=get_bool_arg(args.verbose, 0),
+            eta0=get_float_arg(args.eta0, 1.0),
+            n_jobs=get_int_arg(args.n_jobs, None),
+            random_state=get_int_arg(args.random_state, None),
+            early_stopping=args.early_stopping,
+            validation_fraction=get_float_arg(args.validation_fraction, 0.1),
+            n_iter_no_change=get_int_arg(args.n_iter_no_change, 5),
+            class_weight=get_class_weights(args.class_weight, None),
+            warm_start=args.warm_start
+        )
+    if args.model == 'passiveAgressiveClassifier':
+
+    if args.model == 'passiveAgressiveRegressor':
+
+    if args.model == 'huberRegression':
+
+    if args.model == 'ransacRegression':
+
+    if args.model == 'theilSenRegression':
+
+    if args.model == 'quantileRegression':
+
+
+def main():
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--fit_intercept", action=argparse.BooleanOptionalAction)
+    parser.add_argument("--copy_X", action=argparse.BooleanOptionalAction)
+    parser.add_argument("--n_jobs", type=str, required=False)
+    parser.add_argument("--positive", action=argparse.BooleanOptionalAction)
+    parser.add_argument("--alpha", type=str, required=False)
+    parser.add_argument("--max_iter", type=str, required=False)
+    parser.add_argument("--tol", type=str, required=False)
+    parser.add_argument("--solver", type=str, required=False)
+    parser.add_argument("--random_state", type=str, required=False)
+    parser.add_argument("--alphas", type=str, required=False)
+    parser.add_argument("--class_weight", type=str, required=False)
+    parser.add_argument("--scoring", type=str, required=False)
+    parser.add_argument("--cv", type=str, required=False)
+    parser.add_argument("--store_cv_values", type=str, required=False)
+    parser.add_argument("--precompute", action=argparse.BooleanOptionalAction)
+    parser.add_argument("--warm_start", type=str, required=False)
+    parser.add_argument("--selection", type=str, required=False)
+    parser.add_argument("--eps", type=str, required=False)
+    parser.add_argument("--n_alphas", type=str, required=False)
+    parser.add_argument("--verbose", action=argparse.BooleanOptionalAction)
+    parser.add_argument("--fit_path", action=argparse.BooleanOptionalAction)
+    parser.add_argument("--jitter", type=str, required=False)
+    parser.add_argument("--max_n_alphas", type=str, required=False)
+    parser.add_argument("--criterion", type=str, required=False)
+    parser.add_argument("--noise_variance", type=str, required=False)
+    parser.add_argument("--l1_ratio", type=str, required=False)
+    parser.add_argument("--n_nonzero_coefs", type=str, required=False)
+    parser.add_argument("--copy", action=argparse.BooleanOptionalAction)
+    parser.add_argument("--n_iter", type=str, required=False)
+    parser.add_argument("--alpha_1", type=str, required=False)
+    parser.add_argument("--alpha_2", type=str, required=False)
+    parser.add_argument("--lambda_1", type=str, required=False)
+    parser.add_argument("--lambda_2", type=str, required=False)
+    parser.add_argument("--alpha_init", type=str, required=False)
+    parser.add_argument("--lambda_init", type=str, required=False)
+    parser.add_argument("--compute_score", action=argparse.BooleanOptionalAction)
+    parser.add_argument("--threshold_lambda", type=str, required=False)
+    parser.add_argument("--penalty", type=str, required=False)
+    parser.add_argument("--dual", action=argparse.BooleanOptionalAction)
+    parser.add_argument("--C", type=str, required=False)
+    parser.add_argument("--intercept_scaling", type=str, required=False)
+    parser.add_argument("--multi_class", type=str, required=False)
+    parser.add_argument("--Cs", type=str, required=False)
+    parser.add_argument("--refit", action=argparse.BooleanOptionalAction)
+    parser.add_argument("--l1_ratios", type=str, required=False)
+    parser.add_argument("--power", type=str, required=False)
+    parser.add_argument("--link", type=str, required=False)
+    parser.add_argument("--loss", type=str, required=False)
+    parser.add_argument("--shuffle", type=str, required=False)
+    parser.add_argument("--epsilon", type=str, required=False)
+    parser.add_argument("--learning_rate", type=str, required=False)
+    parser.add_argument("--eta0", type=str, required=False)
+    parser.add_argument("--power_t", type=str, required=False)
+    parser.add_argument("--early_stopping", type=str, required=False)
+    parser.add_argument("--validation_fraction", type=str, required=False)
+    parser.add_argument("--n_iter_no_change", type=str, required=False)
+    parser.add_argument("--average", type=str, required=False)
+    parser.add_argument("--max_subpopulation", type=str, required=False)
+    parser.add_argument("--n_subsamples", type=str, required=False)
+    parser.add_argument("--quantile", type=str, required=False)
+    parser.add_argument("--solver_options", type=str, required=False)
+    
+    parser.add_argument("--model", type=str, required=True)
+    args = parser.parse_args()
+
+    call_liner_model(args)
+
+if __name__ == "__main__":
+    main()

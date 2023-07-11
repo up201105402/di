@@ -132,10 +132,8 @@ func (step ScikitTrainingDataset) Execute(logFile *os.File) error {
 	cmd.Stderr = &stderr
 
 	err := cmd.Run()
-	a := stderr.String()
-	b := stdout.String()
-	runLogger.Println(a)
-	runLogger.Println(b)
+	runLogger.Println(stderr.String())
+	runLogger.Println(stdout.String())
 
 	return err
 }

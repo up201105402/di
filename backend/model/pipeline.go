@@ -40,7 +40,6 @@ type StepDataConfig struct {
 	// CheckoutRepo
 	RepoURL null.String `json:"repoURL"`
 	// Scikit Datasets
-
 	FilePath         null.String `json:"filePath"`
 	DataFilePath     null.String `json:"dataFilePath"`
 	TargetFilePath   null.String `json:"targetFilePath"`
