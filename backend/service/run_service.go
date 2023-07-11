@@ -224,7 +224,7 @@ func (service *runServiceImpl) HandleRunPipelineTask(ctx context.Context, t *asy
 	}
 
 	currentPipelineWorkDir := pipelinesWorkDir + "/" + fmt.Sprint(runPipelinePayload.PipelineID) + "/" + fmt.Sprint(runPipelinePayload.RunID) + "/"
-	currentRunLogDir := runLogsDir + "/" + fmt.Sprint(runPipelinePayload.PipelineID) + "/" + fmt.Sprint(runPipelinePayload.RunID) + "/"
+	currentRunLogDir := runLogsDir + "/pipelines/" + fmt.Sprint(runPipelinePayload.PipelineID) + "/" + fmt.Sprint(runPipelinePayload.RunID) + "/"
 
 	if err := os.RemoveAll(currentPipelineWorkDir); err != nil {
 		service.UpdateRunStatus(runPipelinePayload.RunID, 3, "Error removing files from "+currentPipelineWorkDir)
@@ -278,9 +278,7 @@ func (service *runServiceImpl) HandleRunPipelineTask(ctx context.Context, t *asy
 			log.Println(msg)
 			runLogger.Println(msg)
 
-			runStepStatus.RunStatusID = 3
-			runStepStatus.ErrorMessage = err.Error()
-			service.RunRepository.UpdateRunStepStatus(runStepStatus)
+			service.updateStepRunStatus(runStepStatus, 3, err.Error())
 
 			hasError = true
 
@@ -293,9 +291,7 @@ func (service *runServiceImpl) HandleRunPipelineTask(ctx context.Context, t *asy
 			runLogger.Println(msg)
 			log.Println(msg)
 
-			runStepStatus.RunStatusID = 3
-			runStepStatus.ErrorMessage = err.Error()
-			service.RunRepository.UpdateRunStepStatus(runStepStatus)
+			service.updateStepRunStatus(runStepStatus, 3, err.Error())
 
 			hasError = true
 
@@ -304,9 +300,7 @@ func (service *runServiceImpl) HandleRunPipelineTask(ctx context.Context, t *asy
 			runLogger.Println(fmt.Sprintf("Step %s (%d) executed successfully!", step.GetName(), step.GetID()))
 		}
 
-		runStepStatus.RunStatusID = 4
-		runStepStatus.ErrorMessage = ""
-		service.RunRepository.UpdateRunStepStatus(runStepStatus)
+		service.updateStepRunStatus(runStepStatus, 4, "")
 		return false
 	})
 
@@ -329,9 +323,19 @@ func (service *runServiceImpl) HandleRunPipelineTask(ctx context.Context, t *asy
 
 func (service *runServiceImpl) UpdateRunStatus(runID uint, statusID uint, errorMessage string) {
 	run, _ := service.RunRepository.FindByID(runID)
-	// runStatus, _ := service.RunRepository.GetRunStatusByID(4)
+	runStatus, _ := service.RunRepository.GetRunStatusByID(statusID)
 	run.RunStatusID = statusID
+	run.RunStatus = *runStatus
 	run.ErrorMessage = errorMessage
 	run.LastRun = time.Now()
 	service.RunRepository.Update(run)
+}
+
+func (service *runServiceImpl) updateStepRunStatus(runStepStatus *model.RunStepStatus, statusID uint, errorMessage string) {
+	runStatus, _ := service.RunRepository.GetRunStatusByID(statusID)
+	runStepStatus.RunStatusID = statusID
+	runStepStatus.RunStatus = *runStatus
+	runStepStatus.ErrorMessage = errorMessage
+	runStepStatus.LastRun = time.Now()
+	service.RunRepository.UpdateRunStepStatus(runStepStatus)
 }

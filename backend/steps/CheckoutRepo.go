@@ -34,7 +34,7 @@ func (step *CheckoutRepo) SetData(stepDescription model.NodeDescription) error {
 	step.ID, _ = strconv.Atoi(stepDescription.ID)
 	step.Name = stepDescription.Data.NameAndType.Name
 	step.IsFirstStep = stepDescription.Data.NameAndType.IsFirstStep
-	step.RepoURL = stepDescription.Data.StepConfig.RepoURL
+	step.RepoURL = stepDescription.Data.StepConfig.RepoURL.String
 
 	return nil
 }

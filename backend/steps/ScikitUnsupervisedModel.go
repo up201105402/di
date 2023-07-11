@@ -124,282 +124,271 @@ func (step ScikitUnsupervisedModel) Execute(logFile *os.File) error {
 
 	if step.DataConfig.Max_iter.Valid {
 		args = append(args, "--max_iter")
-		args = append(args, string(step.DataConfig.Max_iter))
+		args = append(args, step.DataConfig.Max_iter.String)
 	}
 
 	if step.DataConfig.Tol.Valid {
 		args = append(args, "--tol")
-		args = append(args, string(step.DataConfig.Tol))
+		args = append(args, step.DataConfig.Tol.String)
 	}
 
 	if step.DataConfig.Solver.Valid {
 		args = append(args, "--solver")
-		args = append(args, string(step.DataConfig.Solver))
+		args = append(args, step.DataConfig.Solver.String)
 	}
 
 	if step.DataConfig.Random_state.Valid {
 		args = append(args, "--random_state")
-		args = append(args, string(step.DataConfig.Random_state))
+		args = append(args, step.DataConfig.Random_state.String)
 	}
 
 	if step.DataConfig.Alphas.Valid {
 		args = append(args, "--alphas")
-		args = append(args, string(step.DataConfig.Alphas))
+		args = append(args, step.DataConfig.Alphas.String)
 	}
 
 	if step.DataConfig.Class_weight.Valid {
 		args = append(args, "--class_weight")
-		args = append(args, string(step.DataConfig.Class_weight))
+		args = append(args, step.DataConfig.Class_weight.String)
 	}
 
 	if step.DataConfig.Scoring.Valid {
 		args = append(args, "--scoring")
-		args = append(args, string(step.DataConfig.Scoring))
+		args = append(args, step.DataConfig.Scoring.String)
 	}
 
 	if step.DataConfig.Cv.Valid {
 		args = append(args, "--cv")
-		args = append(args, string(step.DataConfig.Cv))
+		args = append(args, step.DataConfig.Cv.String)
 	}
 
-	if step.DataConfig.Store_cv_values.Valid {
+	if step.DataConfig.Store_cv_values.Valid && step.DataConfig.Store_cv_values.Bool {
 		args = append(args, "--store_cv_values")
-		args = append(args, string(step.DataConfig.Store_cv_values))
 	}
 
-	if step.DataConfig.Precompute.Valid {
+	if step.DataConfig.Precompute.Valid && step.DataConfig.Precompute.Bool {
 		args = append(args, "--precompute")
-		args = append(args, string(step.DataConfig.Precompute))
 	}
 
 	if step.DataConfig.Warm_start.Valid {
 		args = append(args, "--warm_start")
-		args = append(args, string(step.DataConfig.Warm_start))
+		args = append(args, step.DataConfig.Warm_start.String)
 	}
 
 	if step.DataConfig.Selection.Valid {
 		args = append(args, "--selection")
-		args = append(args, string(step.DataConfig.Selection))
+		args = append(args, step.DataConfig.Selection.String)
 	}
 
 	if step.DataConfig.Eps.Valid {
 		args = append(args, "--eps")
-		args = append(args, string(step.DataConfig.Eps))
+		args = append(args, step.DataConfig.Eps.String)
 	}
 
 	if step.DataConfig.N_alphas.Valid {
 		args = append(args, "--n_alphas")
-		args = append(args, string(step.DataConfig.N_alphas))
+		args = append(args, step.DataConfig.N_alphas.String)
 	}
 
-	if step.DataConfig.Verbose.Valid {
+	if step.DataConfig.Verbose.Valid && step.DataConfig.Verbose.Bool {
 		args = append(args, "--verbose")
-		args = append(args, string(step.DataConfig.Verbose))
 	}
 
-	if step.DataConfig.Fit_path.Valid {
+	if step.DataConfig.Fit_path.Valid && step.DataConfig.Fit_path.Bool {
 		args = append(args, "--fit_path")
-		args = append(args, string(step.DataConfig.Fit_path))
 	}
 
 	if step.DataConfig.Jitter.Valid {
 		args = append(args, "--jitter")
-		args = append(args, string(step.DataConfig.Jitter))
+		args = append(args, step.DataConfig.Jitter.String)
 	}
 
 	if step.DataConfig.Max_n_alphas.Valid {
 		args = append(args, "--max_n_alphas")
-		args = append(args, string(step.DataConfig.Max_n_alphas))
+		args = append(args, step.DataConfig.Max_n_alphas.String)
 	}
 
 	if step.DataConfig.Criterion.Valid {
 		args = append(args, "--criterion")
-		args = append(args, string(step.DataConfig.Criterion))
+		args = append(args, step.DataConfig.Criterion.String)
 	}
 
 	if step.DataConfig.Noise_variance.Valid {
 		args = append(args, "--noise_variance")
-		args = append(args, string(step.DataConfig.Noise_variance))
+		args = append(args, step.DataConfig.Noise_variance.String)
 	}
 
 	if step.DataConfig.L1_ratio.Valid {
 		args = append(args, "--l1_ratio")
-		args = append(args, string(step.DataConfig.L1_ratio))
+		args = append(args, step.DataConfig.L1_ratio.String)
 	}
 
 	if step.DataConfig.N_nonzero_coefs.Valid {
 		args = append(args, "--n_nonzero_coefs")
-		args = append(args, string(step.DataConfig.N_nonzero_coefs))
+		args = append(args, step.DataConfig.N_nonzero_coefs.String)
 	}
 
-	if step.DataConfig.Copy.Valid {
+	if step.DataConfig.Copy.Valid && step.DataConfig.Copy.Bool {
 		args = append(args, "--copy")
-		args = append(args, string(step.DataConfig.Copy))
 	}
 
 	if step.DataConfig.N_iter.Valid {
 		args = append(args, "--n_iter")
-		args = append(args, string(step.DataConfig.N_iter))
+		args = append(args, step.DataConfig.N_iter.String)
 	}
 
 	if step.DataConfig.Alpha_1.Valid {
 		args = append(args, "--alpha_1")
-		args = append(args, string(step.DataConfig.Alpha_1))
+		args = append(args, step.DataConfig.Alpha_1.String)
 	}
 
 	if step.DataConfig.Alpha_2.Valid {
 		args = append(args, "--alpha_2")
-		args = append(args, string(step.DataConfig.Alpha_2))
+		args = append(args, step.DataConfig.Alpha_2.String)
 	}
 
 	if step.DataConfig.Lambda_1.Valid {
 		args = append(args, "--lambda_1")
-		args = append(args, string(step.DataConfig.Lambda_1))
+		args = append(args, step.DataConfig.Lambda_1.String)
 	}
 
 	if step.DataConfig.Lambda_2.Valid {
 		args = append(args, "--lambda_2")
-		args = append(args, string(step.DataConfig.Lambda_2))
+		args = append(args, step.DataConfig.Lambda_2.String)
 	}
 
 	if step.DataConfig.Alpha_init.Valid {
 		args = append(args, "--alpha_init")
-		args = append(args, string(step.DataConfig.Alpha_init))
+		args = append(args, step.DataConfig.Alpha_init.String)
 	}
 
 	if step.DataConfig.Lambda_init.Valid {
 		args = append(args, "--lambda_init")
-		args = append(args, string(step.DataConfig.Lambda_init))
+		args = append(args, step.DataConfig.Lambda_init.String)
 	}
 
-	if step.DataConfig.Compute_score.Valid {
+	if step.DataConfig.Compute_score.Valid && step.DataConfig.Compute_score.Bool {
 		args = append(args, "--compute_score")
-		args = append(args, string(step.DataConfig.Compute_score))
 	}
 
 	if step.DataConfig.Threshold_lambda.Valid {
 		args = append(args, "--threshold_lambda")
-		args = append(args, string(step.DataConfig.Threshold_lambda))
+		args = append(args, step.DataConfig.Threshold_lambda.String)
 	}
 
 	if step.DataConfig.Penalty.Valid {
 		args = append(args, "--penalty")
-		args = append(args, string(step.DataConfig.Penalty))
+		args = append(args, step.DataConfig.Penalty.String)
 	}
 
-	if step.DataConfig.Dual.Valid {
+	if step.DataConfig.Dual.Valid && step.DataConfig.Dual.Bool {
 		args = append(args, "--dual")
-		args = append(args, string(step.DataConfig.Dual))
 	}
 
 	if step.DataConfig.C.Valid {
 		args = append(args, "--C")
-		args = append(args, string(step.DataConfig.C))
+		args = append(args, step.DataConfig.C.String)
 	}
 
 	if step.DataConfig.Intercept_scaling.Valid {
 		args = append(args, "--intercept_scaling")
-		args = append(args, string(step.DataConfig.Intercept_scaling))
+		args = append(args, step.DataConfig.Intercept_scaling.String)
 	}
 
 	if step.DataConfig.Multi_class.Valid {
 		args = append(args, "--multi_class")
-		args = append(args, string(step.DataConfig.Multi_class))
+		args = append(args, step.DataConfig.Multi_class.String)
 	}
 
 	if step.DataConfig.Cs.Valid {
 		args = append(args, "--Cs")
-		args = append(args, string(step.DataConfig.Cs))
+		args = append(args, step.DataConfig.Cs.String)
 	}
 
-	if step.DataConfig.Refit.Valid {
+	if step.DataConfig.Refit.Valid && step.DataConfig.Refit.Bool {
 		args = append(args, "--refit")
-		args = append(args, string(step.DataConfig.Refit))
 	}
 
 	if step.DataConfig.L1_ratios.Valid {
 		args = append(args, "--l1_ratios")
-		args = append(args, string(step.DataConfig.L1_ratios))
+		args = append(args, step.DataConfig.L1_ratios.String)
 	}
 
 	if step.DataConfig.Power.Valid {
 		args = append(args, "--power")
-		args = append(args, string(step.DataConfig.Power))
+		args = append(args, step.DataConfig.Power.String)
 	}
 
 	if step.DataConfig.Link.Valid {
 		args = append(args, "--link")
-		args = append(args, string(step.DataConfig.Link))
+		args = append(args, step.DataConfig.Link.String)
 	}
 
 	if step.DataConfig.Loss.Valid {
 		args = append(args, "--loss")
-		args = append(args, string(step.DataConfig.Loss))
+		args = append(args, step.DataConfig.Loss.String)
 	}
 
-	if step.DataConfig.Shuffle.Valid {
+	if step.DataConfig.Shuffle.Valid && step.DataConfig.Shuffle.Bool {
 		args = append(args, "--shuffle")
-		args = append(args, string(step.DataConfig.Shuffle))
 	}
 
 	if step.DataConfig.Epsilon.Valid {
 		args = append(args, "--epsilon")
-		args = append(args, string(step.DataConfig.Epsilon))
+		args = append(args, step.DataConfig.Epsilon.String)
 	}
 
 	if step.DataConfig.Learning_rate.Valid {
 		args = append(args, "--learning_rate")
-		args = append(args, string(step.DataConfig.Learning_rate))
+		args = append(args, step.DataConfig.Learning_rate.String)
 	}
 
 	if step.DataConfig.Eta0.Valid {
 		args = append(args, "--eta0")
-		args = append(args, string(step.DataConfig.Eta0))
+		args = append(args, step.DataConfig.Eta0.String)
 	}
 
 	if step.DataConfig.Power_t.Valid {
 		args = append(args, "--power_t")
-		args = append(args, string(step.DataConfig.Power_t))
+		args = append(args, step.DataConfig.Power_t.String)
 	}
 
-	if step.DataConfig.Early_stopping.Valid {
+	if step.DataConfig.Early_stopping.Valid && step.DataConfig.Early_stopping.Bool {
 		args = append(args, "--early_stopping")
-		args = append(args, string(step.DataConfig.Early_stopping))
 	}
 
 	if step.DataConfig.Validation_fraction.Valid {
 		args = append(args, "--validation_fraction")
-		args = append(args, string(step.DataConfig.Validation_fraction))
+		args = append(args, step.DataConfig.Validation_fraction.String)
 	}
 
 	if step.DataConfig.N_iter_no_change.Valid {
 		args = append(args, "--n_iter_no_change")
-		args = append(args, string(step.DataConfig.N_iter_no_change))
+		args = append(args, step.DataConfig.N_iter_no_change.String)
 	}
 
-	if step.DataConfig.Average.Valid {
+	if step.DataConfig.Average.Valid && step.DataConfig.Average.Bool {
 		args = append(args, "--average")
-		args = append(args, string(step.DataConfig.Average))
 	}
 
 	if step.DataConfig.Max_subpopulation.Valid {
 		args = append(args, "--max_subpopulation")
-		args = append(args, string(step.DataConfig.Max_subpopulation))
+		args = append(args, step.DataConfig.Max_subpopulation.String)
 	}
 
 	if step.DataConfig.N_subsamples.Valid {
 		args = append(args, "--n_subsamples")
-		args = append(args, string(step.DataConfig.N_subsamples))
+		args = append(args, step.DataConfig.N_subsamples.String)
 	}
 
 	if step.DataConfig.Quantile.Valid {
 		args = append(args, "--quantile")
-		args = append(args, string(step.DataConfig.Quantile))
+		args = append(args, step.DataConfig.Quantile.String)
 	}
 
 	if step.DataConfig.Solver_options.Valid {
 		args = append(args, "--solver_options")
-		args = append(args, string(step.DataConfig.Solver_options))
+		args = append(args, step.DataConfig.Solver_options.String)
 	}
 
 	return nil
