@@ -94,34 +94,34 @@ func (step ScikitTestingDataset) Execute(logFile *os.File) error {
 	args = append(args, "-t")
 	args = append(args, currentPipelineWorkDir+"filtered_testing_target.csv")
 
-	if step.DataConfig.LowerXRangeIndex != 0 {
+	if step.DataConfig.LowerXRangeIndex.Valid {
 		args = append(args, "-l1")
-		args = append(args, string(step.DataConfig.LowerXRangeIndex))
+		args = append(args, string(step.DataConfig.LowerXRangeIndex.Int64))
 	}
 
-	if step.DataConfig.UpperXRangeIndex != 0 {
+	if step.DataConfig.UpperXRangeIndex.Valid {
 		args = append(args, "-u1")
-		args = append(args, string(step.DataConfig.UpperXRangeIndex))
+		args = append(args, string(step.DataConfig.UpperXRangeIndex.Int64))
 	}
 
-	if step.DataConfig.LowerYRangeIndex != 0 {
+	if step.DataConfig.LowerYRangeIndex.Valid {
 		args = append(args, "-l2")
-		args = append(args, string(step.DataConfig.LowerYRangeIndex))
+		args = append(args, string(step.DataConfig.LowerYRangeIndex.Int64))
 	}
 
-	if step.DataConfig.UpperYRangeIndex != 0 {
+	if step.DataConfig.UpperYRangeIndex.Valid {
 		args = append(args, "-u2")
-		args = append(args, string(step.DataConfig.UpperYRangeIndex))
+		args = append(args, string(step.DataConfig.UpperYRangeIndex.Int64))
 	}
 
-	if step.DataConfig.DataFilePath != "" {
+	if step.DataConfig.DataFilePath.Valid {
 		args = append(args, "-f1")
-		args = append(args, currentPipelineWorkDir+string(step.DataConfig.DataFilePath))
+		args = append(args, currentPipelineWorkDir+string(step.DataConfig.DataFilePath.String))
 	}
 
-	if step.DataConfig.TargetFilePath != "" {
+	if step.DataConfig.TargetFilePath.Valid {
 		args = append(args, "-f2")
-		args = append(args, currentPipelineWorkDir+string(step.DataConfig.TargetFilePath))
+		args = append(args, currentPipelineWorkDir+string(step.DataConfig.TargetFilePath.String))
 	}
 
 	cmd := exec.Command("python3", args...)
