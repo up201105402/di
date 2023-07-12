@@ -222,6 +222,7 @@ const onStepCreate = (formData) => {
       ...formData,
       id: newId,
       group: selectedStep.value.group,
+      model: selectedStep.value.type,
       type: selectedStep.value.type,
     },
   });

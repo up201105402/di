@@ -74,7 +74,7 @@ const parseRunDefinition = (run) => {
 }
 
 const formatValue = (value) => {
-  return '<p>' + value.replaceAll("\n", "</p><p>") + "</p>"
+  return '<p>' + value.replaceAll("\n", "</p><p>").replaceAll("\r", "</p><p>") + "</p>"
 }
 
 watch(isFetchFinished, () => {
@@ -247,5 +247,9 @@ function toggleClass() {
 <style>
 .p-editor-toolbar {
   display: none
+}
+
+div.p-editor-container div.ql-editor p {
+  max-width: 100%;
 }
 </style>

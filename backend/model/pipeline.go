@@ -115,7 +115,9 @@ type StepData struct {
 	NameAndType StepDataNameAndType `json:"nameAndType"`
 	StepConfig  StepDataConfig      `json:"stepConfig"`
 	Type        string              `json:"type"`
-	IsFirstStep bool                `json:"isFirstStep"`
+	// Scikit Unsupervised Models
+	Model       null.String `json:"model"`
+	IsFirstStep bool        `json:"isFirstStep"`
 }
 
 type NodeDescription struct {

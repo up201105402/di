@@ -1,5 +1,7 @@
 import numpy as np
 import argparse
+import csv
+from pathlib import Path
 
 DEFAULT_EPSILON = 0.1
 
@@ -56,15 +58,6 @@ def least_squares(
     # print("Mean squared error: %.2f" % mean_squared_error(diabetes_y_test, diabetes_y_pred))
     # The coefficient of determination: 1 is perfect prediction
     # print("Coefficient of determination: %.2f" % r2_score(diabetes_y_test, diabetes_y_pred))
-
-    # Plot outputs
-    # plt.scatter(diabetes_X_test, diabetes_y_test, color="black")
-    # plt.plot(diabetes_X_test, diabetes_y_pred, color="blue", linewidth=3)
-
-    # plt.xticks(()) 
-    # plt.yticks(())
-
-    # plt.show()
 
 # Ridge Regression and Classification
 def ridge_regression(
@@ -1499,7 +1492,7 @@ def theil_sen_regression(
         tol=1.0e-3,
         random_state=None,
         n_jobs=None,
-        verbose=False,):
+        verbose=False):
     
     from sklearn.linear_model import TheilSenRegressor
 
@@ -1568,7 +1561,7 @@ def get_int_arg(arg, default):
 def get_float_arg(arg, default):
     return float(arg) if arg else default
 
-def get_class_weights(arg, default):
+def get_dict(arg, default):
     if not arg:
         return default
     
@@ -1583,17 +1576,16 @@ def get_class_weights(arg, default):
 def get_bool_arg(arg, default):
     return arg if arg else default
 
-
 def call_liner_model(args, X_train, y_train, X_test):
     if args.model == 'leastSquares':
         model = least_squares(
             X_train=X_train,
             y_train=y_train,
             X_test=X_test,
-            fit_intercept=args.fit_intercept,
-            copy_X=args.copy_X,
+            fit_intercept=get_bool_arg(args.fit_intercept, False),
+            copy_X=get_bool_arg(args.copy_X, False),
             n_jobs=args.n_jobs,
-            positive=args.positive
+            positive=get_bool_arg(args.positive, False)
         )
     if args.model == 'ridgeRegression':
         model = ridge_regression(
@@ -1601,12 +1593,12 @@ def call_liner_model(args, X_train, y_train, X_test):
             y_train=y_train,
             X_test=X_test,
             alpha=get_float_arg(args.alpha, 1.0),
-            fit_intercept=args.fit_intercept,
-            copy_X=args.copy_X,
+            fit_intercept=get_bool_arg(args.fit_intercept, False),
+            copy_X=get_bool_arg(args.copy_X, False),
             max_iter=get_int_arg(args.max_iter, None),
             tol=get_float_arg(args.tol, 1e-4),
             solver=args.solver,
-            positive=args.positive,
+            positive=get_bool_arg(args.positive, False),
             random_state=get_int_arg(args.random_state, None)
         )
     if args.model == 'ridgeRegressionCV':
@@ -1615,7 +1607,7 @@ def call_liner_model(args, X_train, y_train, X_test):
             y_train=y_train, 
             X_test=X_test,
             alphas=get_alphas_arg(args.alphas, (0.1, 1.0, 10.0)),
-            fit_intercept=args.fit_intercept,
+            fit_intercept=get_bool_arg(args.fit_intercept, False),
             scoring=args.scoring,
             cv=args.cv,
             gcv_mode=args.gcv_mode,
@@ -1628,13 +1620,13 @@ def call_liner_model(args, X_train, y_train, X_test):
             y_train=y_train, 
             X_test=X_test,
             alpha=get_float_arg(args.alpha, 1.0),
-            fit_intercept=args.fit_intercept,
-            copy_X=args.copy_X,
+            fit_intercept=get_bool_arg(args.fit_intercept, False),
+            copy_X=get_bool_arg(args.copy_X, False),
             max_iter=get_int_arg(args.max_iter, None),
             tol=get_float_arg(args.tol, 1e-4),
-            class_weight=get_class_weights(args.class_weight, 'balanced'),
+            class_weight=get_dict(args.class_weight, 'balanced'),
             solver=args.solver,
-            positive=args.positive,
+            positive=get_bool_arg(args.positive, False),
             random_state=get_int_arg(args.random_state, None)
         )
     if args.model == 'ridgeClassifierCV':
@@ -1643,10 +1635,10 @@ def call_liner_model(args, X_train, y_train, X_test):
             y_train=y_train, 
             X_test=X_test,
             alphas=get_alphas_arg(args.alphas, (0.1, 1.0, 10.0)),
-            fit_intercept=args.fit_intercept,
+            fit_intercept=get_bool_arg(args.fit_intercept, False),
             scoring=args.scoring,
             cv=get_int_arg(args.cv, None),
-            class_weight=get_class_weights(args.class_weight, 'balanced'),
+            class_weight=get_dict(args.class_weight, 'balanced'),
             store_cv_values=args.store_cv_values
         )
     if args.model == 'lasso':
@@ -1655,13 +1647,13 @@ def call_liner_model(args, X_train, y_train, X_test):
             y_train=y_train, 
             X_test=X_test,
             alpha=get_float_arg(args.alpha, 1.0),
-            fit_intercept=args.fit_intercept,
-            precompute=args.precompute,
-            copy_X=args.copy_X,
+            fit_intercept=get_bool_arg(args.fit_intercept, False),
+            precompute=get_bool_arg(args.precompute, False),
+            copy_X=get_bool_arg(args.copy_X, False),
             max_iter=get_int_arg(args.max_iter, 1000),
             tol=get_float_arg(args.tol, 1e-4),
             warm_start=args.warm_start,
-            positive=args.positive,
+            positive=get_bool_arg(args.positive, False),
             random_state=get_int_arg(args.random_state, None),
             selection=args.selection
         )
@@ -1673,15 +1665,15 @@ def call_liner_model(args, X_train, y_train, X_test):
             eps=get_float_arg(args.eps, 1e-3),
             n_alphas=get_int_arg(args.n_alphas, 100),
             alphas=get_alphas_arg(args.alphas, None),
-            fit_intercept=args.fit_intercept,
-            precompute=args.precompute,
+            fit_intercept=get_bool_arg(args.fit_intercept, False),
+            precompute=get_bool_arg(args.precompute, False),
             max_iter=get_int_arg(args.max_iter, 1000),
             tol=get_float_arg(args.tol, 1e-4),
-            copy_X=args.copy_X,
+            copy_X=get_bool_arg(args.copy_X, False),
             cv=get_int_arg(args.cv, None),
-            verbose=args.verbose,
+            verbose=get_bool_arg(args.verbose, False),
             n_jobs=get_int_arg(args.n_jobs, None),
-            positive=args.positive,
+            positive=get_bool_arg(args.positive, False),
             random_state=get_int_arg(args.random_state, None),
             selection=args.selection
         )
@@ -1691,14 +1683,14 @@ def call_liner_model(args, X_train, y_train, X_test):
             y_train=y_train, 
             X_test=X_test,
             alpha=get_float_arg(args.alpha, 1.0),
-            fit_intercept=args.fit_intercept,
-            verbose=args.verbose,
+            fit_intercept=get_bool_arg(args.fit_intercept, False),
+            verbose=get_bool_arg(args.verbose, False),
             precompute=get_bool_arg(args.precompute, "auto"),
             max_iter=get_int_arg(args.max_iter, 500),
             eps=get_float_arg(args.eps, np.finfo(float).eps),
-            copy_X=args.copy_X,
-            fit_path=args.fit_path,
-            positive=args.positive,
+            copy_X=get_bool_arg(args.copy_X, False),
+            fit_path=get_bool_arg(args.fit_path, False),
+            positive=get_bool_arg(args.positive, False),
             jitter=get_float_arg(args.fitter, None),
             random_state=get_int_arg(args.random_state, None)
         )
@@ -1707,16 +1699,16 @@ def call_liner_model(args, X_train, y_train, X_test):
             X_train=X_train, 
             y_train=y_train, 
             X_test=X_test,
-            fit_intercept=args.fit_intercept,
-            verbose=args.verbose,
+            fit_intercept=get_bool_arg(args.fit_intercept, False),
+            verbose=get_bool_arg(args.verbose, False),
             max_iter=get_int_arg(args.max_iter, 500),
             precompute=get_bool_arg(args.precompute, "auto"),
             cv=get_int_arg(args.cv, None),
             max_n_alphas=get_int_arg(args.max_n_alphas, 1000),
             n_jobs=get_int_arg(args.n_jobs, None),
             eps=get_float_arg(args.eps, np.finfo(float).eps),
-            copy_X=args.copy_X,
-            positive=args.positive
+            copy_X=get_bool_arg(args.copy_X, False),
+            positive=get_bool_arg(args.positive, False)
         )
     if args.model == 'lassoLarsIC':
         model = lasso_lars_ic(
@@ -1724,13 +1716,13 @@ def call_liner_model(args, X_train, y_train, X_test):
             y_train=y_train, 
             X_test=X_test,
             criterion=args.criterion,
-            fit_intercept=args.fit_intercept,
-            verbose=args.verbose,
+            fit_intercept=get_bool_arg(args.fit_intercept, False),
+            verbose=get_bool_arg(args.verbose, False),
             precompute=get_bool_arg(args.precompute, "auto"),
             max_iter=get_int_arg(args.max_iter, 500),
             eps=get_float_arg(args.eps, np.finfo(float).eps),
-            copy_X=args.copy_X,
-            positive=args.positive,
+            copy_X=get_bool_arg(args.copy_X, False),
+            positive=get_bool_arg(args.positive, False),
             noise_variance=get_float_arg(args.noise_variance, None)
         )
     if args.model == 'multiTaskLasso':
@@ -1739,8 +1731,8 @@ def call_liner_model(args, X_train, y_train, X_test):
             y_train=y_train, 
             X_test=X_test,
             alpha=get_int_arg(args.alpha, 1.0),
-            fit_intercept=args.fit_intercept,
-            copy_X=args.copy_X,
+            fit_intercept=get_bool_arg(args.fit_intercept, False),
+            copy_X=get_bool_arg(args.copy_X, False),
             max_iter=get_int_arg(args.max_iter, 1000),
             tol=get_float_arg(args.tol, 1e-4),
             warm_start=args.warm_start,
@@ -1755,12 +1747,12 @@ def call_liner_model(args, X_train, y_train, X_test):
             eps=get_float_arg(args.eps, 1e-3),
             n_alphas=get_int_arg(args.n_alphas, 100),
             alphas=get_alphas_arg(args.alphas, None),
-            fit_intercept=args.fit_intercept,
+            fit_intercept=get_bool_arg(args.fit_intercept, False),
             max_iter=get_int_arg(args.max_iter, 1000),
             tol=get_float_arg(args.tol, 1e-4),
-            copy_X=args.copy_X,
+            copy_X=get_bool_arg(args.copy_X, False),
             cv=get_int_arg(args.cv, None),
-            verbose=args.verbose,
+            verbose=get_bool_arg(args.verbose, False),
             n_jobs=get_int_arg(args.n_jobs, None),
             random_state=get_int_arg(args.random_state),
             selection=args.selection
@@ -1772,13 +1764,13 @@ def call_liner_model(args, X_train, y_train, X_test):
             X_test=X_test,
             alpha=get_float_arg(args.alpha, 1.0),
             l1_ratio=get_float_arg(args.l1_ratio, 0.5),
-            fit_intercept=args.fit_intercept,
-            precompute=args.precompute,
+            fit_intercept=get_bool_arg(args.fit_intercept, False),
+            precompute=get_bool_arg(args.precompute, False),
             max_iter=get_int_arg(args.max_iter, 1000),
-            copy_X=args.copy_X,
+            copy_X=get_bool_arg(args.copy_X, False),
             tol=get_float_arg(args.tol, 1e-4),
             warm_start=args.warm_start,
-            positive=args.positive,
+            positive=get_bool_arg(args.positive, False),
             random_state=get_int_arg(args.random_state, None),
             selection=args.selection
         )
@@ -1791,15 +1783,15 @@ def call_liner_model(args, X_train, y_train, X_test):
             eps=get_float_arg(args.eps, 1e-3),
             n_alphas=get_int_arg(args.n_alphas, 100),
             alphas=get_alphas_arg(args.alphas, None),
-            fit_intercept=args.fit_intercept,
-            precompute=args.precompute,
+            fit_intercept=get_bool_arg(args.fit_intercept, False),
+            precompute=get_bool_arg(args.precompute, False),
             max_iter=get_int_arg(args.max_iter, 1000),
             tol=get_float_arg(args.tol, 1e-4),
             cv=get_int_arg(args.cv, None),
-            copy_X=args.copy_X,
-            verbose=args.verbose,
+            copy_X=get_bool_arg(args.copy_X, False),
+            verbose=get_bool_arg(args.verbose, False),
             n_jobs=get_int_arg(args.n_jobs, None),
-            positive=args.positive,
+            positive=get_bool_arg(args.positive, False),
             random_state=get_int_arg(args.random_state, None),
             selection=args.selection
         )
@@ -1812,12 +1804,12 @@ def call_liner_model(args, X_train, y_train, X_test):
             eps=get_float_arg(args.eps, 1e-3),
             n_alphas=get_int_arg(args.n_alphas, 100),
             alphas=get_alphas_arg(args.alphas, None),
-            fit_intercept=args.fit_intercept,
+            fit_intercept=get_bool_arg(args.fit_intercept, False),
             max_iter=get_int_arg(args.max_iter, 1000),
             tol=get_float_arg(args.tol, 1e-4),
             cv=get_int_arg(args.cv, None),
-            copy_X=args.copy_X,
-            verbose=args.verbose,
+            copy_X=get_bool_arg(args.copy_X, False),
+            verbose=get_bool_arg(args.verbose, False),
             n_jobs=get_int_arg(args.n_jobs, None),
             random_state=get_int_arg(args.random_state, None),
             selection=args.selection
@@ -1831,12 +1823,12 @@ def call_liner_model(args, X_train, y_train, X_test):
             eps=get_float_arg(args.eps, 1e-3),
             n_alphas=100,
             alphas=get_alphas_arg(args.alphas, None),
-            fit_intercept=args.fit_intercept,
+            fit_intercept=get_bool_arg(args.fit_intercept, False),
             max_iter=get_int_arg(args.max_iter, 1000),
             tol=get_float_arg(args.tol, 1e-4),
             cv=get_int_arg(args.cv, None),
-            copy_X=args.copy_X,
-            verbose=args.verbose,
+            copy_X=get_bool_arg(args.copy_X, False),
+            verbose=get_bool_arg(args.verbose, False),
             n_jobs=get_int_arg(args.n_jobs, None),
             random_state=get_int_arg(args.random_state, None),
             selection=args.selection
@@ -1846,13 +1838,13 @@ def call_liner_model(args, X_train, y_train, X_test):
             X_train=X_train, 
             y_train=y_train, 
             X_test=X_test,
-            fit_intercept=args.fit_intercept,
-            verbose=args.verbose,
+            fit_intercept=get_bool_arg(args.fit_intercept, False),
+            verbose=get_bool_arg(args.verbose, False),
             precompute=get_bool_arg(args.precompute, "auto"),
             n_nonzero_coefs=get_int_arg(args.n_nonzero_coefs, 500),
             eps=get_float_arg(args.eps, np.finfo(float).eps),
-            copy_X=args.copy_X,
-            fit_path=args.fit_path,
+            copy_X=get_bool_arg(args.copy_X, False),
+            fit_path=get_bool_arg(args.fit_path, False),
             jitter=get_float_arg(args.jitter, None),
             random_state=get_int_arg(args.random_state, None)
         )
@@ -1861,15 +1853,15 @@ def call_liner_model(args, X_train, y_train, X_test):
             X_train=X_train, 
             y_train=y_train, 
             X_test=X_test,
-            fit_intercept=args.fit_intercept,
-            verbose=args.verbose,
+            fit_intercept=get_bool_arg(args.fit_intercept, False),
+            verbose=get_bool_arg(args.verbose, False),
             max_iter=get_int_arg(args.max_iter, 500),
             precompute=get_bool_arg(args.precompute, "auto"),
             cv=get_int_arg(args.cv, None),
             max_n_alphas=1000,
             n_jobs=get_int_arg(args.n_jobs, None),
             eps=get_float_arg(args.eps, np.finfo(float).eps),
-            copy_X=args.copy_X
+            copy_X=get_bool_arg(args.copy_X, False)
         )
     if args.model == 'omp':
         model = orthogonal_matching_pursuit(
@@ -1878,7 +1870,7 @@ def call_liner_model(args, X_train, y_train, X_test):
             X_test=X_test,
             n_nonzero_coefs=get_int_arg(args.n_nonzero_coefs, None),
             tol=get_float_arg(args.tol, None),
-            fit_intercept=args.fit_intercept,
+            fit_intercept=get_bool_arg(args.fit_intercept, False),
             precompute=get_bool_arg(args.precompute, "auto")
         )
     if args.model == 'ompCV':
@@ -1886,12 +1878,12 @@ def call_liner_model(args, X_train, y_train, X_test):
             X_train=X_train, 
             y_train=y_train, 
             X_test=X_test,
-            copy=args.copy,
-            fit_intercept=args.fit_intercept,
+            copy=get_bool_arg(args.copy, False),
+            fit_intercept=get_bool_arg(args.fit_intercept, False),
             max_iter=get_int_arg(args.max_iter, None),
             cv=get_int_arg(args.cv, None),
             n_jobs=get_int_arg(args.n_jobs, None),
-            verbose=args.verbose
+            verbose=get_bool_arg(args.verbose, False)
         )
     if args.model == 'bayesianRidge':
         model = bayesian_ridge_regression(
@@ -1906,10 +1898,10 @@ def call_liner_model(args, X_train, y_train, X_test):
             lambda_2=get_float_arg(args.lambda_2, 1.0e-6),
             alpha_init=get_float_arg(args.alpha_init, None),
             lambda_init=get_float_arg(args.lambda_init, None),
-            compute_score=args.compute_score,
-            fit_intercept=args.fit_intercept,
-            copy_X=args.copy_X,
-            verbose=args.verbose
+            compute_score=get_bool_arg(args.compute_score, False),
+            fit_intercept=get_bool_arg(args.fit_intercept, False),
+            copy_X=get_bool_arg(args.copy_X, False),
+            verbose=get_bool_arg(args.verbose, False)
         )
     if args.model == 'bayesianARD':
         model = bayesian_ard_regression(
@@ -1922,11 +1914,11 @@ def call_liner_model(args, X_train, y_train, X_test):
             alpha_2=get_float_arg(args.alpha_2, 1.0e-6),
             lambda_1=get_float_arg(args.lambda_1, 1.0e-6),
             lambda_2=get_float_arg(args.lambda_2, 1.0e-6),
-            compute_score=args.compute_score,
+            compute_score=get_bool_arg(args.compute_score, False),
             threshold_lambda=get_float_arg(args.threshold_lambda, 1.0e4),
-            fit_intercept=args.fit_intercept,
-            copy_X=args.copy_X,
-            verbose=args.verbose
+            fit_intercept=get_bool_arg(args.fit_intercept, False),
+            copy_X=get_bool_arg(args.copy_X, False),
+            verbose=get_bool_arg(args.verbose, False)
         )
     if args.model == 'logisticRegression':
         model = logistic_regression(
@@ -1934,17 +1926,17 @@ def call_liner_model(args, X_train, y_train, X_test):
             y_train=y_train, 
             X_test=X_test,
             penalty=args.penalty,
-            dual=args.dual,
+            dual=get_bool_arg(args.dual, False),
             tol=get_float_arg(args.tol, 1e-4),
             C=get_float_arg(args.C, 1.0),
-            fit_intercept=args.fit_intercept,
+            fit_intercept=get_bool_arg(args.fit_intercept, False),
             intercept_scaling=get_float_arg(args.intercept_scaling, 1.0),
-            class_weight=get_class_weights(args.class_weight, None),
+            class_weight=get_dict(args.class_weight, None),
             random_state=get_int_arg(args.random_state, None),
             solver=args.solver, 
             max_iter=get_int_arg(args.max_iter, 100),
             multi_class=args.multi_class,
-            verbose=args.verbose,
+            verbose=get_bool_arg(args.verbose, False),
             warm_start=args.warm_start,
             n_jobs=get_int_arg(args.n_iter, None),
             l1_ratio=get_float_arg(args.l1_ratio, None)
@@ -1955,18 +1947,18 @@ def call_liner_model(args, X_train, y_train, X_test):
             y_train=y_train, 
             X_test=X_test,
             Cs=get_int_arg(args.Cs, 10),
-            fit_intercept=args.fit_intercept,
+            fit_intercept=get_bool_arg(args.fit_intercept, False),
             cv=get_int_arg(args.cv, None),
-            dual=args.dual,
+            dual=get_bool_arg(args.dual, False),
             penalty=args.penalty,
             scoring=args.scoring,
             solver=args.solver,
             tol=get_float_arg(args.tol, 1e-4),
             max_iter=get_int_arg(args.max_iter, 100),
-            class_weight=get_class_weights(args.class_weight, None),
+            class_weight=get_dict(args.class_weight, None),
             n_jobs=get_int_arg(args.n_iter, None),
-            verbose=args.verbose,
-            refit=args.refit,
+            verbose=get_bool_arg(args.verbose, False),
+            refit=get_bool_arg(args.refit, False),
             intercept_scaling=get_float_arg(args.intercept_scaling, 1.0),
             multi_class=args.multi_class,
             random_state=get_int_arg(args.random_state, None),
@@ -1979,13 +1971,13 @@ def call_liner_model(args, X_train, y_train, X_test):
             X_test=X_test,
             power=get_float_arg(args.power, 0.0),
             alpha=get_float_arg(args.alpha, 1.0),
-            fit_intercept=args.fit_intercept,
+            fit_intercept=get_bool_arg(args.fit_intercept, False),
             link=args.link,
             solver=args.solver,
             max_iter=get_int_arg(args.max_iter, 100),
             tol=get_float_arg(args.tol, 1e-4),
             warm_start=args.warm_start,
-            verbose=args.verbose
+            verbose=get_bool_arg(args.verbose, False)
         )
     if args.model == 'poissonRegressor':
         model = poisson_regressor(
@@ -1993,12 +1985,12 @@ def call_liner_model(args, X_train, y_train, X_test):
             y_train=y_train, 
             X_test=X_test,
             alpha=get_float_arg(args.alpha, 1.0),
-            fit_intercept=args.fit_intercept,
+            fit_intercept=get_bool_arg(args.fit_intercept, False),
             solver=args.solver,
             max_iter=get_int_arg(args.max_iter, 100),
             tol=get_float_arg(args.tol, 1e-4),
             warm_start=args.warm_start,
-            verbose=args.verbose
+            verbose=get_bool_arg(args.verbose, False)
         )
     if args.model == 'gammaRegressor':
         model = gamma_regressor(
@@ -2006,12 +1998,12 @@ def call_liner_model(args, X_train, y_train, X_test):
             y_train=y_train, 
             X_test=X_test,
             alpha=get_float_arg(args.alpha, 1.0),
-            fit_intercept=args.fit_intercept,
+            fit_intercept=get_bool_arg(args.fit_intercept, False),
             solver=args.solver,
             max_iter=get_int_arg(args.max_iter, 100),
             tol=get_float_arg(args.tol, 1e-4),
             warm_start=args.warm_start,
-            verbose=args.verbose
+            verbose=get_bool_arg(args.verbose, False)
         )
     if args.model == 'sgdClassifier':
         model = sgd_classifier(
@@ -2022,7 +2014,7 @@ def call_liner_model(args, X_train, y_train, X_test):
             penalty=args.penalty,
             alpha=get_float_arg(args.alpha, 0.0001),
             l1_ratio=get_float_arg(args.l1_ratio, 0.15),
-            fit_intercept=args.fit_intercept,
+            fit_intercept=get_bool_arg(args.fit_intercept, False),
             max_iter=get_int_arg(args.max_iter, 1000),
             tol=get_float_arg(args.tol, 1e-3),
             shuffle=args.shuffle,
@@ -2036,7 +2028,7 @@ def call_liner_model(args, X_train, y_train, X_test):
             early_stopping=args.early_stopping,
             validation_fraction=get_float_arg(args.validation_fraction, 0.1),
             n_iter_no_change=get_int_arg(args.n_iter_no_change, 5),
-            class_weight=get_class_weights(args.class_weight, None),
+            class_weight=get_dict(args.class_weight, None),
             warm_start=args.warm_start,
             average=args.average
         )
@@ -2049,7 +2041,7 @@ def call_liner_model(args, X_train, y_train, X_test):
             penalty=args.penalty,
             alpha=get_float_arg(args.alpha, 0.0001),
             l1_ratio=get_float_arg(args.l1_ratio, 0.15),
-            fit_intercept=args.fit_intercept,
+            fit_intercept=get_bool_arg(args.fit_intercept, False),
             max_iter=get_int_arg(args.max_iter, 1000),
             tol=get_float_arg(args.tol, 1e-3),
             shuffle=args.shuffle,
@@ -2073,7 +2065,7 @@ def call_liner_model(args, X_train, y_train, X_test):
             penalty=args.penalty,
             alpha=get_float_arg(args.alpha, 0.0001),
             l1_ratio=get_float_arg(args.l1_ratio, 0.15),
-            fit_intercept=args.fit_intercept,
+            fit_intercept=get_bool_arg(args.fit_intercept, False),
             max_iter=get_int_arg(args.max_iter, 1000),
             tol=get_float_arg(args.tol, 1e-3),
             shuffle=args.shuffle,
@@ -2084,21 +2076,107 @@ def call_liner_model(args, X_train, y_train, X_test):
             early_stopping=args.early_stopping,
             validation_fraction=get_float_arg(args.validation_fraction, 0.1),
             n_iter_no_change=get_int_arg(args.n_iter_no_change, 5),
-            class_weight=get_class_weights(args.class_weight, None),
+            class_weight=get_dict(args.class_weight, None),
             warm_start=args.warm_start
         )
     if args.model == 'passiveAgressiveClassifier':
-
+        model = passive_aggressive_classifier(
+            X_train=X_train, 
+            y_train=y_train, 
+            X_test=X_test,
+            C=get_float_arg(args.C, 1.0),
+            fit_intercept=get_bool_arg(args.fit_intercept, False),
+            max_iter=get_int_arg(args.max_iter, 1000),
+            tol=get_float_arg(args.tol, 1e-3),
+            early_stopping=args.early_stopping,
+            validation_fraction=get_float_arg(args.validation_fraction, 0.1),
+            n_iter_no_change=get_int_arg(args.n_iter_no_change, 5),
+            shuffle=args.shuffle,
+            verbose=get_bool_arg(args.verbose, 0),
+            loss=args.loss,
+            n_jobs=get_int_arg(args.n_jobs, None),
+            random_state=get_int_arg(args.random_state, None),
+            warm_start=args.warm_start,
+            class_weight=get_dict(args.class_weight, None),
+            average=args.average
+        )
     if args.model == 'passiveAgressiveRegressor':
-
+        model = passive_aggressive_regressor(
+            X_train=X_train, 
+            y_train=y_train, 
+            X_test=X_test,
+            C=get_float_arg(args.C, 1.0),
+            fit_intercept=get_bool_arg(args.fit_intercept, False),
+            max_iter=get_int_arg(args.max_iter, 1000),
+            tol=get_float_arg(args.tol, 1e-3),
+            early_stopping=args.early_stopping,
+            validation_fraction=get_float_arg(args.validation_fraction, 0.1),
+            n_iter_no_change=get_int_arg(args.n_iter_no_change, 5),
+            shuffle=args.shuffle,
+            verbose=get_bool_arg(args.verbose, 0),
+            loss=args.loss,
+            epsilon=get_float_arg(args.epsilon, DEFAULT_EPSILON),
+            random_state=get_int_arg(args.random_state, None),
+            warm_start=args.warm_start,
+            average=args.average
+        )
     if args.model == 'huberRegression':
-
+        model = huber_regression(
+            X_train=X_train, 
+            y_train=y_train, 
+            X_test=X_test,
+            epsilon=get_float_arg(args.epsilon, 1.35),
+            max_iter=get_int_arg(args.max_iter, 1000),
+            alpha=get_int_arg(args.alpha, 0.0001),
+            warm_start=args.warm_start,
+            fit_intercept=get_bool_arg(args.fit_intercept, False),
+            tol=get_float_arg(args.tol, 1e-05),
+        )
     if args.model == 'ransacRegression':
-
+        model = ransac_regression(
+            X_train=X_train, 
+            y_train=y_train, 
+            X_test=X_test,
+            min_samples=get_int_arg(args.min_sample, None),
+            residual_threshold=None,
+            # is_data_valid=None, these 2 are callables (not supported)
+            # is_model_valid=None,
+            max_trials=get_int_arg(args.max_trials, 100),
+            max_skips=get_int_arg(args.max_skips, np.inf),
+            stop_n_inliers=get_int_arg(args.stop_n_inliers, np.inf),
+            stop_score=get_int_arg(args.stop_score, np.inf),
+            stop_probability=get_float_arg(args.stop_probability, 0.99),
+            loss=args.loss,
+            random_state=get_int_arg(args.random_state, None),
+        )
     if args.model == 'theilSenRegression':
-
+        model = theil_sen_regression(
+            X_train=X_train, 
+            y_train=y_train, 
+            X_test=X_test,
+            fit_intercept=get_bool_arg(args.fit_intercept, False),
+            copy_X=get_bool_arg(args.copy_X, False),
+            max_subpopulation=get_int_arg(args.max_subpopulation, 1e4),
+            n_subsamples=get_int_arg(args.n_subsamples, 1e4),
+            max_iter=get_int_arg(args.max_iter, 300),
+            tol=get_float_arg(args.tol, 1.0e-3),
+            random_state=get_int_arg(args.random_state, None),
+            n_jobs=get_int_arg(args.n_jobs, None),
+            verbose=get_bool_arg(args.verbose, False)
+        )
     if args.model == 'quantileRegression':
+        model = quantile_regression(
+            X_train=X_train, 
+            y_train=y_train, 
+            X_test=X_test,
+            quantile=get_float_arg(args.quantile, 0.5),
+            alpha=get_float_arg(args.alpha, 1.0),
+            fit_intercept=get_bool_arg(args.fit_intercept, False),
+            solver=args.solver,
+            solver_options=get_dict(args.solver_options, args.solver_options)
+        )
 
+    return model
 
 def main():
     parser = argparse.ArgumentParser()
@@ -2165,9 +2243,19 @@ def main():
     parser.add_argument("--solver_options", type=str, required=False)
     
     parser.add_argument("--model", type=str, required=True)
+
+    parser.add_argument("--train_data_path", type=Path, required=True)
+    parser.add_argument("--train_target_path", type=Path, required=True)
+    parser.add_argument("--testing_data_path", type=Path, required=True)
     args = parser.parse_args()
 
-    call_liner_model(args)
+    X_train = np.load(args.train_data_path, allow_pickle=True)
+    y_train = np.load(args.train_target_path, allow_pickle=True)
+    X_test = np.load(args.testing_data_path, allow_pickle=True)
+
+    model = call_liner_model(args, X_train=X_train, y_train=y_train, X_test=X_test)
+
+    print(model)
 
 if __name__ == "__main__":
     main()

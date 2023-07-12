@@ -5,6 +5,24 @@
     "version": "0.2.0",
     "configurations": [
         {
+            "name": "Python: Current File",
+            "type": "python",
+            "request": "launch",
+            "program": "${file}",
+            "console": "integratedTerminal",
+            "justMyCode": true,
+            "args": [
+                "--model",
+                "leastSquares",
+                "--train_data_path",
+                "/usr/src/di/work/pipelines/1/22/filtered_training_data.csv",
+                "--train_target_path",
+                "/usr/src/di/work/pipelines/1/22/filtered_training_target.csv",
+                "--testing_data_path",
+                "/usr/src/di/work/pipelines/1/22/filtered_testing_data.csv",
+            ]
+        },
+        {
             "name": "Launch file",
             "type": "go",
             "request": "launch",

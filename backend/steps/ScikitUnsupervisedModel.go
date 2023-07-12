@@ -3,12 +3,11 @@ package steps
 import (
 	"bytes"
 	"di/model"
-	"di/util"
-	"di/util/errors"
 	"fmt"
 	"log"
 	"os"
 	"os/exec"
+	"strconv"
 )
 
 var ScikitUnsupervisedModelTypes = []string{
@@ -51,12 +50,13 @@ var ScikitUnsupervisedModelTypes = []string{
 }
 
 type ScikitUnsupervisedModel struct {
-	ID         uint
-	PipelineID uint
-	RunID      uint
-	Model      string
-	Name       string
-	DataConfig model.StepDataConfig
+	ID          int
+	PipelineID  uint
+	RunID       uint
+	Model       string
+	Name        string
+	IsFirstStep bool
+	DataConfig  model.StepDataConfig
 }
 
 func (step ScikitUnsupervisedModel) GetID() int {
@@ -67,17 +67,16 @@ func (step ScikitUnsupervisedModel) GetName() string {
 	return step.Name
 }
 
-func (step *ScikitUnsupervisedModel) SetModel(model string) error {
-	if util.StringArrayContains(ScikitUnsupervisedModelTypes, model) {
-		step.Model = model
-		return nil
-	}
-
-	return errors.NewNotFound("model", model)
+func (step ScikitUnsupervisedModel) GetIsFirstStep() bool {
+	return step.IsFirstStep
 }
 
-func (step *ScikitUnsupervisedModel) SetConfig(stepConfig model.StepDataConfig) error {
-	step.DataConfig = stepConfig
+func (step *ScikitUnsupervisedModel) SetData(stepDescription model.NodeDescription) error {
+	step.ID, _ = strconv.Atoi(stepDescription.ID)
+	step.Name = stepDescription.Data.NameAndType.Name
+	step.IsFirstStep = stepDescription.Data.NameAndType.IsFirstStep
+	step.Model = stepDescription.Data.Model.String
+	step.DataConfig = stepDescription.Data.StepConfig
 	return nil
 }
 
@@ -131,6 +130,18 @@ func (step ScikitUnsupervisedModel) appendArgs(args []string) []string {
 	args = append(args, scikitSnippetsDir+"linear_models.py")
 	args = append(args, "--model")
 	args = append(args, step.Model)
+
+	pipelinesWorkDir := os.Getenv("PIPELINES_WORK_DIR")
+	currentPipelineWorkDir := pipelinesWorkDir + "/" + fmt.Sprint(step.PipelineID) + "/" + fmt.Sprint(step.RunID) + "/"
+
+	args = append(args, "--train_data_path")
+	args = append(args, currentPipelineWorkDir+"filtered_training_data.csv")
+
+	args = append(args, "--train_target_path")
+	args = append(args, currentPipelineWorkDir+"filtered_training_target.csv")
+
+	args = append(args, "--testing_data_path")
+	args = append(args, currentPipelineWorkDir+"filtered_testing_data.csv")
 
 	if step.DataConfig.Fit_intercept.Valid {
 		args = append(args, "--fit_intercept")
