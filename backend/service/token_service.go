@@ -49,7 +49,6 @@ type idTokenCustomClaims struct {
 
 func GetTokenServiceConfig(redisClient *redis.Client) (*TokenServiceConfig, error) {
 
-	// privKeyFile := os.Getenv("./jwt/rsa_private.pem")
 	priv, err := ioutil.ReadFile("./jwt/rsa_private.pem")
 
 	if err != nil {
@@ -62,7 +61,6 @@ func GetTokenServiceConfig(redisClient *redis.Client) (*TokenServiceConfig, erro
 		return nil, fmt.Errorf("Could not parse private key: %w", err)
 	}
 
-	// pubKeyFile := os.Getenv("./jwt/rsa_public.pem")
 	pub, err := ioutil.ReadFile("./jwt/rsa_public.pem")
 
 	if err != nil {

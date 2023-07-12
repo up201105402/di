@@ -16,6 +16,11 @@ type Pipeline struct {
 	LastRun    time.Time `gorm:"-:all"`
 }
 
+type PipelineSchedule struct {
+	gorm.Model
+	CronExpression string `json:"cronExpression"`
+}
+
 type CreatePipelineReq struct {
 	User       string `json:"user"`
 	Name       string `json:"name"`
@@ -27,6 +32,10 @@ type PipelineReq struct {
 	User       string `json:"user"`
 	Name       string `json:"name"`
 	Definition string `json:"definition"`
+}
+
+type PipelineScheduleReq struct {
+	CronExpression string `json:"cronExpression"`
 }
 
 type StepDataNameAndType struct {

@@ -83,6 +83,41 @@ func GetPipeline(services *service.Services) gin.HandlerFunc {
 	}
 }
 
+func GetPipelineSchedule(services *service.Services) gin.HandlerFunc {
+	return func(context *gin.Context) {
+
+		pipelineId := context.Param("id")
+
+		id, parseError := strconv.ParseUint(pipelineId, 10, 64)
+
+		if parseError != nil {
+			log.Printf("Failed to convert pipelineId into uint: %v\n", parseError)
+			errorMessage := fmt.Sprint("Failed to convert pipelineId into uint: %v\n", parseError)
+			err := errors.NewInternal()
+			context.JSON(err.Status(), gin.H{
+				"error": errorMessage,
+			})
+			return
+		}
+
+		schedules, getError := services.PipelineService.GetSchedules(uint(id))
+
+		if getError != nil {
+			log.Printf("Failed to get pipeline's schedules with id %v: %v\n", pipelineId, getError)
+			errorMessage := fmt.Sprint("Failed to get pipeline's schedules with id %v: %v\n", pipelineId, getError)
+			err := errors.NewInternal()
+			context.JSON(err.Status(), gin.H{
+				"error": errorMessage,
+			})
+			return
+		}
+
+		context.JSON(http.StatusOK, gin.H{
+			"schedules": schedules,
+		})
+	}
+}
+
 func UpsertPipeline(services *service.Services) gin.HandlerFunc {
 	return func(context *gin.Context) {
 
@@ -129,6 +164,75 @@ func UpsertPipeline(services *service.Services) gin.HandlerFunc {
 			if serviceError != nil {
 				log.Printf("Failed to create in user: %v\n", err.Error())
 				errorMessage := fmt.Sprint("Failed to create pipeline for user: %v\n", err.Error())
+				err := errors.NewInternal()
+				context.JSON(err.Status(), gin.H{
+					"error": errorMessage,
+				})
+				return
+			}
+		}
+
+		context.JSON(http.StatusOK, gin.H{})
+	}
+}
+
+func CreatePipelineSchedule(services *service.Services) gin.HandlerFunc {
+	return func(context *gin.Context) {
+
+		pipelineID := context.Param("id")
+
+		id, parseError := strconv.ParseUint(pipelineID, 10, 64)
+
+		if parseError != nil {
+			log.Printf("Failed to convert pipelineId into uint: %v\n", parseError)
+			errorMessage := fmt.Sprint("Failed to convert pipelineId into uint: %v\n", parseError)
+			err := errors.NewInternal()
+			context.JSON(err.Status(), gin.H{
+				"error": errorMessage,
+			})
+			return
+		}
+
+		var req model.PipelineSchedule
+
+		if ok := bindData(context, &req); !ok {
+			return
+		}
+
+		if req.CronExpression != "" {
+			user, err := getUser(context)
+			if err != nil {
+				context.JSON(err.Status(), gin.H{
+					"error": err.Error(),
+				})
+			}
+
+			pipeline, pipelineErr := services.PipelineService.Get(uint(id))
+
+			if pipelineErr != nil {
+				log.Printf("Failed to get pipeline with id %d\n", req.ID)
+				err := errors.NewNotFound("pipeline", string(req.ID))
+				context.JSON(err.Status(), gin.H{
+					"error": err.Message,
+				})
+				return
+			}
+
+			if user.ID != pipeline.UserID {
+				msg := fmt.Sprintf("Pipeline %s is not owned by user %s\n", pipeline.Name, user.Username)
+				log.Printf(msg)
+				err := errors.NewAuthorization(msg)
+				context.JSON(err.Status(), gin.H{
+					"error": err.Message,
+				})
+				return
+			}
+
+			createError := services.PipelineService.CreateSchedule(pipeline.ID, req.CronExpression)
+
+			if createError != nil {
+				errorMessage := fmt.Sprint("Failed to get pipeline's schedules with id %v: %v\n", pipelineID, createError)
+				log.Printf(errorMessage)
 				err := errors.NewInternal()
 				context.JSON(err.Status(), gin.H{
 					"error": errorMessage,

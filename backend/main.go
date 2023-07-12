@@ -6,6 +6,7 @@ import (
 	"di/service"
 	"di/util"
 	"net/http"
+	"os"
 
 	"github.com/gin-gonic/gin"
 )
@@ -52,7 +53,13 @@ func main() {
 
 	go taskService.SetupAsynqWorker()
 
-	r.Run(":8001")
+	port, exists := os.LookupEnv("WEB_SERVER_PORT")
+
+	if !exists {
+		port = "8001"
+	}
+
+	r.Run(":" + port)
 }
 
 func setupRouter(services *service.Services) *gin.Engine {
@@ -77,6 +84,8 @@ func setupRouter(services *service.Services) *gin.Engine {
 	pipelineAPI := router.Group("/api/pipeline")
 	pipelineAPI.GET("", middleware.Auth(services.TokenService), handlers.GetPipelines(services))
 	pipelineAPI.GET("/:id", middleware.Auth(services.TokenService), handlers.GetPipeline(services))
+	pipelineAPI.GET("/:id/schedule", middleware.Auth(services.TokenService), handlers.GetPipelineSchedule(services))
+	pipelineAPI.POST("/:id/schedule", middleware.Auth(services.TokenService), handlers.CreatePipelineSchedule(services))
 	pipelineAPI.POST("/:id", middleware.Auth(services.TokenService), handlers.UpsertPipeline(services))
 	pipelineAPI.DELETE("", middleware.Auth(services.TokenService), handlers.DeletePipeline(services))
 

@@ -29,6 +29,7 @@
             "mode": "debug",
             "program": "main.go",
             "env": {
+                "WEB_SERVER_PORT": "8001",
                 "POSTGRES_PORT": "5432",
                 "REDIS_HOST": "redis",
                 "REDIS_PORT": "6379",

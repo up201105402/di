@@ -9,10 +9,7 @@ import { useAsyncState } from "@vueuse/core";
 import { doRequest } from "@/util";
 import { useAuthStore } from "@/stores/auth";
 import { onBeforeRouteLeave, onBeforeRouteUpdate, useRouter, useRoute } from 'vue-router';
-import {
-  mdiChartTimelineVariant,
-  mdiPlus
-} from "@mdi/js";
+import { mdiChartTimelineVariant, mdiPlus, mdiCalendarEdit } from "@mdi/js";
 import SectionMain from "@/components/SectionMain.vue";
 import LayoutAuthenticated from "@/layouts/LayoutAuthenticated.vue";
 import SectionTitleLineWithButton from "@/components/SectionTitleLineWithButton.vue";
@@ -29,18 +26,23 @@ import deepEqual from 'deep-equal';
 import $ from 'jquery';
 import { steps } from '@/pipelines/steps';
 import { camel2title } from '@/util';
+import PipelineScheduleTable from '@/components/PipelineScheduleTable.vue';
+import TabView from 'primevue/tabview';
+import TabPanel from 'primevue/tabpanel';
+import Dropdown from 'primevue/dropdown';
+import FormCheckRadioGroup from '@/components/FormCheckRadioGroup.vue';
 
-const { accessToken, requireAuthRoute } = storeToRefs(useAuthStore());
+const { accessToken } = storeToRefs(useAuthStore());
 const router = useRouter();
 const route = useRoute();
 const elements = ref([]);
+const pipelineSchedules = ref([]);
 const pipelineTitle = ref('');
 const toast = useToast();
 
 const emit = defineEmits(["onUpdate", "onStepEdited"]);
 
 // FETCH PIPELINE
-
 const { isLoading: isFetching, state: fetchResponse, isReady: isFetchFinished, execute: fetchPipeline } = useAsyncState(
   () => {
     return doRequest({
@@ -58,8 +60,25 @@ const { isLoading: isFetching, state: fetchResponse, isReady: isFetchFinished, e
   },
 );
 
-// UPDATE PIPELINE
+// FETCH PIPELINE SCHEDULE
+const { isLoading: isFetchingSchedule, state: fetchScheduleResponse, isReady: isFetchFinishedSchedule, execute: fetchPipelineSchedule } = useAsyncState(
+  () => {
+    return doRequest({
+      url: `/api/pipeline/${route.params.id}/schedule`,
+      method: 'GET',
+      headers: {
+        Authorization: `${accessToken.value}`
+      },
+    })
+  },
+  {},
+  {
+    delay: 500,
+    resetOnExecute: false,
+  },
+);
 
+// UPDATE PIPELINE
 const { isLoading: isUpdating, state: updateResponse, isReady: isUpdateFinished, execute: updatePipeline } = useAsyncState(
   () => {
     return doRequest({
@@ -91,10 +110,17 @@ watch(fetchResponse, (value) => {
   }
 })
 
+watch(fetchScheduleResponse, (value) => {
+  if (value.error) {
+    toast.add({ severity: 'error', summary: 'Error', detail: value.error.message, life: 3000 });
+  }
+})
+
 const parsePipelineDefinition = (pipeline) => {
   try {
     return JSON.parse(pipeline.definition)
   } catch (e) {
+    toast.add({ severity: 'error', summary: 'Error', detail: "Error parsing pipeline definition", life: 3000 });
     return [];
   }
 }
@@ -102,6 +128,10 @@ const parsePipelineDefinition = (pipeline) => {
 watch(isFetchFinished, () => {
   elements.value = fetchResponse.value?.data ? parsePipelineDefinition(fetchResponse.value.data.pipeline) : [];
   pipelineTitle.value = fetchResponse.value?.data ? fetchResponse.value.data.pipeline.name : 'Untitled';
+})
+
+watch(isFetchFinishedSchedule, () => {
+  pipelineSchedules.value = fetchScheduleResponse.value?.schedules ? fetchScheduleResponse.value?.schedules : [];
 })
 
 watch(updateResponse, (value) => {
@@ -115,15 +145,27 @@ watch(updateResponse, (value) => {
   }
 })
 
-const isLoading = computed(() => isFetching.value || isUpdating.value);
+const isLoading = computed(() => isFetching.value || isFetchingSchedule.value || isUpdating.value);
 
 const hasChanges = ref(false);
 const isStepDialogActive = ref(false);
+const isScheduleDialogActive = ref(false);
 const formSchema = ref({});
 const dialogTitle = ref('');
 const stepData = ref({});
 const editStepNodeId = ref("-1");
 let count = 0;
+
+const selectedWeekDay = ref()
+const weekDays = [
+  { value: 'monday', label: 'Monday' },
+  { value: 'tuesday', label: 'Tuesday' },
+  { value: 'wednesday', label: 'Wednesday' },
+  { value: 'thursday', label: 'Thursday' },
+  { value: 'friday', label: 'Friday' },
+  { value: 'saturday', label: 'Saturday' },
+  { value: 'sunday', label: 'Sunday' },
+];
 
 onBeforeRouteLeave((to, from) => {
   if (hasChanges.value) {
@@ -171,6 +213,10 @@ const onCreateStepClick = (e) => {
     stepData.value.type = selectedStep.value.type;
     count++;
   }
+}
+
+const onCreateScheduleClick = (e) => {
+  isScheduleDialogActive.value = true;
 }
 
 const onNodeDoubleClick = (e) => {
@@ -369,11 +415,15 @@ function toggleClass() {
   <LayoutAuthenticated>
     <SectionMain>
       <loading v-model:active="isLoading" :is-full-page="false" />
-
       <SectionTitleLineWithButton :hasButton="false" :icon="mdiChartTimelineVariant" :title="pipelineTitle" main>
         <div>
-          <CascadeSelect v-model="selectedStep" :options="cascadeOptions" optionLabel="label" optionGroupLabel="name"
-            :optionGroupChildren="['steps', 'subSteps']" style="min-width: 14rem" placeholder="Select a Step Type">
+          <BaseButtons style="float:right">
+            <BaseButton :disabled="!hasChanges" :label="'Save'" color="success" @click="onPipelineSave" />
+            <BaseButton :label="'Cancel'" color="danger" @click="onPipelineCancel" />
+          </BaseButtons>
+          <CascadeSelect style="float:right; min-width: 14rem;" v-model="selectedStep" :options="cascadeOptions"
+            optionLabel="label" optionGroupLabel="name" :optionGroupChildren="['steps', 'subSteps']"
+            placeholder="Select a Step Type">
             <template #option="slotProps">
               <div class="flex align-items-center">
                 <!-- <img v-if="slotProps.option.states" :alt="slotProps.option.name"
@@ -440,11 +490,29 @@ function toggleClass() {
         <UpsertStepDialog :key="'createStepDialog_' + count" :formSchema="formSchema" :nodeId="editStepNodeId"
           :nodeData="stepData" @onSubmit="onStepEdited" @onCancel="onCancel" />
       </CardBoxModal>
-      <BaseButtons style="float:right">
-        <BaseButton :disabled="!hasChanges" :label="'Save'" color="success" @click="onPipelineSave" />
-        <BaseButton :label="'Cancel'" color="danger" @click="onPipelineCancel" />
-      </BaseButtons>
-    </SectionMain>
-    <Toast />
-  </LayoutAuthenticated>
-</template>
+      <SectionTitleLineWithButton :hasButton="false" :icon="mdiCalendarEdit" title="Scheduling">
+        <BaseButton label="Add Schedule" :icon="mdiPlus" color="success" @click="onCreateScheduleClick" />
+      </SectionTitleLineWithButton>
+      <PipelineScheduleTable :header="pipelineScheduleKeys" :items="pipelineSchedules" />
+      <CardBoxModal v-model="isScheduleDialogActive" has-cancel title="Create Schedule">
+        <TabView>
+          <TabPanel header="Once">
+            
+          </TabPanel>
+          <TabPanel header="Repeat">
+            <Dropdown v-model="selectedWeekDay" :options="weekDays" optionValue="monday" placeholder="Select a day" class="w-full md:w-14rem" />
+          </TabPanel>
+          <TabPanel header="Cron Expression">
+            <p>
+              Sed ut perspiciatis unde omnis iste natus error sit voluptatem accusantium doloremque laudantium, totam rem
+              aperiam, eaque ipsa quae ab illo inventore veritatis et quasi architecto beatae vitae dicta sunt explicabo.
+              Nemo enim
+              ipsam voluptatem quia voluptas sit aspernatur aut odit aut fugit, sed quia consequuntur magni dolores eos
+              qui ratione voluptatem sequi nesciunt. Consectetur, adipisci velit, sed quia non numquam eius modi.
+            </p>
+          </TabPanel>
+      </TabView>
+    </CardBoxModal>
+  </SectionMain>
+  <Toast />
+</LayoutAuthenticated></template>

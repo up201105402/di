@@ -12,23 +12,25 @@ type TokenRepository interface {
 }
 
 type PipelineRepository interface {
-	FindByID(id uint) (*Pipeline, error)
-	FindByOwner(ownerId uint) ([]Pipeline, error)
-	Create(u *Pipeline) error
-	Update(u *Pipeline) error
-	Delete(id uint) error
+	FindByID(pipelineID uint) (*Pipeline, error)
+	FindScheduleByID(pipelineID uint) ([]PipelineSchedule, error)
+	FindByOwner(ownerID uint) ([]Pipeline, error)
+	Create(pipeline *Pipeline) error
+	CreateSchedule(pipeline *PipelineSchedule) error
+	Update(pipeline *Pipeline) error
+	Delete(pipelineID uint) error
 }
 
 type RunRepository interface {
-	FindByID(id uint) (*Run, error)
-	FindByPipeline(pipelineId uint) ([]Run, error)
+	FindByID(runID uint) (*Run, error)
+	FindByPipeline(pipelineID uint) ([]Run, error)
 	FindRunStepStatusesByRun(runID uint) ([]RunStepStatus, error)
-	Create(u *Run) error
-	CreateRunStepStatus(u *RunStepStatus) error
-	Update(u *Run) error
-	UpdateRunStepStatus(u *RunStepStatus) error
-	Delete(id uint) error
-	DeleteRunStepStatus(id uint) error
-	DeleteAllRunStepStatuses(runId uint) error
-	GetRunStatusByID(id uint) (*RunStatus, error)
+	Create(run *Run) error
+	CreateRunStepStatus(runStepStatus *RunStepStatus) error
+	Update(run *Run) error
+	UpdateRunStepStatus(runStepStatus *RunStepStatus) error
+	Delete(runID uint) error
+	DeleteRunStepStatus(runID uint) error
+	DeleteAllRunStepStatuses(runID uint) error
+	GetRunStatusByID(runID uint) (*RunStatus, error)
 }

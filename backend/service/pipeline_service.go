@@ -22,6 +22,11 @@ func (service *pipelineServiceImpl) Get(id uint) (*model.Pipeline, error) {
 	return pipeline, err
 }
 
+func (service *pipelineServiceImpl) GetSchedules(id uint) ([]model.PipelineSchedule, error) {
+	schedules, err := service.PipelineRepository.FindScheduleByID(id)
+	return schedules, err
+}
+
 func (service *pipelineServiceImpl) GetByOwner(ownerId uint) ([]model.Pipeline, error) {
 	pipelines, err := service.PipelineRepository.FindByOwner(ownerId)
 	return pipelines, err
@@ -29,6 +34,14 @@ func (service *pipelineServiceImpl) GetByOwner(ownerId uint) ([]model.Pipeline, 
 
 func (service *pipelineServiceImpl) Create(userId uint, name string, definition string) error {
 	if err := service.PipelineRepository.Create(&model.Pipeline{UserID: userId, Name: name, Definition: definition}); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (service *pipelineServiceImpl) CreateSchedule(pipelineID uint, cronExpression string) error {
+	if err := service.PipelineRepository.CreateSchedule(&model.PipelineSchedule{CronExpression: cronExpression}); err != nil {
 		return err
 	}
 
