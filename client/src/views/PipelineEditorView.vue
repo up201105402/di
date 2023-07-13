@@ -30,7 +30,10 @@ import PipelineScheduleTable from '@/components/PipelineScheduleTable.vue';
 import TabView from 'primevue/tabview';
 import TabPanel from 'primevue/tabpanel';
 import Dropdown from 'primevue/dropdown';
-import FormCheckRadioGroup from '@/components/FormCheckRadioGroup.vue';
+import Calendar from 'primevue/calendar';
+import InputText from 'primevue/inputtext';
+import { useField } from 'vee-validate';
+import cronTime from "cron-time-generator";
 
 const { accessToken } = storeToRefs(useAuthStore());
 const router = useRouter();
@@ -39,6 +42,20 @@ const elements = ref([]);
 const pipelineSchedules = ref([]);
 const pipelineTitle = ref('');
 const toast = useToast();
+
+function validateCron(value) {
+    if (!value) {
+      return 'Cron expression is required!';
+    }
+
+    if (!value.match('(@(annually|yearly|monthly|weekly|daily|hourly|reboot))|(@every (\\d+(ns|us|µs|ms|s|m|h))+)|((((\\d+,)+\\d+|(\\d+(\\/|-)\\d+)|\\d+|\\*) ?){5,7})')) {
+      return 'Cron expresion is not valid!';
+    }
+
+    return true;
+}
+
+const { value: cronValue, errorMessage: cronError } = useField('input-cron', validateCron);
 
 const emit = defineEmits(["onUpdate", "onStepEdited"]);
 
@@ -156,7 +173,7 @@ const stepData = ref({});
 const editStepNodeId = ref("-1");
 let count = 0;
 
-const selectedWeekDay = ref()
+const activeTabIndex = ref(0);
 const weekDays = [
   { value: 'monday', label: 'Monday' },
   { value: 'tuesday', label: 'Tuesday' },
@@ -166,6 +183,8 @@ const weekDays = [
   { value: 'saturday', label: 'Saturday' },
   { value: 'sunday', label: 'Sunday' },
 ];
+const selectedWeekDay = ref(weekDays[0].value)
+const scheduledTime = ref(new Date());
 
 onBeforeRouteLeave((to, from) => {
   if (hasChanges.value) {
@@ -217,6 +236,16 @@ const onCreateStepClick = (e) => {
 
 const onCreateScheduleClick = (e) => {
   isScheduleDialogActive.value = true;
+}
+
+const onCreateSchedule = (e) => {
+  if (activeTabIndex.index = 0) {
+    
+  } else if (activeTabIndex.index = 1) {
+
+  } else if (activeTabIndex.index = 2) {
+
+  }
 }
 
 const onNodeDoubleClick = (e) => {
@@ -494,25 +523,22 @@ function toggleClass() {
         <BaseButton label="Add Schedule" :icon="mdiPlus" color="success" @click="onCreateScheduleClick" />
       </SectionTitleLineWithButton>
       <PipelineScheduleTable :header="pipelineScheduleKeys" :items="pipelineSchedules" />
-      <CardBoxModal v-model="isScheduleDialogActive" has-cancel title="Create Schedule">
-        <TabView>
+      <CardBoxModal v-model="isScheduleDialogActive" has-cancel title="Create Schedule" @confirm="onCreateSchedule" >
+        <TabView :activeIndex="activeTabIndex" >
           <TabPanel header="Once">
-            
+            <Calendar v-model="scheduledTime" showTime hourFormat="12" />
           </TabPanel>
           <TabPanel header="Repeat">
-            <Dropdown v-model="selectedWeekDay" :options="weekDays" optionValue="monday" placeholder="Select a day" class="w-full md:w-14rem" />
+            <Dropdown style="max-width: 30%; margin-right: 10px;" v-model="selectedWeekDay" :options="weekDays" optionValue="value" optionLabel="label" placeholder="Select a day" class="w-full md:w-14rem" />
+            <Calendar v-model="scheduledTime" timeOnly hourFormat="12" />
           </TabPanel>
           <TabPanel header="Cron Expression">
-            <p>
-              Sed ut perspiciatis unde omnis iste natus error sit voluptatem accusantium doloremque laudantium, totam rem
-              aperiam, eaque ipsa quae ab illo inventore veritatis et quasi architecto beatae vitae dicta sunt explicabo.
-              Nemo enim
-              ipsam voluptatem quia voluptas sit aspernatur aut odit aut fugit, sed quia consequuntur magni dolores eos
-              qui ratione voluptatem sequi nesciunt. Consectetur, adipisci velit, sed quia non numquam eius modi.
-            </p>
+            <InputText id="input-cron" style="margin-right: 10px;" v-model="cronValue" type="text" placeholder="Cron expression" :class="{ 'p-invalid': cronError }" aria-describedby="text-error" />
+            <span class="p-error" id="cron-error">{{ cronError || '&nbsp;' }}</span>
           </TabPanel>
       </TabView>
-    </CardBoxModal>
-  </SectionMain>
-  <Toast />
-</LayoutAuthenticated></template>
+      </CardBoxModal>
+    </SectionMain>
+    <Toast />
+  </LayoutAuthenticated>
+</template>

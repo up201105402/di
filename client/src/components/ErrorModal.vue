@@ -17,7 +17,7 @@
             type: String,
             required: true,
         },
-        buttonLabel: {
+        submitLabel: {
             type: String,
             default: "Acknowledge",
         },
@@ -60,7 +60,7 @@
 
             <template #footer>
                 <BaseButtons>
-                    <BaseButton :label="buttonLabel" :color="'danger'" @click="acknowledge" />
+                    <BaseButton :label="submitLabel" :color="'danger'" @click="acknowledge" />
                 </BaseButtons>
             </template>
         </CardBox>

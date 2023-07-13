@@ -20,7 +20,7 @@
       type: String,
       default: "info",
     },
-    buttonLabel: {
+    submitLabel: {
       type: String,
       default: "Done",
     },
@@ -71,7 +71,7 @@
 
       <template v-if="hasSubmit || hasCancel" #footer>
         <BaseButtons>
-          <BaseButton v-if="hasSubmit" :label="buttonLabel" :color="button" @click="confirm" />
+          <BaseButton v-if="hasSubmit" :label="submitLabel" :color="button" @click="confirm" />
           <BaseButton v-if="hasCancel" label="Cancel" :color="button" outline @click="cancel" />
         </BaseButtons>
       </template>
