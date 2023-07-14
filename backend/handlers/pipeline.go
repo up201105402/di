@@ -100,7 +100,7 @@ func GetPipelineSchedule(services *service.Services) gin.HandlerFunc {
 			return
 		}
 
-		schedules, getError := services.PipelineService.GetSchedules(uint(id))
+		schedules, getError := services.PipelineService.GetPipelineSchedules(uint(id))
 
 		if getError != nil {
 			errorMessage := fmt.Sprint("Failed to get pipeline's schedules with id %s: %v\n", pipelineId, getError)
@@ -228,7 +228,7 @@ func CreatePipelineSchedule(services *service.Services) gin.HandlerFunc {
 				return
 			}
 
-			createError := services.PipelineService.CreateSchedule(pipeline.ID, req.UniqueOcurrence, req.CronExpression)
+			createError := services.PipelineService.CreatePipelineSchedule(pipeline.ID, req.UniqueOcurrence, req.CronExpression)
 			if createError != nil {
 				errorMessage := fmt.Sprint("Failed to get pipeline's schedules with id %s: %v\n", pipelineID, createError)
 				log.Printf(errorMessage)

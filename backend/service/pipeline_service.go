@@ -4,6 +4,9 @@ import (
 	"di/model"
 	"di/repository"
 	"encoding/json"
+	"fmt"
+	"log"
+	"os"
 	"time"
 
 	"github.com/hibiken/asynq"
@@ -23,13 +26,78 @@ func NewPipelineService(gormDB *gorm.DB, client *asynq.Client) PipelineService {
 	}
 }
 
+func (service *pipelineServiceImpl) SyncAsyncTasks() {
+	redisHost := os.Getenv("REDIS_HOST")
+	redisPort := os.Getenv("REDIS_PORT")
+
+	inspector := asynq.NewInspector(asynq.RedisClientOpt{Addr: redisHost + ":" + redisPort})
+	scheduledTasks, _ := inspector.ListScheduledTasks("runs")
+	pipelineSchedules, err := service.GetAllPipelineSchedules()
+
+	if err != nil {
+		return
+	}
+
+	for i := 0; i < len(pipelineSchedules); i++ {
+		isQueued := false
+
+		for j := 0; j < len(scheduledTasks); j++ {
+			if scheduledTasks[j].Type == ScheduledRunPipelineTask {
+				var scheduledRunPipelinePayload ScheduledRunPipelinePayload
+				if err := json.Unmarshal(scheduledTasks[j].Payload, &scheduledRunPipelinePayload); err != nil {
+					errStr := fmt.Errorf("json.Unmarshal failed: %v: %w", err, asynq.SkipRetry)
+					log.Println(errStr)
+					return
+				}
+
+				if scheduledRunPipelinePayload.PipelineScheduleID == pipelineSchedules[i].ID {
+					isQueued = true
+				}
+			}
+		}
+
+		if !isQueued {
+
+			nextExec := pipelineSchedules[i].UniqueOcurrence
+
+			if pipelineSchedules[i].CronExpression != "" {
+				parser := cron.NewParser(cron.Minute | cron.Hour | cron.Dom | cron.Month | cron.Dow)
+				schedule, parseError := parser.Parse(pipelineSchedules[i].CronExpression)
+
+				if parseError != nil {
+					return
+				}
+
+				nextExec = schedule.Next(time.Now())
+			}
+
+			if nextExec.Compare(time.Now()) > 0 {
+				err := service.enqueueTask(pipelineSchedules[i].UniqueOcurrence, pipelineSchedules[i].CronExpression, pipelineSchedules[i].PipelineID, pipelineSchedules[i].ID)
+				if err != nil {
+					return
+				}
+			}
+		}
+	}
+}
+
 func (service *pipelineServiceImpl) Get(id uint) (*model.Pipeline, error) {
 	pipeline, err := service.PipelineRepository.FindByID(id)
 	return pipeline, err
 }
 
-func (service *pipelineServiceImpl) GetSchedules(id uint) ([]model.PipelineSchedule, error) {
-	schedules, err := service.PipelineRepository.FindScheduleByPipeline(id)
+func (service *pipelineServiceImpl) GetPipelineSchedule(id uint) (*model.PipelineSchedule, error) {
+	pipelineSchedule, err := service.PipelineRepository.FindPipelineScheduleByID(id)
+	return pipelineSchedule, err
+}
+
+func (service *pipelineServiceImpl) GetPipelineSchedules(id uint) ([]model.PipelineSchedule, error) {
+	schedules, err := service.PipelineRepository.FindPipelineScheduleByPipeline(id)
+	return schedules, err
+}
+
+func (service *pipelineServiceImpl) GetAllPipelineSchedules() ([]model.PipelineSchedule, error) {
+	schedules, err := service.PipelineRepository.GetAllPipelineSchedules()
 	return schedules, err
 }
 
@@ -46,35 +114,44 @@ func (service *pipelineServiceImpl) Create(userId uint, name string, definition 
 	return nil
 }
 
-func (service *pipelineServiceImpl) CreateSchedule(pipelineID uint, uniqueOcurrence time.Time, cronExpression string) error {
+func (service *pipelineServiceImpl) CreatePipelineSchedule(pipelineID uint, uniqueOcurrence time.Time, cronExpression string) error {
 	if cronExpression != "" || uniqueOcurrence.Year() > 1 {
 
-		if err := service.PipelineRepository.CreateSchedule(&model.PipelineSchedule{PipelineID: pipelineID, UniqueOcurrence: uniqueOcurrence, CronExpression: cronExpression}); err != nil {
+		pipelineSchedule := &model.PipelineSchedule{PipelineID: pipelineID, UniqueOcurrence: uniqueOcurrence, CronExpression: cronExpression}
+		if err := service.PipelineRepository.CreatePipelineSchedule(pipelineSchedule); err != nil {
 			return err
 		}
 
-		nextExec := uniqueOcurrence
-
-		if cronExpression != "" {
-			parser := cron.NewParser(cron.Minute | cron.Hour | cron.Dom | cron.Month | cron.Dow)
-			schedule, parseError := parser.Parse(cronExpression)
-
-			if parseError != nil {
-				return parseError
-			}
-
-			nextExec = schedule.Next(time.Now())
-		}
-
-		task, err := NewScheduledRunPipelineTask(pipelineID, cronExpression)
-
+		err := service.enqueueTask(uniqueOcurrence, cronExpression, pipelineID, pipelineSchedule.ID)
 		if err != nil {
 			return err
 		}
-
-		service.TaskQueueClient.Enqueue(task, asynq.Queue("runs"), asynq.ProcessAt(nextExec))
 	}
 
+	return nil
+}
+
+func (service *pipelineServiceImpl) enqueueTask(uniqueOcurrence time.Time, cronExpression string, pipelineID uint, pipelineScheduleID uint) error {
+	nextExec := uniqueOcurrence
+
+	if cronExpression != "" {
+		parser := cron.NewParser(cron.Minute | cron.Hour | cron.Dom | cron.Month | cron.Dow)
+		schedule, parseError := parser.Parse(cronExpression)
+
+		if parseError != nil {
+			return parseError
+		}
+
+		nextExec = schedule.Next(time.Now())
+	}
+
+	task, err := NewScheduledRunPipelineTask(pipelineID, pipelineScheduleID)
+
+	if err != nil {
+		return err
+	}
+
+	service.TaskQueueClient.Enqueue(task, asynq.Queue("runs"), asynq.ProcessAt(nextExec))
 	return nil
 }
 
@@ -108,11 +185,11 @@ func (service *pipelineServiceImpl) DeletePipelineSchedule(id uint) error {
 	return nil
 }
 
-func NewScheduledRunPipelineTask(pipelineID uint, cronExpression string) (*asynq.Task, error) {
-	payload, err := json.Marshal(ScheduledRunPipelinePayload{PipelineID: pipelineID, CronExpression: cronExpression})
+func NewScheduledRunPipelineTask(pipelineID uint, pipelineScheduleID uint) (*asynq.Task, error) {
+	payload, err := json.Marshal(ScheduledRunPipelinePayload{PipelineID: pipelineID, PipelineScheduleID: pipelineScheduleID})
 	if err != nil {
 		return nil, err
 	}
 
-	return asynq.NewTask(RunPipelineTask, payload, asynq.MaxRetry(0)), nil
+	return asynq.NewTask(ScheduledRunPipelineTask, payload, asynq.MaxRetry(0)), nil
 }

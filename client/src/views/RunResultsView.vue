@@ -8,10 +8,10 @@ import { ref, computed, watch } from "vue";
 import { useAsyncState } from "@vueuse/core";
 import { doRequest } from "@/util";
 import { useAuthStore } from "@/stores/auth";
-import { useRouter, useRoute } from 'vue-router';
+import { useRoute } from 'vue-router';
 import {
   mdiChartTimelineVariant,
-  mdiPlus
+  mdiFileDocumentOutline
 } from "@mdi/js";
 import SectionMain from "@/components/SectionMain.vue";
 import LayoutAuthenticated from "@/layouts/LayoutAuthenticated.vue";
@@ -238,6 +238,7 @@ function toggleClass() {
         <UpsertStepDialog :key="'createStepDialog_' + count" :formSchema="formSchema" :nodeId="editStepNodeId"
           :nodeData="stepData" @onCancel="onCancel" />
       </CardBoxModal>
+      <SectionTitleLineWithButton :hasButton="false" :icon="mdiFileDocumentOutline" title="Log" />
       <Editor v-model="log" editorStyle="height: 320px" :modules="quillModules" readonly />
     </SectionMain>
     <Toast />

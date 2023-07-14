@@ -33,11 +33,13 @@ type TokenService interface {
 }
 
 type PipelineService interface {
+	SyncAsyncTasks()
 	Get(id uint) (*model.Pipeline, error)
-	GetSchedules(id uint) ([]model.PipelineSchedule, error)
+	GetPipelineSchedule(id uint) (*model.PipelineSchedule, error)
+	GetPipelineSchedules(id uint) ([]model.PipelineSchedule, error)
 	GetByOwner(ownerId uint) ([]model.Pipeline, error)
 	Create(userId uint, name string, definition string) error
-	CreateSchedule(pipelineID uint, uniqueOcurrence time.Time, cronExpression string) error
+	CreatePipelineSchedule(pipelineID uint, uniqueOcurrence time.Time, cronExpression string) error
 	Update(pipeline *model.Pipeline) error
 	Delete(id uint) error
 	DeletePipelineSchedule(id uint) error

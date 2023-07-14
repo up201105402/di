@@ -38,6 +38,7 @@ func main() {
 	defer client.Close()
 
 	pipelineService := service.NewPipelineService(dbConnection, client)
+	pipelineService.SyncAsyncTasks()
 	stepTypeService := service.NewNodeService()
 	runService := service.NewRunService(dbConnection, client, &pipelineService, &stepTypeService)
 	taskService := service.NewTaskService(&stepTypeService, &runService)

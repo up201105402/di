@@ -26,8 +26,8 @@ type RunPipelinePayload struct {
 }
 
 type ScheduledRunPipelinePayload struct {
-	PipelineID     uint
-	CronExpression string
+	PipelineID         uint
+	PipelineScheduleID uint
 }
 
 func NewTaskService(nodeTypeService *NodeTypeService, runService *RunService) TaskService {

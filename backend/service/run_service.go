@@ -334,6 +334,13 @@ func (service *runServiceImpl) HandleScheduledRunPipelineTask(ctx context.Contex
 		return errStr
 	}
 
+	pipelineSchedule, err := service.PipelineService.GetPipelineSchedule(scheduledRunPipelinePayload.PipelineScheduleID)
+
+	if err != nil {
+		log.Println(err.Error())
+		return asynq.SkipRetry
+	}
+
 	pipeline, err := service.PipelineService.Get(scheduledRunPipelinePayload.PipelineID)
 
 	if err != nil {
@@ -348,9 +355,9 @@ func (service *runServiceImpl) HandleScheduledRunPipelineTask(ctx context.Contex
 		return asynq.SkipRetry
 	}
 
-	if scheduledRunPipelinePayload.CronExpression != "" {
+	if pipelineSchedule.CronExpression != "" {
 		parser := cron.NewParser(cron.Minute | cron.Hour | cron.Dom | cron.Month | cron.Dow)
-		schedule, parseError := parser.Parse(scheduledRunPipelinePayload.CronExpression)
+		schedule, parseError := parser.Parse(pipelineSchedule.CronExpression)
 
 		if parseError != nil {
 			return parseError
@@ -358,7 +365,7 @@ func (service *runServiceImpl) HandleScheduledRunPipelineTask(ctx context.Contex
 
 		nextExec := schedule.Next(time.Now())
 
-		task, err := NewScheduledRunPipelineTask(scheduledRunPipelinePayload.PipelineID, scheduledRunPipelinePayload.CronExpression)
+		task, err := NewScheduledRunPipelineTask(pipelineSchedule.PipelineID, pipelineSchedule.ID)
 
 		if err != nil {
 			return err

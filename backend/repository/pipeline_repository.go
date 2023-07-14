@@ -32,6 +32,32 @@ func (repo *pipelineRepositoryImpl) FindByID(id uint) (*model.Pipeline, error) {
 	return &pipeline, nil
 }
 
+func (repo *pipelineRepositoryImpl) FindPipelineScheduleByID(pipelineScheduleID uint) (*model.PipelineSchedule, error) {
+	var pipelineSchedule = model.PipelineSchedule{}
+
+	result := repo.DB.First(&pipelineSchedule, pipelineScheduleID)
+
+	if errors.Is(result.Error, gorm.ErrRecordNotFound) {
+		log.Printf("Failed to get pipeline schedule with id: %v. Reason: %v\n", pipelineScheduleID, result.Error)
+		return nil, result.Error
+	}
+
+	return &pipelineSchedule, nil
+}
+
+func (repo *pipelineRepositoryImpl) GetAllPipelineSchedules() ([]model.PipelineSchedule, error) {
+	var pipelineSchedules []model.PipelineSchedule
+
+	result := repo.DB.Find(&pipelineSchedules)
+
+	if errors.Is(result.Error, gorm.ErrRecordNotFound) {
+		log.Printf("Failed to get pipeline schedules. Reason: %v\n", result.Error)
+		return nil, result.Error
+	}
+
+	return pipelineSchedules, nil
+}
+
 func (repo *pipelineRepositoryImpl) FindByOwner(ownerId uint) ([]model.Pipeline, error) {
 
 	var pipelines []model.Pipeline
@@ -46,7 +72,7 @@ func (repo *pipelineRepositoryImpl) FindByOwner(ownerId uint) ([]model.Pipeline,
 	return pipelines, nil
 }
 
-func (repo *pipelineRepositoryImpl) FindScheduleByPipeline(pipelineID uint) ([]model.PipelineSchedule, error) {
+func (repo *pipelineRepositoryImpl) FindPipelineScheduleByPipeline(pipelineID uint) ([]model.PipelineSchedule, error) {
 	var pipelineSchedules []model.PipelineSchedule
 
 	result := repo.DB.Where("pipeline_id = ?", pipelineID).Order("id").Find(&pipelineSchedules)
@@ -69,7 +95,7 @@ func (repo *pipelineRepositoryImpl) Create(pipeline *model.Pipeline) error {
 	return nil
 }
 
-func (repo *pipelineRepositoryImpl) CreateSchedule(pipelineSchedule *model.PipelineSchedule) error {
+func (repo *pipelineRepositoryImpl) CreatePipelineSchedule(pipelineSchedule *model.PipelineSchedule) error {
 	result := repo.DB.Create(pipelineSchedule)
 
 	if result.Error != nil {

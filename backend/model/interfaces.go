@@ -13,10 +13,12 @@ type TokenRepository interface {
 
 type PipelineRepository interface {
 	FindByID(pipelineID uint) (*Pipeline, error)
-	FindScheduleByPipeline(pipelineID uint) ([]PipelineSchedule, error)
+	FindPipelineScheduleByID(pipelineScheduleID uint) (*PipelineSchedule, error)
+	FindPipelineScheduleByPipeline(pipelineID uint) ([]PipelineSchedule, error)
+	GetAllPipelineSchedules() ([]PipelineSchedule, error)
 	FindByOwner(ownerID uint) ([]Pipeline, error)
 	Create(pipeline *Pipeline) error
-	CreateSchedule(pipelineSchedule *PipelineSchedule) error
+	CreatePipelineSchedule(pipelineSchedule *PipelineSchedule) error
 	Update(pipeline *Pipeline) error
 	Delete(pipelineID uint) error
 	DeletePipelineSchedule(pipelineID uint) error
