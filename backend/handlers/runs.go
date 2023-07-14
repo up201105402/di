@@ -139,7 +139,7 @@ func CreateRun(services *service.Services) gin.HandlerFunc {
 			return
 		}
 
-		serviceError = services.RunService.Create(*pipeline)
+		_, serviceError = services.RunService.Create(*pipeline)
 
 		if serviceError != nil {
 			log.Printf("Failed to create run for pipeline: %v\n", err.Error())

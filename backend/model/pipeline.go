@@ -18,7 +18,10 @@ type Pipeline struct {
 
 type PipelineSchedule struct {
 	gorm.Model
-	CronExpression string `json:"cronExpression"`
+	PipelineID      uint
+	Pipeline        Pipeline
+	UniqueOcurrence time.Time `json:"uniqueOccurrence"`
+	CronExpression  string    `json:"cronExpression"`
 }
 
 type CreatePipelineReq struct {
@@ -35,7 +38,9 @@ type PipelineReq struct {
 }
 
 type PipelineScheduleReq struct {
-	CronExpression string `json:"cronExpression"`
+	ID              uint      `json:"id"`
+	UniqueOcurrence time.Time `json:"uniqueOccurrence"`
+	CronExpression  string    `json:"cronExpression"`
 }
 
 type StepDataNameAndType struct {

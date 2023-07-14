@@ -45,6 +45,11 @@ func CreateOrUpdateSchema(db *gorm.DB) error {
 		return err
 	}
 
+	if err := db.AutoMigrate(&model.PipelineSchedule{}); err != nil {
+		log.Fatalln(err)
+		return err
+	}
+
 	if err := db.AutoMigrate(&model.RunStatus{}); err != nil {
 		log.Fatalln(err)
 		return err

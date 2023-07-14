@@ -14,22 +14,23 @@ import (
 
 	"github.com/dominikbraun/graph"
 	"github.com/hibiken/asynq"
+	"github.com/robfig/cron/v3"
 	"gorm.io/gorm"
 )
 
 type runServiceImpl struct {
-	RunRepository    model.RunRepository
-	PipelineService  PipelineService
-	NodeTypeService  NodeTypeService
-	TasksQueueClient asynq.Client
+	RunRepository   model.RunRepository
+	PipelineService PipelineService
+	NodeTypeService NodeTypeService
+	TaskQueueClient asynq.Client
 }
 
 func NewRunService(gormDB *gorm.DB, client *asynq.Client, pipelineService *PipelineService, stepTypeService *NodeTypeService) RunService {
 	return &runServiceImpl{
-		RunRepository:    repository.NewRunRepository(gormDB),
-		PipelineService:  *pipelineService,
-		NodeTypeService:  *stepTypeService,
-		TasksQueueClient: *client,
+		RunRepository:   repository.NewRunRepository(gormDB),
+		PipelineService: *pipelineService,
+		NodeTypeService: *stepTypeService,
+		TaskQueueClient: *client,
 	}
 }
 
@@ -48,14 +49,14 @@ func (service *runServiceImpl) FindRunStepStatusesByRun(runID uint) ([]model.Run
 	return runStepStatuses, error
 }
 
-func (service *runServiceImpl) Create(pipeline model.Pipeline) error {
+func (service *runServiceImpl) Create(pipeline model.Pipeline) (model.Run, error) {
 	// Add Initial Status
 	newRun := &model.Run{PipelineID: pipeline.ID, RunStatusID: 1, Definition: pipeline.Definition}
 	if err := service.RunRepository.Create(newRun); err != nil {
-		return err
+		return *newRun, err
 	}
 
-	return nil
+	return *newRun, nil
 }
 
 func (service *runServiceImpl) CreateRunStepStatus(runID uint, stepID int, runStatusID uint, errorMessage string) error {
@@ -99,7 +100,7 @@ func (service *runServiceImpl) Execute(runID uint) error {
 		return err
 	}
 
-	if _, err := service.TasksQueueClient.Enqueue(
+	if _, err := service.TaskQueueClient.Enqueue(
 		runPipelineTask,
 		asynq.Queue("runs"),
 	); err != nil {
@@ -165,6 +166,10 @@ func (service *runServiceImpl) HandleRunPipelineTask(ctx context.Context, t *asy
 		return errStr
 	}
 
+	return executeRunPipelineTask(runPipelinePayload, service)
+}
+
+func executeRunPipelineTask(runPipelinePayload RunPipelinePayload, service *runServiceImpl) error {
 	var stepDescriptions []model.NodeDescription
 
 	if err := json.Unmarshal([]byte(runPipelinePayload.GraphDefinition), &stepDescriptions); err != nil {
@@ -319,6 +324,57 @@ func (service *runServiceImpl) HandleRunPipelineTask(ctx context.Context, t *asy
 	logFile.Close()
 
 	return asynq.SkipRetry
+}
+
+func (service *runServiceImpl) HandleScheduledRunPipelineTask(ctx context.Context, t *asynq.Task) error {
+	var scheduledRunPipelinePayload ScheduledRunPipelinePayload
+	if err := json.Unmarshal(t.Payload(), &scheduledRunPipelinePayload); err != nil {
+		errStr := fmt.Errorf("json.Unmarshal failed: %v: %w", err, asynq.SkipRetry)
+		log.Println(errStr)
+		return errStr
+	}
+
+	pipeline, err := service.PipelineService.Get(scheduledRunPipelinePayload.PipelineID)
+
+	if err != nil {
+		log.Println(err.Error())
+		return asynq.SkipRetry
+	}
+
+	run, err := service.Create(*pipeline)
+
+	if err != nil {
+		log.Println(err.Error())
+		return asynq.SkipRetry
+	}
+
+	if scheduledRunPipelinePayload.CronExpression != "" {
+		parser := cron.NewParser(cron.Minute | cron.Hour | cron.Dom | cron.Month | cron.Dow)
+		schedule, parseError := parser.Parse(scheduledRunPipelinePayload.CronExpression)
+
+		if parseError != nil {
+			return parseError
+		}
+
+		nextExec := schedule.Next(time.Now())
+
+		task, err := NewScheduledRunPipelineTask(scheduledRunPipelinePayload.PipelineID, scheduledRunPipelinePayload.CronExpression)
+
+		if err != nil {
+			return err
+		}
+
+		service.TaskQueueClient.Enqueue(task, asynq.Queue("runs"), asynq.ProcessAt(nextExec))
+	}
+
+	runPipelinePayload := &RunPipelinePayload{
+		PipelineID:      pipeline.ID,
+		RunID:           run.ID,
+		GraphDefinition: pipeline.Definition,
+		StepIndex:       0,
+	}
+
+	return executeRunPipelineTask(*runPipelinePayload, service)
 }
 
 func (service *runServiceImpl) UpdateRunStatus(runID uint, statusID uint, errorMessage string) {

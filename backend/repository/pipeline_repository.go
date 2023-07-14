@@ -20,7 +20,6 @@ func NewPipelineRepository(gormDB *gorm.DB) model.PipelineRepository {
 }
 
 func (repo *pipelineRepositoryImpl) FindByID(id uint) (*model.Pipeline, error) {
-
 	var pipeline = model.Pipeline{}
 
 	result := repo.DB.Preload("User").First(&pipeline, id)
@@ -47,11 +46,34 @@ func (repo *pipelineRepositoryImpl) FindByOwner(ownerId uint) ([]model.Pipeline,
 	return pipelines, nil
 }
 
+func (repo *pipelineRepositoryImpl) FindScheduleByPipeline(pipelineID uint) ([]model.PipelineSchedule, error) {
+	var pipelineSchedules []model.PipelineSchedule
+
+	result := repo.DB.Where("pipeline_id = ?", pipelineID).Order("id").Find(&pipelineSchedules)
+	if errors.Is(result.Error, gorm.ErrRecordNotFound) {
+		log.Printf("Failed to get schedules for pipeline with id: %v. Reason: %v\n", pipelineID, result.Error)
+		return nil, result.Error
+	}
+
+	return pipelineSchedules, nil
+}
+
 func (repo *pipelineRepositoryImpl) Create(pipeline *model.Pipeline) error {
 	result := repo.DB.Create(pipeline)
 
 	if result.Error != nil {
 		log.Printf("Failed to create pipeline. Reason: %v\n", result.Error)
+		return result.Error
+	}
+
+	return nil
+}
+
+func (repo *pipelineRepositoryImpl) CreateSchedule(pipelineSchedule *model.PipelineSchedule) error {
+	result := repo.DB.Create(pipelineSchedule)
+
+	if result.Error != nil {
+		log.Printf("Failed to create pipeline schedule. Reason: %v\n", result.Error)
 		return result.Error
 	}
 
@@ -73,6 +95,17 @@ func (repo *pipelineRepositoryImpl) Delete(id uint) error {
 
 	if result.Error != nil {
 		log.Printf("Failed to delete pipeline. Reason: %v\n", result.Error)
+		return result.Error
+	}
+
+	return nil
+}
+
+func (repo *pipelineRepositoryImpl) DeletePipelineSchedule(id uint) error {
+	result := repo.DB.Delete(&model.PipelineSchedule{}, id)
+
+	if result.Error != nil {
+		log.Printf("Failed to delete pipeline schedule. Reason: %v\n", result.Error)
 		return result.Error
 	}
 

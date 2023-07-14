@@ -103,8 +103,8 @@ func GetPipelineSchedule(services *service.Services) gin.HandlerFunc {
 		schedules, getError := services.PipelineService.GetSchedules(uint(id))
 
 		if getError != nil {
-			log.Printf("Failed to get pipeline's schedules with id %v: %v\n", pipelineId, getError)
-			errorMessage := fmt.Sprint("Failed to get pipeline's schedules with id %v: %v\n", pipelineId, getError)
+			errorMessage := fmt.Sprint("Failed to get pipeline's schedules with id %s: %v\n", pipelineId, getError)
+			log.Printf(errorMessage)
 			err := errors.NewInternal()
 			context.JSON(err.Status(), gin.H{
 				"error": errorMessage,
@@ -193,13 +193,13 @@ func CreatePipelineSchedule(services *service.Services) gin.HandlerFunc {
 			return
 		}
 
-		var req model.PipelineSchedule
+		var req model.PipelineScheduleReq
 
 		if ok := bindData(context, &req); !ok {
 			return
 		}
 
-		if req.CronExpression != "" {
+		if req.CronExpression != "" || req.UniqueOcurrence.Year() > 1 {
 			user, err := getUser(context)
 			if err != nil {
 				context.JSON(err.Status(), gin.H{
@@ -228,10 +228,9 @@ func CreatePipelineSchedule(services *service.Services) gin.HandlerFunc {
 				return
 			}
 
-			createError := services.PipelineService.CreateSchedule(pipeline.ID, req.CronExpression)
-
+			createError := services.PipelineService.CreateSchedule(pipeline.ID, req.UniqueOcurrence, req.CronExpression)
 			if createError != nil {
-				errorMessage := fmt.Sprint("Failed to get pipeline's schedules with id %v: %v\n", pipelineID, createError)
+				errorMessage := fmt.Sprint("Failed to get pipeline's schedules with id %s: %v\n", pipelineID, createError)
 				log.Printf(errorMessage)
 				err := errors.NewInternal()
 				context.JSON(err.Status(), gin.H{
@@ -288,6 +287,74 @@ func DeletePipeline(services *service.Services) gin.HandlerFunc {
 		if deleteError != nil {
 			log.Printf("Failed to delete pipeline with id %v: %v\n", req.ID, err.Error())
 			errorMessage := fmt.Sprint("Failed to delete pipeline with id %v: %v\n", req.ID, err.Error())
+			err := errors.NewInternal()
+			context.JSON(err.Status(), gin.H{
+				"error": errorMessage,
+			})
+			return
+		}
+
+		context.JSON(http.StatusOK, gin.H{})
+	}
+}
+
+func DeletePipelineSchedule(services *service.Services) gin.HandlerFunc {
+	return func(context *gin.Context) {
+
+		pipelineId := context.Param("id")
+
+		pipelineID, parseError := strconv.ParseUint(pipelineId, 10, 64)
+
+		if parseError != nil {
+			log.Printf("Failed to convert pipelineId into uint: %v\n", parseError)
+			errorMessage := fmt.Sprint("Failed to convert pipelineId into uint: %v\n", parseError)
+			err := errors.NewInternal()
+			context.JSON(err.Status(), gin.H{
+				"error": errorMessage,
+			})
+			return
+		}
+
+		var req model.PipelineScheduleReq
+
+		if ok := bindData(context, &req); !ok {
+			return
+		}
+
+		pipeline, getError := services.PipelineService.Get(uint(pipelineID))
+
+		if getError != nil {
+			errorMessage := fmt.Sprint("Failed to get pipeline with id %v\n", getError)
+			log.Printf(errorMessage)
+			err := errors.NewNotFound("pipeline", string(pipelineID))
+			context.JSON(err.Status(), gin.H{
+				"error": errorMessage,
+			})
+			return
+		}
+
+		user, err := getUser(context)
+		if err != nil {
+			context.JSON(err.Status(), gin.H{
+				"error": err.Error(),
+			})
+		}
+
+		if pipeline.UserID != user.ID {
+			errorMessage := fmt.Sprint("Pipeline with id %v does not belong to user %v\n", pipeline.ID, user.Username)
+			log.Printf(errorMessage)
+			err := errors.NewAuthorization("")
+			context.JSON(err.Status(), gin.H{
+				"error": errorMessage,
+			})
+			return
+		}
+
+		deleteError := services.PipelineService.DeletePipelineSchedule(req.ID)
+
+		if deleteError != nil {
+			errorMessage := fmt.Sprint("Failed to delete pipeline schedule with id %v: %v\n", req.ID, err.Error())
+			log.Printf(errorMessage)
 			err := errors.NewInternal()
 			context.JSON(err.Status(), gin.H{
 				"error": errorMessage,

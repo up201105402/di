@@ -60,3 +60,41 @@ export const steps = [
     steps: scikitUnsupervisedSteps
   },
 ];
+
+export const menubarSteps = [
+  {
+    type: 'general',
+    label: 'General',
+    items: [
+      {
+        group: 'general',
+        type: 'checkoutRepo',
+        label: 'Checkout Repository',
+        form: checkoutRepoForm
+      },
+    ]
+  },
+  {
+    type: 'scikitDatasets',
+    label: 'Scikit Datasets',
+    items: [
+      {
+        group: 'scikitDatasets',
+        type: 'scikitTrainingDataset',
+        label: 'Load Training Dataset',
+        form: scikitDatasetForm
+      },
+      {
+        group: 'scikitDatasets',
+        type: 'scikitTestingDataset',
+        label: 'Load Testing Dataset',
+        form: scikitDatasetForm
+      },
+    ]
+  },
+  {
+    type: 'scikitUnsupervisedModels',
+    label: 'Scikit Unsupervised Models',
+    items: scikitUnsupervisedSteps
+  },
+];

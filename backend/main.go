@@ -34,10 +34,10 @@ func main() {
 		panic("Failed to get Token Configuration")
 	}
 
-	client := util.ConnectToAsynq()
+	client := util.GetAsynqClient()
 	defer client.Close()
 
-	pipelineService := service.NewPipelineService(dbConnection)
+	pipelineService := service.NewPipelineService(dbConnection, client)
 	stepTypeService := service.NewNodeService()
 	runService := service.NewRunService(dbConnection, client, &pipelineService, &stepTypeService)
 	taskService := service.NewTaskService(&stepTypeService, &runService)
@@ -88,6 +88,7 @@ func setupRouter(services *service.Services) *gin.Engine {
 	pipelineAPI.POST("/:id/schedule", middleware.Auth(services.TokenService), handlers.CreatePipelineSchedule(services))
 	pipelineAPI.POST("/:id", middleware.Auth(services.TokenService), handlers.UpsertPipeline(services))
 	pipelineAPI.DELETE("", middleware.Auth(services.TokenService), handlers.DeletePipeline(services))
+	pipelineAPI.DELETE("/:id/schedule", middleware.Auth(services.TokenService), handlers.DeletePipelineSchedule(services))
 
 	runAPI := router.Group("/api/run")
 	runAPI.GET("", middleware.Auth(services.TokenService), handlers.GetRuns(services))

@@ -16,6 +16,7 @@ import SectionTitleLineWithButton from "@/components/SectionTitleLineWithButton.
 import BaseButtons from "@/components/BaseButtons.vue";
 import BaseButton from "@/components/BaseButton.vue";
 import CascadeSelect from 'primevue/cascadeselect';
+import Menubar from 'primevue/menubar';
 import CardBoxModal from '@/components/CardBoxModal.vue';
 import UpsertStepDialog from '@/components/UpsertStepDialog.vue';
 import Toast from 'primevue/toast';
@@ -24,7 +25,7 @@ import Loading from "vue-loading-overlay";
 import { nodeTypes } from "@/pipelines/steps";
 import deepEqual from 'deep-equal';
 import $ from 'jquery';
-import { steps } from '@/pipelines/steps';
+import { steps, menubarSteps } from '@/pipelines/steps';
 import { camel2title } from '@/util';
 import PipelineScheduleTable from '@/components/PipelineScheduleTable.vue';
 import TabView from 'primevue/tabview';
@@ -60,7 +61,7 @@ const { value: cronValue, errorMessage: cronError } = useField('input-cron', val
 const emit = defineEmits(["onUpdate", "onStepEdited"]);
 
 // FETCH PIPELINE
-const { isLoading: isFetching, state: fetchResponse, isReady: isFetchFinished, execute: fetchPipeline } = useAsyncState(
+const { isLoading: isFetchingPipeline, state: fetchPipelineResponse, isReady: isFetchPipelineFinished, execute: fetchPipeline } = useAsyncState(
   () => {
     return doRequest({
       url: `/api/pipeline/${route.params.id}`,
@@ -78,7 +79,7 @@ const { isLoading: isFetching, state: fetchResponse, isReady: isFetchFinished, e
 );
 
 // FETCH PIPELINE SCHEDULE
-const { isLoading: isFetchingSchedule, state: fetchScheduleResponse, isReady: isFetchFinishedSchedule, execute: fetchPipelineSchedule } = useAsyncState(
+const { isLoading: isFetchingPipelineSchedules, state: fetchPipelineSchedulesResponse, isReady: isPipelineScheduleFetchFinished, execute: fetchPipelineSchedules } = useAsyncState(
   () => {
     return doRequest({
       url: `/api/pipeline/${route.params.id}/schedule`,
@@ -96,7 +97,7 @@ const { isLoading: isFetchingSchedule, state: fetchScheduleResponse, isReady: is
 );
 
 // UPDATE PIPELINE
-const { isLoading: isUpdating, state: updateResponse, isReady: isUpdateFinished, execute: updatePipeline } = useAsyncState(
+const { isLoading: isUpdatingPipeline, state: updatePipelineResponse, isReady: isPipelineUpdateFinished, execute: updatePipeline } = useAsyncState(
   () => {
     return doRequest({
       url: `/api/pipeline/${route.params.id}`,
@@ -118,16 +119,94 @@ const { isLoading: isUpdating, state: updateResponse, isReady: isUpdateFinished,
   },
 )
 
+// CREATE PIPELINE SCHEDULE
+const { isLoading: isCreatingPipelineSchedule, state: createPipelineScheduleResponse, isReady: isPipelineScheduleCreateFinished, execute: createPipelineSchedule } = useAsyncState(
+  (pipelineSchedule) => {
+    return doRequest({
+      url: `/api/pipeline/${route.params.id}/schedule`,
+      method: 'POST',
+      data: {
+        ...pipelineSchedule
+      },
+      headers: {
+        Authorization: `${accessToken.value}`
+      },
+    })
+  },
+  {},
+  {
+    delay: 500,
+    resetOnExecute: false,
+    immediate: false,
+  },
+);
+
+// DELETE PIPELINE SCHEDULE
+const { isLoading: isDeletingPipelineSchedule, state: deletePipelineScheduleResponse, isReady: isPipelineScheduleDeleteFinished, execute: deletePipelineSchedule } = useAsyncState(
+  (pipelineSchedule) => {
+    return doRequest({
+      url: `/api/pipeline/${route.params.id}/schedule`,
+      method: 'DELETE',
+      data: {
+        ...pipelineSchedule
+      },
+      headers: {
+        Authorization: `${accessToken.value}`
+      },
+    })
+  },
+  {},
+  {
+    delay: 500,
+    resetOnExecute: false,
+    immediate: false,
+  },
+);
+
 const selectedStep = ref();
 const cascadeOptions = ref(steps);
 
-watch(fetchResponse, (value) => {
+const onMenubarClick = (e) => {
+  editStepNodeId.value = "-1";
+  stepData.value = {};
+
+  if (e.item) {
+    isStepDialogActive.value = true;
+    if (elements.value == null || elements.value.length == 0) {
+      stepData.value = {
+        nameAndType: {
+          isFirstStep: true
+        },
+      }
+    }
+    let step = e.item.form(stepData.value, onStepEdited);
+    formSchema.value = step.formSchema;
+    dialogTitle.value = 'Create ' + camel2title(e.item.type) + ' Step';
+    stepData.value = step.formkitData;
+    stepData.value.group = e.item.group;
+    stepData.value.type = e.item.type;
+    count++;
+  }
+}
+
+const addItemCommand = (item) => {
+  if (item.items) {
+    item.items.forEach(addItemCommand)
+  } else {
+    item.command = onMenubarClick
+  }
+}
+
+menubarSteps.forEach(addItemCommand)
+const menubarItems = ref(menubarSteps)
+
+watch(fetchPipelineResponse, (value) => {
   if (value.error) {
     toast.add({ severity: 'error', summary: 'Error', detail: value.error.message, life: 3000 });
   }
 })
 
-watch(fetchScheduleResponse, (value) => {
+watch(fetchPipelineSchedulesResponse, (value) => {
   if (value.error) {
     toast.add({ severity: 'error', summary: 'Error', detail: value.error.message, life: 3000 });
   }
@@ -142,16 +221,16 @@ const parsePipelineDefinition = (pipeline) => {
   }
 }
 
-watch(isFetchFinished, () => {
-  elements.value = fetchResponse.value?.data ? parsePipelineDefinition(fetchResponse.value.data.pipeline) : [];
-  pipelineTitle.value = fetchResponse.value?.data ? fetchResponse.value.data.pipeline.name : 'Untitled';
+watch(isFetchPipelineFinished, () => {
+  elements.value = fetchPipelineResponse.value?.data ? parsePipelineDefinition(fetchPipelineResponse.value.data.pipeline) : [];
+  pipelineTitle.value = fetchPipelineResponse.value?.data ? fetchPipelineResponse.value.data.pipeline.name : 'Untitled';
 })
 
-watch(isFetchFinishedSchedule, () => {
-  pipelineSchedules.value = fetchScheduleResponse.value?.schedules ? fetchScheduleResponse.value?.schedules : [];
+watch(isPipelineScheduleFetchFinished, () => {
+  pipelineSchedules.value = fetchPipelineSchedulesResponse.value?.data ? fetchPipelineSchedulesResponse.value.data.schedules : [];
 })
 
-watch(updateResponse, (value) => {
+watch(updatePipelineResponse, (value) => {
   if (value.error) {
     toast.add({ severity: 'error', summary: 'Error', detail: value.error.message, life: 3000 });
   }
@@ -162,11 +241,33 @@ watch(updateResponse, (value) => {
   }
 })
 
-const isLoading = computed(() => isFetching.value || isFetchingSchedule.value || isUpdating.value);
+watch(createPipelineScheduleResponse, (value) => {
+  if (value.error) {
+    toast.add({ severity: 'error', summary: 'Error', detail: value.error.message, life: 3000 });
+  }
+
+  if (value.status === 200) {
+    fetchPipelineSchedules(null);
+  }
+})
+
+watch(deletePipelineScheduleResponse, (value) => {
+  if (value.error) {
+    toast.add({ severity: 'error', summary: 'Error', detail: value.error.message, life: 3000 });
+  }
+
+  if (value.status === 200) {
+    fetchPipelineSchedules(null);
+  }
+})
+
+const isLoading = computed(() => isFetchingPipeline.value || isFetchingPipelineSchedules.value || isUpdatingPipeline.value || isCreatingPipelineSchedule.value);
 
 const hasChanges = ref(false);
 const isStepDialogActive = ref(false);
 const isScheduleDialogActive = ref(false);
+const isDeleteScheduleDialogActive = ref(false);
+const pipelineScheduleIdToDelete = ref();
 const formSchema = ref({});
 const dialogTitle = ref('');
 const stepData = ref({});
@@ -183,8 +284,8 @@ const weekDays = [
   { value: 'saturday', label: 'Saturday' },
   { value: 'sunday', label: 'Sunday' },
 ];
-const selectedWeekDay = ref(weekDays[0].value)
-const scheduledTime = ref(new Date());
+const selectedWeekDay = ref(weekDays[0].value);
+const scheduledTime = ref(new Date(new Date(Date.now() + 60*60*1000).setSeconds(0))); // one hour in the future
 
 onBeforeRouteLeave((to, from) => {
   if (hasChanges.value) {
@@ -238,14 +339,27 @@ const onCreateScheduleClick = (e) => {
   isScheduleDialogActive.value = true;
 }
 
+const onDeletePipelineScheduleClick = (id) => {
+  pipelineScheduleIdToDelete.value = id;
+  isDeleteScheduleDialogActive.value = true;
+}
+
 const onCreateSchedule = (e) => {
-  if (activeTabIndex.index = 0) {
-    
-  } else if (activeTabIndex.index = 1) {
+  var pipelineSchedule = {}
 
-  } else if (activeTabIndex.index = 2) {
-
+  if (activeTabIndex.value == 0) {
+    pipelineSchedule['uniqueOccurrence'] = scheduledTime.value.toISOString()
+  } else if (activeTabIndex.value == 1) {
+    pipelineSchedule['cronExpression'] = cronTime.onSpecificDaysAt([selectedWeekDay.value], scheduledTime.value.getHours(), scheduledTime.value.getMinutes())
+  } else if (activeTabIndex.value == 2) {
+    pipelineSchedule['cronExpression'] = cronValue.value;
   }
+
+  createPipelineSchedule(null, pipelineSchedule);
+}
+
+const onDeleteSchedule = (id) => {
+  deletePipelineSchedule(null, {ID: id})
 }
 
 const onNodeDoubleClick = (e) => {
@@ -450,21 +564,17 @@ function toggleClass() {
             <BaseButton :disabled="!hasChanges" :label="'Save'" color="success" @click="onPipelineSave" />
             <BaseButton :label="'Cancel'" color="danger" @click="onPipelineCancel" />
           </BaseButtons>
-          <CascadeSelect style="float:right; min-width: 14rem;" v-model="selectedStep" :options="cascadeOptions"
+          <Menubar :model="menubarItems" style="float: right; margin-right: 10px; "/>
+          <!-- <CascadeSelect style="float:right; min-width: 14rem;" v-model="selectedStep" :options="cascadeOptions"
             optionLabel="label" optionGroupLabel="name" :optionGroupChildren="['steps', 'subSteps']"
             placeholder="Select a Step Type">
             <template #option="slotProps">
               <div class="flex align-items-center">
-                <!-- <img v-if="slotProps.option.states" :alt="slotProps.option.name"
-                  src="https://primefaces.org/cdn/primevue/images/flag/flag_placeholder.png"
-                  :class="`flag flag-${slotProps.option.code.toLowerCase()} mr-2`" style="width: 18px" />
-                <i v-if="slotProps.option.cities" class="pi pi-compass mr-2"></i>
-                <i v-if="slotProps.option.cname" class="pi pi-map-marker mr-2"></i> -->
                 <span>{{ slotProps.option.label }}</span>
               </div>
             </template>
           </CascadeSelect>
-          <BaseButton :icon="mdiPlus" color="success" @click="onCreateStepClick" />
+          <BaseButton :icon="mdiPlus" color="success" @click="onCreateStepClick" /> -->
         </div>
       </SectionTitleLineWithButton>
       <VueFlow v-model="elements" :class="{ dark }" class="basicflow" :node-types="nodeTypes"
@@ -522,7 +632,7 @@ function toggleClass() {
       <SectionTitleLineWithButton :hasButton="false" :icon="mdiCalendarEdit" title="Scheduling">
         <BaseButton label="Add Schedule" :icon="mdiPlus" color="success" @click="onCreateScheduleClick" />
       </SectionTitleLineWithButton>
-      <PipelineScheduleTable :header="pipelineScheduleKeys" :items="pipelineSchedules" />
+      <PipelineScheduleTable :header="['ID', 'At', 'Cron Expression']" :items="pipelineSchedules" @delete-button-clicked="onDeletePipelineScheduleClick" />
       <CardBoxModal v-model="isScheduleDialogActive" has-cancel title="Create Schedule" @confirm="onCreateSchedule" >
         <TabView :activeIndex="activeTabIndex" >
           <TabPanel header="Once">
@@ -538,6 +648,7 @@ function toggleClass() {
           </TabPanel>
       </TabView>
       </CardBoxModal>
+      <CardBoxModal v-model="isDeleteScheduleDialogActive" :target-id="pipelineScheduleIdToDelete" has-cancel submitLabel="Confirm" title="Delete Schedule" @confirm="onDeleteSchedule" />
     </SectionMain>
     <Toast />
   </LayoutAuthenticated>

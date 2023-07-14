@@ -4,6 +4,7 @@ import (
 	"context"
 	"di/model"
 	"di/steps"
+	"time"
 
 	"github.com/hibiken/asynq"
 )
@@ -36,16 +37,17 @@ type PipelineService interface {
 	GetSchedules(id uint) ([]model.PipelineSchedule, error)
 	GetByOwner(ownerId uint) ([]model.Pipeline, error)
 	Create(userId uint, name string, definition string) error
-	CreateSchedule(pipelineID uint, cronExpression string) error
+	CreateSchedule(pipelineID uint, uniqueOcurrence time.Time, cronExpression string) error
 	Update(pipeline *model.Pipeline) error
 	Delete(id uint) error
+	DeletePipelineSchedule(id uint) error
 }
 
 type RunService interface {
 	Get(id uint) (*model.Run, error)
 	GetByPipeline(pipelineId uint) ([]model.Run, error)
 	FindRunStepStatusesByRun(runID uint) ([]model.RunStepStatus, error)
-	Create(pipeline model.Pipeline) error
+	Create(pipeline model.Pipeline) (model.Run, error)
 	CreateRunStepStatus(runID uint, stepID int, runStatusID uint, errorMessage string) error
 	Execute(runID uint) error
 	Update(run *model.Run) error
@@ -54,6 +56,7 @@ type RunService interface {
 	DeleteRunStepStatus(id uint) error
 	NewRunPipelineTask(pipelineID uint, runID uint, graph string, stepIndex uint) (*asynq.Task, error)
 	HandleRunPipelineTask(ctx context.Context, t *asynq.Task) error
+	HandleScheduledRunPipelineTask(ctx context.Context, t *asynq.Task) error
 	UpdateRunStatus(runID uint, statusID uint, errorMessage string)
 }
 

@@ -88,22 +88,16 @@ const checked = (isChecked, pipeline) => {
         <tbody>
             <tr v-for="pipeline in itemsPaginated" :key="pipeline.id">
                 <TableCheckboxCell v-if="checkable" @checked="checked($event, pipeline)" />
-                <td data-label="Name">
-                    {{ pipeline.name }}
-                </td>
+                <td data-label="Name">{{ pipeline.ID }}</td>
                 <td data-label="Modified" class="lg:w-1 whitespace-nowrap">
-                    <small class="text-gray-500 dark:text-slate-400" :title="formatDate(pipeline.UpdatedAt)">{{
-                        formatDate(pipeline.UpdatedAt) }}</small>
+                    <small class="text-gray-500 dark:text-slate-400" :title="formatDate(pipeline.uniqueOccurrence)">{{ formatDate(pipeline.uniqueOccurrence) }}</small>
                 </td>
                 <td data-label="Created" class="lg:w-1 whitespace-nowrap">
-                    <small class="text-gray-500 dark:text-slate-400" :title="formatDate(pipeline.CreatedAt)">{{
-                        formatDate(pipeline.CreatedAt) }}</small>
+                    <small class="text-gray-500 dark:text-slate-400" :title="pipeline.cronExpression">{{ pipeline.cronExpression }}</small>
                 </td>
                 <td class="before:hidden lg:w-1 whitespace-nowrap">
                     <BaseButtons type="justify-start lg:justify-end" no-wrap>
-                        <BaseButton color="info" :icon="mdiEye" small :to="'/pipelines/edit/' + pipeline.ID" />
-                        <BaseButton color="danger" :icon="mdiTrashCan" small :target-id="pipeline.ID"
-                            @clicked="deleteButtonClicked" />
+                        <BaseButton color="danger" :icon="mdiTrashCan" small :target-id="pipeline.ID" @clicked="deleteButtonClicked" />
                     </BaseButtons>
                 </td>
             </tr>

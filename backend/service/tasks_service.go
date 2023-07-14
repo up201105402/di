@@ -9,7 +9,8 @@ import (
 )
 
 const (
-	RunPipelineTask = "pipeline:run"
+	RunPipelineTask          = "pipeline:run"
+	ScheduledRunPipelineTask = "pipeline:scheduled_run"
 )
 
 type taskServiceImpl struct {
@@ -21,8 +22,12 @@ type RunPipelinePayload struct {
 	PipelineID      uint
 	RunID           uint
 	GraphDefinition string
-	//Graph     graph.Graph[int, steps.Step]
-	StepIndex uint
+	StepIndex       uint
+}
+
+type ScheduledRunPipelinePayload struct {
+	PipelineID     uint
+	CronExpression string
 }
 
 func NewTaskService(nodeTypeService *NodeTypeService, runService *RunService) TaskService {
@@ -52,6 +57,11 @@ func (service *taskServiceImpl) SetupAsynqWorker() {
 	mux.HandleFunc(
 		RunPipelineTask,
 		service.RunService.HandleRunPipelineTask,
+	)
+
+	mux.HandleFunc(
+		ScheduledRunPipelineTask,
+		service.RunService.HandleScheduledRunPipelineTask,
 	)
 
 	if err := worker.Run(mux); err != nil {
