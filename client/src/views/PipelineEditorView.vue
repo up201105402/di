@@ -6,7 +6,7 @@ import { Controls } from '@vue-flow/controls';
 import { MiniMap } from '@vue-flow/minimap';
 import { ref, computed, watch } from "vue";
 import { useAsyncState } from "@vueuse/core";
-import { doRequest } from "@/util";
+import { doRequest, parsePipelineDefinition, deepFilterMenuBarSteps, validateCron } from "@/util";
 import { useAuthStore } from "@/stores/auth";
 import { onBeforeRouteLeave, onBeforeRouteUpdate, useRouter, useRoute } from 'vue-router';
 import { mdiChartTimelineVariant, mdiPlus, mdiCalendarEdit } from "@mdi/js";
@@ -22,10 +22,9 @@ import UpsertStepDialog from '@/components/UpsertStepDialog.vue';
 import Toast from 'primevue/toast';
 import { useToast } from 'primevue/usetoast';
 import Loading from "vue-loading-overlay";
-import { nodeTypes } from "@/pipelines/steps";
+import { nodeTypes, menubarSteps } from "@/pipelines/steps";
 import deepEqual from 'deep-equal';
 import $ from 'jquery';
-import { steps, menubarSteps } from '@/pipelines/steps';
 import { camel2title } from '@/util';
 import PipelineScheduleTable from '@/components/PipelineScheduleTable.vue';
 import TabView from 'primevue/tabview';
@@ -43,18 +42,6 @@ const elements = ref([]);
 const pipelineSchedules = ref([]);
 const pipelineTitle = ref('');
 const toast = useToast();
-
-function validateCron(value) {
-    if (!value) {
-      return 'Cron expression is required!';
-    }
-
-    if (!value.match('(@(annually|yearly|monthly|weekly|daily|hourly|reboot))|(@every (\\d+(ns|us|µs|ms|s|m|h))+)|((((\\d+,)+\\d+|(\\d+(\\/|-)\\d+)|\\d+|\\*) ?){5,7})')) {
-      return 'Cron expresion is not valid!';
-    }
-
-    return true;
-}
 
 const { value: cronValue, errorMessage: cronError } = useField('input-cron', validateCron);
 
@@ -164,11 +151,11 @@ const { isLoading: isDeletingPipelineSchedule, state: deletePipelineScheduleResp
 );
 
 const selectedStep = ref();
-const cascadeOptions = ref(steps);
 
 const onMenubarClick = (e) => {
   editStepNodeId.value = "-1";
   stepData.value = {};
+  selectedStep.value = e.item
 
   if (e.item) {
     isStepDialogActive.value = true;
@@ -212,17 +199,8 @@ watch(fetchPipelineSchedulesResponse, (value) => {
   }
 })
 
-const parsePipelineDefinition = (pipeline) => {
-  try {
-    return JSON.parse(pipeline.definition)
-  } catch (e) {
-    toast.add({ severity: 'error', summary: 'Error', detail: "Error parsing pipeline definition", life: 3000 });
-    return [];
-  }
-}
-
 watch(isFetchPipelineFinished, () => {
-  elements.value = fetchPipelineResponse.value?.data ? parsePipelineDefinition(fetchPipelineResponse.value.data.pipeline) : [];
+  elements.value = fetchPipelineResponse.value?.data ? parsePipelineDefinition(fetchPipelineResponse.value.data.pipeline, toast) : [];
   pipelineTitle.value = fetchPipelineResponse.value?.data ? fetchPipelineResponse.value.data.pipeline.name : 'Untitled';
 })
 
@@ -307,11 +285,6 @@ onBeforeRouteUpdate((to, from) => {
   }
 })
 
-const getSchemaFromType = (searchGroup, searchType) => {
-  const group = steps.filter(e => e.type == searchGroup)[0]
-  return group.steps.filter(e => e.type == searchType)[0];
-}
-
 const onCreateStepClick = (e) => {
   editStepNodeId.value = "-1";
   stepData.value = {};
@@ -366,7 +339,7 @@ const onNodeDoubleClick = (e) => {
   isStepDialogActive.value = true;
   editStepNodeId.value = e.node.id;
   stepData.value = { ...e.node.data }
-  const formkitObject = getSchemaFromType(e.node.data.group, e.node.data.type).form({ ...e.node.data }, onStepEdited);
+  const formkitObject = deepFilterMenuBarSteps(menubarSteps, 'type', e.node.data.type).form({ ...e.node.data }, onStepEdited);
   formSchema.value = formkitObject.formSchema;
   dialogTitle.value = 'Edit ' + camel2title(e.node.data.type) + ' Step';
   stepData.value = formkitObject.formkitData;
@@ -404,7 +377,7 @@ const onStepCreate = (formData) => {
   elements.value.push({
     id: newId,
     label: formData.nameAndType.name,
-    type: selectedStep.value.group,
+    type: selectedStep.value.type,
     position: { x: 0, y: 0 },
     class: 'light',
     data: {
@@ -564,7 +537,6 @@ function toggleClass() {
             <BaseButton :disabled="!hasChanges" :label="'Save'" color="success" @click="onPipelineSave" />
             <BaseButton :label="'Cancel'" color="danger" @click="onPipelineCancel" />
           </BaseButtons>
-          <Menubar :model="menubarItems" style="float: right; margin-right: 10px; "/>
           <!-- <CascadeSelect style="float:right; min-width: 14rem;" v-model="selectedStep" :options="cascadeOptions"
             optionLabel="label" optionGroupLabel="name" :optionGroupChildren="['steps', 'subSteps']"
             placeholder="Select a Step Type">
@@ -577,6 +549,7 @@ function toggleClass() {
           <BaseButton :icon="mdiPlus" color="success" @click="onCreateStepClick" /> -->
         </div>
       </SectionTitleLineWithButton>
+      <Menubar :model="menubarItems" style="margin-right: 10px; "/>
       <VueFlow v-model="elements" :class="{ dark }" class="basicflow" :node-types="nodeTypes"
         @nodeDoubleClick="onNodeDoubleClick" @edge-update="onEdgeUpdate" :default-viewport="{ zoom: 1.5 }" :min-zoom="0.2"
         :max-zoom="4">

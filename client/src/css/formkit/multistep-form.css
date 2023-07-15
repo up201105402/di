@@ -93,7 +93,7 @@
 
 .formkit-bottom-buttons {
     display: flex;
-    margin: 0 2em;
+    margin: 0 2em 2em 2em;
 }
 
 .form-body {
@@ -152,6 +152,23 @@ summary {
 
 p {
     max-width: 600px;
+}
+
+.ql-editor p {
+    max-width: fit-content;
+    white-space: nowrap;
+}
+
+.p-editor-toolbar {
+    display: none;
+}
+
+.p-editor-content {
+    width: calc(100% - 2px);
+}
+
+.p-editor-container {
+    width: calc(100% - 2px);
 }
 
 p small {

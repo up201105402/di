@@ -110,6 +110,7 @@ export const checkoutRepoForm = function (data, onSubmit) {
                 onSubmit(formData);
             } catch (err) {
                 node.setErrors(err.formErrors, err.fieldErrors)
+                console.error(err);
             }
         },
         stringify: (value) => JSON.stringify(value, null, 2),

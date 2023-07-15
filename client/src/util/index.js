@@ -100,3 +100,44 @@ export const golangType = function(type) {
           
   return type
 }
+
+export const parsePipelineDefinition = (entity, toast) => {
+  try {
+    return JSON.parse(entity.definition)
+  } catch (e) {
+    toast.add({ severity: 'error', summary: 'Error', detail: "Error parsing pipeline definition", life: 3000 });
+    return [];
+  }
+}
+
+export function validateCron(value) {
+    if (!value) {
+      return 'Cron expression is required!';
+    }
+
+    if (!value.match('(@(annually|yearly|monthly|weekly|daily|hourly|reboot))|(@every (\\d+(ns|us|µs|ms|s|m|h))+)|((((\\d+,)+\\d+|(\\d+(\\/|-)\\d+)|\\d+|\\*) ?){5,7})')) {
+      return 'Cron expresion is not valid!';
+    }
+
+    return true;
+};
+
+export const deepFilterMenuBarSteps = (subject, key, value) => {
+  if (subject instanceof Array) {
+    return subject.map(elem => deepFilterMenuBarSteps(elem, key, value))
+                  .filter(elem => elem != null)[0];
+  }
+
+  if (subject[key] == value) {
+    return subject;
+  }
+
+  const items = subject['items'];
+
+  if (items && items.length) {
+    return items.map(item => deepFilterMenuBarSteps(item, key, value))
+                .filter(elem => elem != null)[0];
+  }
+
+  return null
+}

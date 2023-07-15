@@ -22,7 +22,6 @@ import Toast from 'primevue/toast';
 import { useToast } from 'primevue/usetoast';
 import Loading from "vue-loading-overlay";
 import { nodeTypes } from "@/pipelines/steps";
-import { steps } from '@/pipelines/steps';
 import { camel2title } from '@/util';
 import Editor from 'primevue/editor';
 
@@ -239,18 +238,18 @@ function toggleClass() {
           :nodeData="stepData" @onCancel="onCancel" />
       </CardBoxModal>
       <SectionTitleLineWithButton :hasButton="false" :icon="mdiFileDocumentOutline" title="Log" />
-      <Editor v-model="log" editorStyle="height: 320px" :modules="quillModules" readonly />
+      <Editor id="run-results-log" v-model="log" editorStyle="height: 320px" :modules="quillModules" readonly />
     </SectionMain>
     <Toast />
   </LayoutAuthenticated>
 </template>
 
 <style>
-.p-editor-toolbar {
+#run-results-log .p-editor-toolbar {
   display: none
 }
 
-div.p-editor-container div.ql-editor p {
+#run-results-log div.p-editor-container div.ql-editor p {
   max-width: 100%;
 }
 </style>

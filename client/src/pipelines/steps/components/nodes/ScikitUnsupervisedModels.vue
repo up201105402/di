@@ -99,4 +99,8 @@
         color: blue;
         padding: 0 2px;
     }
+
+    .node-config {
+        text-transform: none;
+    }
 </style>

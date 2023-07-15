@@ -54,9 +54,6 @@
 
       <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <CardBox is-form @submit.prevent="submitProfile">
-          <FormField label="Avatar" help="Max 500kb">
-            <FormFilePicker label="Upload" />
-          </FormField>
 
           <FormField label="Name" help="Required. Your name">
             <FormControl v-model="profileForm.name" :icon="mdiAccount" name="username" required

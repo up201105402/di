@@ -1,5 +1,6 @@
 <script setup>
-  import { computed, onMounted } from 'vue';
+  import { computed, onMounted, markRaw } from 'vue';
+  import { library } from '@/pipelines/steps';
   import $ from 'jquery';
 
   const props = defineProps({
@@ -19,11 +20,6 @@
     },
   });
 
-  const data = computed({
-    get: () => props.nodeData,
-    set: (value) => { },
-  });
-
   onMounted(() => {
     $("#cancel-create-step-button").off('click').on('click', function (e) {
       emit("onCancel");
@@ -39,9 +35,23 @@
 </script>
 
 <template>
-  <FormKitSchema v-if="formSchema" :schema="formSchema" :data="nodeData" />
+  <FormKitSchema v-if="formSchema" :schema="formSchema" :data="nodeData" :library="library" />
 </template>
 
 <style>
-  @import "@/css/formkit/multistep-form.css";
+  .ql-editor {
+    counter-reset: line;
+    padding-left: 0;
+  }
+
+  .ql-editor p:before {
+    counter-increment: line;
+    content: counter(line);
+    display: inline-block;
+    border-right: 1px solid #ddd;
+    padding: 0 .5em;
+    margin-right: .5em;
+    color: #888
+  }
+
 </style>

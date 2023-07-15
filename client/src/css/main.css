@@ -11,6 +11,8 @@
 @import '@vue-flow/core/dist/theme-default.css';
 @import '@vue-flow/controls/dist/style.css';
 
+@import "@/css/formkit/multistep-form.css";
+
 .formkit-form {
     max-width: none;
     flex-shrink: 0;
