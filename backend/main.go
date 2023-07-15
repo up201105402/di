@@ -87,6 +87,7 @@ func setupRouter(services *service.Services) *gin.Engine {
 	pipelineAPI.GET("/:id", middleware.Auth(services.TokenService), handlers.GetPipeline(services))
 	pipelineAPI.GET("/:id/schedule", middleware.Auth(services.TokenService), handlers.GetPipelineSchedule(services))
 	pipelineAPI.POST("/:id/schedule", middleware.Auth(services.TokenService), handlers.CreatePipelineSchedule(services))
+	pipelineAPI.POST("/:id/file", middleware.Auth(services.TokenService), handlers.UploadPipelineFile(services))
 	pipelineAPI.POST("/:id", middleware.Auth(services.TokenService), handlers.UpsertPipeline(services))
 	pipelineAPI.DELETE("", middleware.Auth(services.TokenService), handlers.DeletePipeline(services))
 	pipelineAPI.DELETE("/:id/schedule", middleware.Auth(services.TokenService), handlers.DeletePipelineSchedule(services))

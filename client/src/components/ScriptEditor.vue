@@ -20,6 +20,6 @@
 <template>
     <div>
         <label class="formkit-label" for="script-editor">Script</label>
-        <Editor id="formkit-label" v-model="text" @update:modelValue="onModelValueUpdate" editorStyle="height: 320px;" :modules="quillModules" />
+        <Editor id="formkit-label" v-model="text" @update:modelValue="onModelValueUpdate" editorStyle="height: 320px; margin-bottom:10px" :modules="quillModules" />
     </div>
 </template>

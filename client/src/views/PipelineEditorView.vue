@@ -154,7 +154,9 @@ const selectedStep = ref();
 
 const onMenubarClick = (e) => {
   editStepNodeId.value = "-1";
-  stepData.value = {};
+  stepData.value = {
+    pipelineID: route.params.id
+  };
   selectedStep.value = e.item
 
   if (e.item) {
@@ -287,7 +289,9 @@ onBeforeRouteUpdate((to, from) => {
 
 const onCreateStepClick = (e) => {
   editStepNodeId.value = "-1";
-  stepData.value = {};
+  stepData.value = {
+    pipelineID: route.params.id
+  };
 
   if (selectedStep.value) {
     isStepDialogActive.value = !isStepDialogActive.value;

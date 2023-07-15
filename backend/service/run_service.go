@@ -69,7 +69,6 @@ func (service *runServiceImpl) CreateRunStepStatus(runID uint, stepID int, runSt
 }
 
 func (service *runServiceImpl) Execute(runID uint) error {
-	// demarshal stringified pipeline definition json
 
 	run, err := service.RunRepository.FindByID(runID)
 
@@ -161,9 +160,9 @@ func (service *runServiceImpl) NewRunPipelineTask(pipelineID uint, runID uint, g
 func (service *runServiceImpl) HandleRunPipelineTask(ctx context.Context, t *asynq.Task) error {
 	var runPipelinePayload RunPipelinePayload
 	if err := json.Unmarshal(t.Payload(), &runPipelinePayload); err != nil {
-		log.Println("json.Unmarshal failed: %v: %w", err, asynq.SkipRetry)
-		errStr := fmt.Errorf("json.Unmarshal failed: %v: %w", err, asynq.SkipRetry)
-		return errStr
+		errStr := fmt.Errorf("json.Unmarshal failed: %v", err.Error())
+		log.Println(errStr)
+		return asynq.SkipRetry
 	}
 
 	return executeRunPipelineTask(runPipelinePayload, service)
@@ -174,7 +173,7 @@ func executeRunPipelineTask(runPipelinePayload RunPipelinePayload, service *runS
 
 	if err := json.Unmarshal([]byte(runPipelinePayload.GraphDefinition), &stepDescriptions); err != nil {
 		log.Printf("Unable to unmarshal pipeline %v definition", runPipelinePayload.PipelineID)
-		return err
+		return asynq.SkipRetry
 	}
 
 	pipelineGraph := graph.New(stepHash, graph.Directed(), graph.Acyclic())

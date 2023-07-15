@@ -4,10 +4,11 @@ import General from '@/pipelines/steps/components/nodes/General.vue';
 import ScikitDatasets from '@/pipelines/steps/components/nodes/ScikitDatasets.vue';
 import ScikitUnsupervisedModels from '@/pipelines/steps/components/nodes/ScikitUnsupervisedModels.vue';
 import { checkoutRepoForm } from '@/pipelines/steps/checkoutRepo';
-import { scriptForm } from '@/pipelines/steps/pythonScript';
+import { scriptForm } from '@/pipelines/steps/script';
 import { scikitDatasetForm } from '@/pipelines/steps/scikit/datasets';
 import { scikitUnsupervisedModels } from '@/pipelines/steps/scikit/models';
 import ScriptEditor from '@/components/ScriptEditor.vue';
+import FormFilePicker from '@/components/FormFilePicker.vue';
 import PythonScriptNode from '@/pipelines/steps/components/nodes/PythonScript.vue';
 import ShellScriptNode from '@/pipelines/steps/components/nodes/ShellScript.vue';
 import BaseButton from '@/components/BaseButton.vue';
@@ -94,6 +95,7 @@ export const menubarSteps = [
 
 export const library = markRaw({
   ScriptEditor: ScriptEditor,
+  FormFilePicker: FormFilePicker,
   BaseButton: BaseButton,
   BaseCancelAndSubmitButtons: BaseCancelAndSubmitButtons,
 })

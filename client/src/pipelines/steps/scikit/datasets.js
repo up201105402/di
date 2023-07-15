@@ -1,6 +1,7 @@
 import { reactive, toRef, ref, watch } from 'vue';
-import { camel2title, customDelay } from '@/util';
+import { camel2title } from '@/util';
 import { getNode, createMessage } from '@formkit/core';
+import { stepNav, cancelAndSubmitButtons } from '@/pipelines/steps/formBasics';
 
 export const datasetConfigFields = [
     {
@@ -62,7 +63,7 @@ export const scikitDatasetOptions = [
 
 export const scikitDatasetForm = function (data, onSubmit) {
     const activeStep = ref('');
-    const activeDataset = ref(scikitDatasetOptions[0].value);
+    const activeDataset = ref(data?.nameAndType?.dataset || scikitDatasetOptions[0].value);
     const steps = reactive({});
     const visitedSteps = ref([]); // track visited steps
     const showIsFirstStep = data.nameAndType == null || data?.nameAndType?.isFirstStep == false;
@@ -155,7 +156,6 @@ export const scikitDatasetForm = function (data, onSubmit) {
         },
         submitForm: async (formData, node) => {
             try {
-                await customDelay(formData);
                 node.clearErrors()
                 onSubmit(formData);
             } catch (err) {
@@ -272,46 +272,10 @@ export const scikitDatasetForm = function (data, onSubmit) {
                                 datasetConfigSection
                             ]
                         },
-                        {
-                            $el: 'div',
-                            attrs: {
-                                class: 'step-nav'
-                            },
-                            children: [
-                                {
-                                    $formkit: 'button',
-                                    disabled: '$activeStep === "nameAndType"',
-                                    onClick: '$setStep(-1)',
-                                    children: 'Back'
-                                },
-                                {
-                                    $formkit: 'button',
-                                    disabled: '$activeStep === "stepConfig"',
-                                    onClick: '$setStep(1)',
-                                    children: 'Next'
-                                }
-                            ]
-                        },
+                        stepNav,
                     ]
                 },
-                {
-                    $el: 'div',
-                    attrs: {
-                        class: 'formkit-bottom-buttons'
-                    },
-                    children: [
-                        {
-                            $formkit: 'button',
-                            label: 'Cancel',
-                            id: 'cancel-create-step-button'
-                        },
-                        {
-                            $formkit: 'submit',
-                            label: 'Submit',
-                            disabled: '$get(form).state.valid !== true',
-                        },
-                    ]
-                },
+                cancelAndSubmitButtons
             ]
         },
     ];

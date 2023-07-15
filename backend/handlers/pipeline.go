@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+	"os"
 	"strconv"
 	"time"
 
@@ -241,6 +242,56 @@ func CreatePipelineSchedule(services *service.Services) gin.HandlerFunc {
 		}
 
 		context.JSON(http.StatusOK, gin.H{})
+	}
+}
+
+func UploadPipelineFile(services *service.Services) gin.HandlerFunc {
+	return func(context *gin.Context) {
+
+		// Upload the file to specific dst.
+		fileUploadDir, exists := os.LookupEnv("FILE_UPLOAD_DIR")
+
+		if !exists {
+			errorMessage := fmt.Sprint("Upload directory is not defined")
+			log.Printf(errorMessage)
+			err := errors.NewInternal()
+			context.JSON(err.Status(), gin.H{
+				"error": errorMessage,
+			})
+		}
+
+		pipelineID := context.Param("id")
+
+		_, parseError := strconv.ParseUint(pipelineID, 10, 64)
+
+		if parseError != nil {
+			errorMessage := fmt.Sprint("Failed to convert pipelineId into uint: %v\n", parseError)
+			log.Printf(errorMessage)
+			err := errors.NewInternal()
+			context.JSON(err.Status(), gin.H{
+				"error": errorMessage,
+			})
+			return
+		}
+
+		file, _ := context.FormFile("file")
+		file.Filename = "file_" + fmt.Sprintf("%d", time.Now().Unix())
+		log.Println(file.Filename)
+
+		err := context.SaveUploadedFile(file, fileUploadDir+"pipelines/"+pipelineID+"/"+file.Filename)
+
+		if err != nil {
+			errorMessage := fmt.Sprintf("Failed to save uploaded file: %v", err.Error())
+			log.Printf(errorMessage)
+			err := errors.NewInternal()
+			context.JSON(err.Status(), gin.H{
+				"error": errorMessage,
+			})
+		}
+
+		context.JSON(http.StatusOK, gin.H{
+			"filename": file.Filename,
+		})
 	}
 }
 
