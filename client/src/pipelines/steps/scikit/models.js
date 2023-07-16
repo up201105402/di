@@ -17,8 +17,32 @@ import { perceptronStepConfig } from './perceptron';
 import { passiveAgressiveClassifierStepConfig, passiveAgressiveRegressorStepConfig } from './passiveAgressive';
 import { huberRegressorStepConfig, ransacRegressorStepConfig, theilSenRegressorStepConfig } from './robustnessRegression';
 import { quantileRegressionStepConfig } from './quantileRegression';
+import { stepTabs, cancelAndSubmitButtons, getFormBody } from '@/pipelines/steps/formBasics';
 
-const scikitUnsupervisedModelsForm = (stepConfigFields) => function (data, onSubmit) {
+const nameAndTypeGroupChildren = [
+    {
+        $formkit: 'group',
+        id: 'nameAndType',
+        name: 'nameAndType',
+        children: [
+            {
+                $formkit: 'text',
+                name: 'name',
+                label: 'Step Name',
+                placeholder: 'Step Name',
+                validation: 'required'
+            },
+            {
+                $formkit: 'checkbox',
+                name: 'isFirstStep',
+                label: 'Is First Step?',
+                if: '$showIsFirstStep == true',
+            },
+        ]
+    }
+];
+
+const scikitUnsupervisedModelsForm = (stepConfigGroupChildren) => function (data, onSubmit) {
     const activeStep = ref('');
     const steps = reactive({});
     const visitedSteps = ref([]); // track visited steps
@@ -128,136 +152,9 @@ const scikitUnsupervisedModelsForm = (stepConfigFields) => function (data, onSub
                 value: { ...data }
             },
             children: [
-                {
-                    $el: 'ul',
-                    attrs: {
-                        class: "steps"
-                    },
-                    children: [
-                        {
-                            $el: 'li',
-                            for: ['step', 'stepName', '$steps'],
-                            attrs: {
-                                class: {
-                                    'step': true,
-                                    'has-errors': '$showStepErrors($stepName)'
-                                },
-                                style: {
-                                    if: '$activeNodeType == ""',
-                                    then: 'display: none;'
-                                },
-                                onClick: '$setActiveStep($stepName)',
-                                'data-step-active': '$activeStep === $stepName',
-                                'data-step-valid': '$stepIsValid($stepName)'
-                            },
-                            children: [
-                                {
-                                    $el: 'span',
-                                    if: '$showStepErrors($stepName)',
-                                    attrs: {
-                                        class: 'step--errors'
-                                    },
-                                    children: '$step.errorCount + $step.blockingCount'
-                                },
-                                '$camel2title($stepName)'
-                            ]
-                        }
-                    ]
-                },
-                {
-                    $el: 'div',
-                    attrs: {
-                        class: 'form-body'
-                    },
-                    children: [
-                        {
-                            $el: 'section',
-                            attrs: {
-                                style: {
-                                    if: '$activeStep !== "nameAndType"',
-                                    then: 'display: none;'
-                                }
-                            },
-                            children: [
-                                {
-                                    $formkit: 'group',
-                                    id: 'nameAndType',
-                                    name: 'nameAndType',
-                                    children: [
-                                        {
-                                            $formkit: 'text',
-                                            name: 'name',
-                                            label: 'Step Name',
-                                            placeholder: 'Step Name',
-                                            validation: 'required'
-                                        },
-                                        {
-                                            $formkit: 'checkbox',
-                                            name: 'isFirstStep',
-                                            label: 'Is First Step?',
-                                            if: '$showIsFirstStep == true',
-                                        },
-                                    ]
-                                }
-                            ]
-                        },
-                        {
-                            $el: 'section',
-                            attrs: {
-                                style: {
-                                    if: '$activeStep !== "stepConfig"',
-                                    then: 'display: none;'
-                                }
-                            },
-                            children: [
-                                {
-                                    $formkit: 'group',
-                                    id: 'stepConfig',
-                                    name: 'stepConfig',
-                                    children: stepConfigFields,
-                                }
-                            ]
-                        },
-                        {
-                            $el: 'div',
-                            attrs: {
-                                class: 'step-nav'
-                            },
-                            children: [
-                                {
-                                    $formkit: 'button',
-                                    disabled: '$activeStep === "nameAndType"',
-                                    onClick: '$setStep(-1)',
-                                    children: 'Back'
-                                },
-                                {
-                                    $formkit: 'button',
-                                    disabled: '$activeStep === "stepConfig"',
-                                    onClick: '$setStep(1)',
-                                    children: 'Next'
-                                }
-                            ]
-                        },
-                    ]
-                },
-                {
-                    $el: 'div',
-                    attrs: {
-                        class: 'formkit-bottom-buttons'
-                    },
-                    children: [
-                        {
-                            $formkit: 'button',
-                            label: 'Cancel',
-                            id: 'cancel-create-step-button'
-                        },
-                        {
-                            $formkit: 'submit',
-                            label: 'Submit',
-                            disabled: '$get(form).state.valid !== true',
-                        },
-                    ]
-                },
+                stepTabs,
+                getFormBody(nameAndTypeGroupChildren, stepConfigGroupChildren),
+                cancelAndSubmitButtons,
             ]
         },
     ];

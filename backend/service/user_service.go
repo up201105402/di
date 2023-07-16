@@ -6,15 +6,18 @@ import (
 	"di/util"
 	"log"
 
+	"github.com/nicksnyder/go-i18n/v2/i18n"
 	"gorm.io/gorm"
 )
 
 type userServiceImpl struct {
+	I18n           *i18n.Localizer
 	UserRepository repository.UserRepository
 }
 
-func NewUserService(gormDB *gorm.DB) UserService {
+func NewUserService(gormDB *gorm.DB, i18n *i18n.Localizer) UserService {
 	return &userServiceImpl{
+		I18n:           i18n,
 		UserRepository: repository.NewUserRepository(gormDB),
 	}
 }

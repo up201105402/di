@@ -14,6 +14,89 @@ export const cancelAndSubmitButtons = {
     ]
 };
 
+export const stepTabs = {
+    $el: 'ul',
+    attrs: {
+        class: "steps"
+    },
+    children: [
+        {
+            $el: 'li',
+            for: ['step', 'stepName', '$steps'],
+            attrs: {
+                class: {
+                    'step': true,
+                    'has-errors': '$showStepErrors($stepName)'
+                },
+                style: {
+                    if: '$activeNodeType == ""',
+                    then: 'display: none;'
+                },
+                onClick: '$setActiveStep($stepName)',
+                'data-step-active': '$activeStep === $stepName',
+                'data-step-valid': '$stepIsValid($stepName)'
+            },
+            children: [
+                {
+                    $el: 'span',
+                    if: '$showStepErrors($stepName)',
+                    attrs: {
+                        class: 'step--errors'
+                    },
+                    children: '$step.errorCount + $step.blockingCount'
+                },
+                '$camel2title($stepName)'
+            ]
+        }
+    ]
+};
+
+export const getFormBody = (nameAndTypeSectionChildren, stepConfigSectionChildren) => {
+    return {
+        $el: 'div',
+        attrs: {
+            class: 'form-body'
+        },
+        children: [
+            {
+                $el: 'section',
+                attrs: {
+                    style: {
+                        if: '$activeStep !== "nameAndType"',
+                        then: 'display: none;'
+                    }
+                },
+                children: [
+                    {
+                        $formkit: 'group',
+                        id: 'nameAndType',
+                        name: 'nameAndType',
+                        children: nameAndTypeSectionChildren
+                    }
+                ]
+            },
+            {
+                $el: 'section',
+                attrs: {
+                    style: {
+                        if: '$activeStep !== "stepConfig"',
+                        then: 'display: none;'
+                    }
+                },
+                children: [
+                    {
+                        $formkit: 'group',
+                        id: 'stepConfig',
+                        name: 'stepConfig',
+                        children: stepConfigSectionChildren,
+                    }
+                ]
+            },
+            stepNav,
+        ]
+    }
+};
+
 export const stepNav = {
     $el: 'div',
     attrs: {
@@ -43,24 +126,4 @@ export const stepNav = {
             }
         }
     ]
-};
-
-export const watchActiveStep = (newStep, oldStep) => {
-    if (oldStep && !visitedSteps.value.includes(oldStep)) {
-        visitedSteps.value.push(oldStep)
-    }
-    // trigger showing validation on fields
-    // within all visited steps
-    visitedSteps.value.forEach((step) => {
-        const node = getNode(step)
-        node.walk((n) => {
-            n.store.set(
-                createMessage({
-                    key: 'submitted',
-                    value: true,
-                    visible: false,
-                })
-            )
-        })
-    })
 };

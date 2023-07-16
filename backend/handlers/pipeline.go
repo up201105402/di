@@ -27,8 +27,8 @@ func GetPipelines(services *service.Services) gin.HandlerFunc {
 		pipelines, getError := services.PipelineService.GetByOwner(user.ID)
 
 		if getError != nil {
-			log.Printf("Failed to get pipelines for user with id %v: %v\n", user.ID, getError)
 			errorMessage := fmt.Sprint("Failed to get pipelines for user with id %v: %v\n", user.ID, getError)
+			log.Printf(errorMessage)
 			err := errors.NewInternal()
 			context.JSON(err.Status(), gin.H{
 				"error": errorMessage,
@@ -55,8 +55,8 @@ func GetPipeline(services *service.Services) gin.HandlerFunc {
 		id, parseError := strconv.ParseUint(pipelineId, 10, 64)
 
 		if parseError != nil {
-			log.Printf("Failed to convert pipelineId into uint: %v\n", parseError)
 			errorMessage := fmt.Sprint("Failed to convert pipelineId into uint: %v\n", parseError)
+			log.Printf(errorMessage)
 			err := errors.NewInternal()
 			context.JSON(err.Status(), gin.H{
 				"error": errorMessage,
@@ -67,8 +67,8 @@ func GetPipeline(services *service.Services) gin.HandlerFunc {
 		pipeline, getError := services.PipelineService.Get(uint(id))
 
 		if getError != nil {
-			log.Printf("Failed to get pipeline with id %v: %v\n", pipelineId, getError)
 			errorMessage := fmt.Sprint("Failed to get pipeline with id %v: %v\n", pipelineId, getError)
+			log.Printf(errorMessage)
 			err := errors.NewInternal()
 			context.JSON(err.Status(), gin.H{
 				"error": errorMessage,
@@ -92,8 +92,8 @@ func GetPipelineSchedule(services *service.Services) gin.HandlerFunc {
 		id, parseError := strconv.ParseUint(pipelineId, 10, 64)
 
 		if parseError != nil {
-			log.Printf("Failed to convert pipelineId into uint: %v\n", parseError)
 			errorMessage := fmt.Sprint("Failed to convert pipelineId into uint: %v\n", parseError)
+			log.Printf(errorMessage)
 			err := errors.NewInternal()
 			context.JSON(err.Status(), gin.H{
 				"error": errorMessage,
@@ -151,8 +151,8 @@ func UpsertPipeline(services *service.Services) gin.HandlerFunc {
 			err = services.PipelineService.Update(pipeline)
 
 			if err != nil {
-				log.Printf("Failed to update pipeline with id %d\n", req.ID)
 				errorMessage := fmt.Sprint("Failed to update pipeline with id &d: %v\n", req.ID, err.Error())
+				log.Printf(errorMessage)
 				err := errors.NewInternal()
 				context.JSON(err.Status(), gin.H{
 					"error": errorMessage,
@@ -163,8 +163,8 @@ func UpsertPipeline(services *service.Services) gin.HandlerFunc {
 			serviceError := services.PipelineService.Create(user.ID, req.Name, req.Definition)
 
 			if serviceError != nil {
-				log.Printf("Failed to create in user: %v\n", err.Error())
 				errorMessage := fmt.Sprint("Failed to create pipeline for user: %v\n", err.Error())
+				log.Print(errorMessage)
 				err := errors.NewInternal()
 				context.JSON(err.Status(), gin.H{
 					"error": errorMessage,
@@ -185,8 +185,8 @@ func CreatePipelineSchedule(services *service.Services) gin.HandlerFunc {
 		id, parseError := strconv.ParseUint(pipelineID, 10, 64)
 
 		if parseError != nil {
-			log.Printf("Failed to convert pipelineId into uint: %v\n", parseError)
 			errorMessage := fmt.Sprint("Failed to convert pipelineId into uint: %v\n", parseError)
+			log.Printf(errorMessage)
 			err := errors.NewInternal()
 			context.JSON(err.Status(), gin.H{
 				"error": errorMessage,
@@ -314,8 +314,8 @@ func DeletePipeline(services *service.Services) gin.HandlerFunc {
 		pipeline, getError := services.PipelineService.Get(req.ID)
 
 		if getError != nil {
-			log.Printf("Failed to get pipeline with id %v\n", getError)
 			errorMessage := fmt.Sprint("Failed to get pipelines for user with id %v: %v\n", user.ID, getError)
+			log.Printf(errorMessage)
 			err := errors.NewNotFound("pipeline", string(req.ID))
 			context.JSON(err.Status(), gin.H{
 				"error": errorMessage,
@@ -324,8 +324,8 @@ func DeletePipeline(services *service.Services) gin.HandlerFunc {
 		}
 
 		if pipeline.UserID != user.ID {
-			log.Printf("Pipeline with id %v does not belong to user %v\n", req.ID, user.Username)
 			errorMessage := fmt.Sprint("Pipeline with id %v does not belong to user %v\n", req.ID, user.Username)
+			log.Printf(errorMessage)
 			err := errors.NewAuthorization("")
 			context.JSON(err.Status(), gin.H{
 				"error": errorMessage,
@@ -336,8 +336,8 @@ func DeletePipeline(services *service.Services) gin.HandlerFunc {
 		deleteError := services.PipelineService.Delete(req.ID)
 
 		if deleteError != nil {
-			log.Printf("Failed to delete pipeline with id %v: %v\n", req.ID, err.Error())
 			errorMessage := fmt.Sprint("Failed to delete pipeline with id %v: %v\n", req.ID, err.Error())
+			log.Printf(errorMessage)
 			err := errors.NewInternal()
 			context.JSON(err.Status(), gin.H{
 				"error": errorMessage,
@@ -357,8 +357,8 @@ func DeletePipelineSchedule(services *service.Services) gin.HandlerFunc {
 		pipelineID, parseError := strconv.ParseUint(pipelineId, 10, 64)
 
 		if parseError != nil {
-			log.Printf("Failed to convert pipelineId into uint: %v\n", parseError)
 			errorMessage := fmt.Sprint("Failed to convert pipelineId into uint: %v\n", parseError)
+			log.Printf(errorMessage)
 			err := errors.NewInternal()
 			context.JSON(err.Status(), gin.H{
 				"error": errorMessage,

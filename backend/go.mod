@@ -44,6 +44,7 @@ require (
 )
 
 require (
+	github.com/BurntSushi/toml v1.3.2
 	github.com/bytedance/sonic v1.9.1 // indirect
 	github.com/chenzhuoyu/base64x v0.0.0-20221115062448-fe3a3abad311 // indirect
 	github.com/dgrijalva/jwt-go v3.2.0+incompatible
@@ -68,6 +69,7 @@ require (
 	github.com/mattn/go-isatty v0.0.19 // indirect
 	github.com/modern-go/concurrent v0.0.0-20180306012644-bacd9c7ef1dd // indirect
 	github.com/modern-go/reflect2 v1.0.2 // indirect
+	github.com/nicksnyder/go-i18n/v2 v2.2.1
 	github.com/pelletier/go-toml/v2 v2.0.8 // indirect
 	github.com/tliron/py4go v0.0.0-20211224192835-798131e31c5b
 	github.com/twitchyliquid64/golang-asm v0.15.1 // indirect

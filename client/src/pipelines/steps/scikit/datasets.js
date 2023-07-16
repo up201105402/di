@@ -1,9 +1,44 @@
 import { reactive, toRef, ref, watch } from 'vue';
 import { camel2title } from '@/util';
 import { getNode, createMessage } from '@formkit/core';
-import { stepNav, cancelAndSubmitButtons } from '@/pipelines/steps/formBasics';
+import { stepTabs, cancelAndSubmitButtons, getFormBody } from '@/pipelines/steps/formBasics';
 
-export const datasetConfigFields = [
+export const scikitDatasetOptions = [
+    { id: 0, value: "scikitBreastCancer", label: "Breast Cancer Dataset" },
+    { id: 1, value: "scikitDiabetes", label: "Diabetes Dataset" },
+    { id: 2, value: "scikitDigits", label: "Digits Dataset" },
+    { id: 3, value: "scikitIris", label: "Iris Dataset" },
+    { id: 4, value: "scikitLinerrud", label: "Linnerud Dataset" },
+    { id: 5, value: "scikitWine", label: "Wine Dataset" },
+    { id: 6, value: "scikitLoadFile", label: "Load Daset From File" },
+];
+
+const nameAndTypeGroupChildren = [
+    {
+        $formkit: 'text',
+        name: 'name',
+        label: 'Step Name',
+        placeholder: 'Step Name',
+        validation: 'required'
+    },
+    {
+      $formkit: 'select',
+      name: 'dataset',
+      label: 'Dataset',
+      placeholder: "",
+      options: scikitDatasetOptions,
+      validation: 'required',
+      onChange: "$setActiveDataset",
+    },
+    {
+        $formkit: 'checkbox',
+        name: 'isFirstStep',
+        label: 'Is First Step?',
+        if: '$showIsFirstStep == true',
+    },
+];
+
+export const stepConfigGroupChildren = [
     {
         $formkit: 'text',
         name: "dataFilePath",
@@ -42,23 +77,6 @@ export const datasetConfigFields = [
         label: "Upper Y Range Index",
         min: 0,
     },
-]
-
-export const datasetConfigSection = {
-    $formkit: 'group',
-    id: 'stepConfig',
-    name: 'stepConfig',
-    children: datasetConfigFields,
-}
-
-export const scikitDatasetOptions = [
-    { id: 0, value: "scikitBreastCancer", label: "Breast Cancer Dataset" },
-    { id: 1, value: "scikitDiabetes", label: "Diabetes Dataset" },
-    { id: 2, value: "scikitDigits", label: "Digits Dataset" },
-    { id: 3, value: "scikitIris", label: "Iris Dataset" },
-    { id: 4, value: "scikitLinerrud", label: "Linnerud Dataset" },
-    { id: 5, value: "scikitWine", label: "Wine Dataset" },
-    { id: 6, value: "scikitLoadFile", label: "Load Daset From File" },
 ]
 
 export const scikitDatasetForm = function (data, onSubmit) {
@@ -178,103 +196,8 @@ export const scikitDatasetForm = function (data, onSubmit) {
                 value: { ...data }
             },
             children: [
-                {
-                    $el: 'ul',
-                    attrs: {
-                        class: "steps"
-                    },
-                    children: [
-                        {
-                            $el: 'li',
-                            for: ['step', 'stepName', '$steps'],
-                            attrs: {
-                                class: {
-                                    'step': true,
-                                    'has-errors': '$showStepErrors($stepName)'
-                                },
-                                style: {
-                                    if: '$activeNodeType == ""',
-                                    then: 'display: none;'
-                                },
-                                onClick: '$setActiveStep($stepName)',
-                                'data-step-active': '$activeStep === $stepName',
-                                'data-step-valid': '$stepIsValid($stepName)'
-                            },
-                            children: [
-                                {
-                                    $el: 'span',
-                                    if: '$showStepErrors($stepName)',
-                                    attrs: {
-                                        class: 'step--errors'
-                                    },
-                                    children: '$step.errorCount + $step.blockingCount'
-                                },
-                                '$camel2title($stepName)'
-                            ]
-                        }
-                    ]
-                },
-                {
-                    $el: 'div',
-                    attrs: {
-                        class: 'form-body'
-                    },
-                    children: [
-                        {
-                            $el: 'section',
-                            attrs: {
-                                style: {
-                                    if: '$activeStep !== "nameAndType"',
-                                    then: 'display: none;'
-                                }
-                            },
-                            children: [
-                                {
-                                    $formkit: 'group',
-                                    id: 'nameAndType',
-                                    name: 'nameAndType',
-                                    children: [
-                                        {
-                                            $formkit: 'text',
-                                            name: 'name',
-                                            label: 'Step Name',
-                                            placeholder: 'Step Name',
-                                            validation: 'required'
-                                        },
-                                        {
-                                          $formkit: 'select',
-                                          name: 'dataset',
-                                          label: 'Dataset',
-                                          placeholder: "",
-                                          options: scikitDatasetOptions,
-                                          validation: 'required',
-                                          onChange: "$setActiveDataset",
-                                        },
-                                        {
-                                            $formkit: 'checkbox',
-                                            name: 'isFirstStep',
-                                            label: 'Is First Step?',
-                                            if: '$showIsFirstStep == true',
-                                        },
-                                    ]
-                                }
-                            ]
-                        },
-                        {
-                            $el: 'section',
-                            attrs: {
-                                style: {
-                                    if: '$activeStep !== "stepConfig"',
-                                    then: 'display: none;'
-                                }
-                            },
-                            children: [
-                                datasetConfigSection
-                            ]
-                        },
-                        stepNav,
-                    ]
-                },
+                stepTabs,
+                getFormBody(nameAndTypeGroupChildren, stepConfigGroupChildren),
                 cancelAndSubmitButtons
             ]
         },

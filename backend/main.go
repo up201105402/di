@@ -37,17 +37,19 @@ func main() {
 	client := util.GetAsynqClient()
 	defer client.Close()
 
-	pipelineService := service.NewPipelineService(dbConnection, client)
+	i18n := util.GetI18nLocalizer()
+
+	pipelineService := service.NewPipelineService(dbConnection, client, i18n)
 	pipelineService.SyncAsyncTasks()
-	stepTypeService := service.NewNodeService()
-	runService := service.NewRunService(dbConnection, client, &pipelineService, &stepTypeService)
-	taskService := service.NewTaskService(&stepTypeService, &runService)
+	stepTypeService := service.NewNodeService(i18n)
+	runService := service.NewRunService(dbConnection, client, i18n, &pipelineService, &stepTypeService)
+	taskService := service.NewTaskService(i18n, &stepTypeService, &runService)
 
 	services := &service.Services{
-		UserService:     service.NewUserService(dbConnection),
+		UserService:     service.NewUserService(dbConnection, i18n),
 		PipelineService: pipelineService,
 		RunService:      runService,
-		TokenService:    service.NewTokenService(tokenServiceConfig),
+		TokenService:    service.NewTokenService(tokenServiceConfig, i18n),
 	}
 
 	r := setupRouter(services)

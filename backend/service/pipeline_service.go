@@ -10,6 +10,7 @@ import (
 	"time"
 
 	"github.com/hibiken/asynq"
+	"github.com/nicksnyder/go-i18n/v2/i18n"
 	"github.com/robfig/cron/v3"
 	"gorm.io/gorm"
 )
@@ -17,12 +18,14 @@ import (
 type pipelineServiceImpl struct {
 	PipelineRepository model.PipelineRepository
 	TaskQueueClient    *asynq.Client
+	I18n               *i18n.Localizer
 }
 
-func NewPipelineService(gormDB *gorm.DB, client *asynq.Client) PipelineService {
+func NewPipelineService(gormDB *gorm.DB, client *asynq.Client, i18n *i18n.Localizer) PipelineService {
 	return &pipelineServiceImpl{
 		PipelineRepository: repository.NewPipelineRepository(gormDB),
 		TaskQueueClient:    client,
+		I18n:               i18n,
 	}
 }
 

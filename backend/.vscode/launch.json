@@ -39,7 +39,7 @@
                 "PIPELINES_WORK_DIR": "/usr/src/di/work/pipelines",
                 "FILE_UPLOAD_DIR": "/usr/src/di/uploads/",
                 "RUN_LOGS_DIR": "/usr/src/di/logs",
-                "LOG_FILE_NAME": "run.log",
+                "RUN_LOG_FILE_NAME": "run.log",
                 "SCIKIT_SNIPPETS_DIR": "/usr/src/di/backend/scikit/python/",
                 "SCIKIT_VERSION": "1.2.2",
             }

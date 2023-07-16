@@ -44,15 +44,20 @@ type PipelineScheduleReq struct {
 }
 
 type StepDataNameAndType struct {
-	Name string `json:"name"`
-	// Scikit Datasets
-	Dataset     string `json:"dataset"`
+	Name        string `json:"name"`
 	IsFirstStep bool   `json:"isFirstStep"`
+	// Scripts
+	ScriptType string `json:"scriptType"`
+	// Scikit Datasets
+	Dataset string `json:"dataset"`
 }
 
 type StepDataConfig struct {
 	// CheckoutRepo
 	RepoURL null.String `json:"repoURL"`
+	// Scripts
+	InlineScript null.String `json:"script"`
+	Filename     null.String `json:"filename"`
 	// Scikit Datasets
 	FilePath         null.String `json:"filePath"`
 	DataFilePath     null.String `json:"dataFilePath"`

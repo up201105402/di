@@ -1,9 +1,36 @@
 import { reactive, toRef, ref, watch } from 'vue';
 import { camel2title, customDelay } from '@/util';
 import { getNode, createMessage } from '@formkit/core';
-import { watchActiveStep, stepNav, cancelAndSubmitButtons } from '@/pipelines/steps/formBasics';
+import { stepTabs, getFormBody, cancelAndSubmitButtons } from '@/pipelines/steps/formBasics';
 
-export const scriptStepConfigFields = (pipelineID) => {
+const nameAndTypeGroupChildren = [
+    {
+        $formkit: 'text',
+        name: 'name',
+        label: 'Step Name',
+        placeholder: 'Step Name',
+        validation: 'required'
+    },
+    {
+        $formkit: 'select',
+        name: 'scriptType',
+        label: 'Script Type',
+        placeholder: "",
+        options: [
+            {
+                value: 'inline',
+                label: 'Inline'
+            }, 
+            {
+                value: 'file',
+                label: 'File'
+            }],
+        validation: 'required',
+        onChange: "$setActiveType",
+    },
+];
+
+const stepConfigGroupChildren = (pipelineID) => {
     return [
         {
             $cmp: 'ScriptEditor',
@@ -36,15 +63,6 @@ export const scriptStepConfigFields = (pipelineID) => {
     ]
 }
 
-export const scriptConfigSection = (pipelineID) => {
-    return {
-        $formkit: 'group',
-        id: 'stepConfig',
-        name: 'stepConfig',
-        children: scriptStepConfigFields(pipelineID),
-    }
-}
-
 export const scriptForm = function (data, onSubmit) {
     const activeStep = ref('');
     const steps = reactive({});
@@ -62,7 +80,25 @@ export const scriptForm = function (data, onSubmit) {
 
     // watch our activeStep and store visited steps
     // to know when to show errors
-    watch(activeStep, watchActiveStep)
+    watch(activeStep, (newStep, oldStep) => {
+        if (oldStep && !visitedSteps.value.includes(oldStep)) {
+            visitedSteps.value.push(oldStep)
+        }
+        // trigger showing validation on fields
+        // within all visited steps
+        visitedSteps.value.forEach((step) => {
+            const node = getNode(step)
+            node.walk((n) => {
+                n.store.set(
+                    createMessage({
+                        key: 'submitted',
+                        value: true,
+                        visible: false,
+                    })
+                )
+            })
+        })
+    })
 
     const setStep = (delta) => {
         const stepNames = Object.keys(steps);
@@ -130,7 +166,7 @@ export const scriptForm = function (data, onSubmit) {
         submitForm: async (formData, node) => {
             try {
                 if (formData.stepConfig.script) {
-                    formData.stepConfig.script = formData.stepConfig.script.replaceAll('<p>', '').replaceAll('</p>', '\n')   
+                    formData.stepConfig.script = formData.stepConfig.script.replaceAll('<p>', '').replaceAll('</p>', '\n')
                 }
                 node.clearErrors()
                 onSubmit(formData);
@@ -155,105 +191,8 @@ export const scriptForm = function (data, onSubmit) {
                 value: { ...data }
             },
             children: [
-                {
-                    $el: 'ul',
-                    attrs: {
-                        class: "steps"
-                    },
-                    children: [
-                        {
-                            $el: 'li',
-                            for: ['step', 'stepName', '$steps'],
-                            attrs: {
-                                class: {
-                                    'step': true,
-                                    'has-errors': '$showStepErrors($stepName)'
-                                },
-                                style: {
-                                    if: '$activeNodeType == ""',
-                                    then: 'display: none;'
-                                },
-                                onClick: '$setActiveStep($stepName)',
-                                'data-step-active': '$activeStep === $stepName',
-                                'data-step-valid': '$stepIsValid($stepName)'
-                            },
-                            children: [
-                                {
-                                    $el: 'span',
-                                    if: '$showStepErrors($stepName)',
-                                    attrs: {
-                                        class: 'step--errors'
-                                    },
-                                    children: '$step.errorCount + $step.blockingCount'
-                                },
-                                '$camel2title($stepName)'
-                            ]
-                        }
-                    ]
-                },
-                {
-                    $el: 'div',
-                    attrs: {
-                        class: 'form-body'
-                    },
-                    children: [
-                        {
-                            $el: 'section',
-                            attrs: {
-                                style: {
-                                    if: '$activeStep !== "nameAndType"',
-                                    then: 'display: none;'
-                                }
-                            },
-                            children: [
-                                {
-                                    $formkit: 'group',
-                                    id: 'nameAndType',
-                                    name: 'nameAndType',
-                                    children: [
-                                        {
-                                            $formkit: 'text',
-                                            name: 'name',
-                                            label: 'Step Name',
-                                            placeholder: 'Step Name',
-                                            validation: 'required'
-                                        },
-                                        {
-                                            $formkit: 'select',
-                                            name: 'scriptType',
-                                            label: 'Script Type',
-                                            placeholder: "",
-                                            options: [
-                                                {
-                                                    value: 'inline',
-                                                    label: 'Inline'
-                                                }, 
-                                                {
-                                                    value: 'file',
-                                                    label: 'File'
-                                                }],
-                                            validation: 'required',
-                                            onChange: "$setActiveType",
-                                          },
-                                    ]
-                                }
-                            ]
-                        },
-                        {
-                            $el: 'section',
-                            attrs: {
-                                style: {
-                                    if: '$activeStep !== "stepConfig"',
-                                    then: 'display: none;'
-                                }
-                            },
-                            children: [
-                                scriptConfigSection(data.pipelineID)
-                            ]
-                        },
-                        stepNav,
-                    ]
-                },
+                stepTabs,
+                getFormBody(nameAndTypeGroupChildren, stepConfigGroupChildren(data.pipelineID)),
                 cancelAndSubmitButtons
             ]
         },

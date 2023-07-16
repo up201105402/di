@@ -6,6 +6,7 @@ import (
 
 	"github.com/dominikbraun/graph"
 	"github.com/hibiken/asynq"
+	"github.com/nicksnyder/go-i18n/v2/i18n"
 )
 
 const (
@@ -14,6 +15,7 @@ const (
 )
 
 type taskServiceImpl struct {
+	I18n            *i18n.Localizer
 	NodeTypeService NodeTypeService
 	RunService      RunService
 }
@@ -30,8 +32,9 @@ type ScheduledRunPipelinePayload struct {
 	PipelineScheduleID uint
 }
 
-func NewTaskService(nodeTypeService *NodeTypeService, runService *RunService) TaskService {
+func NewTaskService(i18n *i18n.Localizer, nodeTypeService *NodeTypeService, runService *RunService) TaskService {
 	return &taskServiceImpl{
+		I18n:            i18n,
 		NodeTypeService: *nodeTypeService,
 		RunService:      *runService,
 	}

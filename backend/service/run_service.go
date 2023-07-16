@@ -14,6 +14,7 @@ import (
 
 	"github.com/dominikbraun/graph"
 	"github.com/hibiken/asynq"
+	"github.com/nicksnyder/go-i18n/v2/i18n"
 	"github.com/robfig/cron/v3"
 	"gorm.io/gorm"
 )
@@ -23,14 +24,16 @@ type runServiceImpl struct {
 	PipelineService PipelineService
 	NodeTypeService NodeTypeService
 	TaskQueueClient asynq.Client
+	I18n            *i18n.Localizer
 }
 
-func NewRunService(gormDB *gorm.DB, client *asynq.Client, pipelineService *PipelineService, stepTypeService *NodeTypeService) RunService {
+func NewRunService(gormDB *gorm.DB, client *asynq.Client, i18n *i18n.Localizer, pipelineService *PipelineService, stepTypeService *NodeTypeService) RunService {
 	return &runServiceImpl{
 		RunRepository:   repository.NewRunRepository(gormDB),
 		PipelineService: *pipelineService,
 		NodeTypeService: *stepTypeService,
 		TaskQueueClient: *client,
+		I18n:            i18n,
 	}
 }
 
@@ -219,8 +222,19 @@ func executeRunPipelineTask(runPipelinePayload RunPipelinePayload, service *runS
 		pipelineGraph.AddEdge(edge.GetTargetID(), edge.GetSourceID())
 	}
 
-	pipelinesWorkDir := os.Getenv("PIPELINES_WORK_DIR")
-	runLogsDir := os.Getenv("RUN_LOGS_DIR")
+	pipelinesWorkDir, exists := os.LookupEnv("PIPELINES_WORK_DIR")
+
+	if !exists {
+		log.Printf(fmt.Sprint("Pipelines work directory is not defined!"))
+		return asynq.SkipRetry
+	}
+
+	runLogsDir, exists := os.LookupEnv("RUN_LOGS_DIR")
+
+	if !exists {
+		log.Printf(fmt.Sprint("Run logs directory is not defined!"))
+		return asynq.SkipRetry
+	}
 
 	if pipelinesWorkDir == "" {
 		service.UpdateRunStatus(runPipelinePayload.RunID, 3, "PIPELINES_WORK_DIR is not defined!")
@@ -250,7 +264,13 @@ func executeRunPipelineTask(runPipelinePayload RunPipelinePayload, service *runS
 		return asynq.SkipRetry
 	}
 
-	logFileName := os.Getenv("LOG_FILE_NAME")
+	logFileName, exists := os.LookupEnv("RUN_LOG_FILE_NAME")
+
+	if !exists {
+		log.Printf(fmt.Sprint("Run log file name is not defined!"))
+		return asynq.SkipRetry
+	}
+
 	logFile, err := os.Create(currentRunLogDir + logFileName)
 
 	if err != nil {

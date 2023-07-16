@@ -10,15 +10,18 @@ import (
 	"strings"
 
 	"github.com/iancoleman/strcase"
+	"github.com/nicksnyder/go-i18n/v2/i18n"
 )
 
 type nodeServiceImpl struct {
+	I18n             *i18n.Localizer
 	StepTypeRegistry map[string]reflect.Type
 	EdgeTypeRegistry map[string]reflect.Type
 }
 
-func NewNodeService() NodeTypeService {
+func NewNodeService(i18n *i18n.Localizer) NodeTypeService {
 	return &nodeServiceImpl{
+		I18n:             i18n,
 		StepTypeRegistry: initStepTypeRegistry(),
 		EdgeTypeRegistry: initEdgeTypeRegistry(),
 	}
@@ -60,7 +63,7 @@ func (nodeService *nodeServiceImpl) NewEdgeInstance(pipelineID uint, runID uint,
 func initStepTypeRegistry() map[string]reflect.Type {
 	var stepTypeRegistry = make(map[string]reflect.Type)
 
-	stepTypes := []interface{}{steps.CheckoutRepo{}, steps.ScikitTestingDataset{}, steps.ScikitTrainingDataset{}}
+	stepTypes := []interface{}{steps.CheckoutRepo{}, steps.ShellScript{}, steps.PythonScript{}, steps.ScikitTestingDataset{}, steps.ScikitTrainingDataset{}}
 
 	for _, v := range stepTypes {
 		splitString := strings.SplitAfter(fmt.Sprintf("%T", v), ".")

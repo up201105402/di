@@ -16,12 +16,14 @@ import (
 	"github.com/dgrijalva/jwt-go"
 	"github.com/go-redis/redis/v8"
 	"github.com/google/uuid"
+	"github.com/nicksnyder/go-i18n/v2/i18n"
 )
 
 // tokenService used for injecting an implementation of TokenRepository
 // for use in service methods along with keys and secrets for
 // signing JWTs
 type tokenService struct {
+	I18n                  *i18n.Localizer
 	TokenRepository       model.TokenRepository
 	PrivKey               *rsa.PrivateKey
 	PubKey                *rsa.PublicKey
@@ -102,8 +104,9 @@ func GetTokenServiceConfig(redisClient *redis.Client) (*TokenServiceConfig, erro
 
 // NewTokenService is a factory function for
 // initializing a UserService with its repository layer dependencies
-func NewTokenService(config *TokenServiceConfig) TokenService {
+func NewTokenService(config *TokenServiceConfig, i18n *i18n.Localizer) TokenService {
 	return &tokenService{
+		I18n:                  i18n,
 		TokenRepository:       repository.NewTokenRepository(config.RedisClient),
 		PrivKey:               config.PrivKey,
 		PubKey:                config.PubKey,
