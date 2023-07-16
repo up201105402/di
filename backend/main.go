@@ -9,6 +9,7 @@ import (
 	"os"
 
 	"github.com/gin-gonic/gin"
+	"github.com/nicksnyder/go-i18n/v2/i18n"
 )
 
 func main() {
@@ -52,7 +53,7 @@ func main() {
 		TokenService:    service.NewTokenService(tokenServiceConfig, i18n),
 	}
 
-	r := setupRouter(services)
+	r := setupRouter(services, i18n)
 
 	go taskService.SetupAsynqWorker()
 
@@ -65,7 +66,7 @@ func main() {
 	r.Run(":" + port)
 }
 
-func setupRouter(services *service.Services) *gin.Engine {
+func setupRouter(services *service.Services, I18n *i18n.Localizer) *gin.Engine {
 	router := gin.Default()
 
 	router.Static("/public", "../client/public")
@@ -82,26 +83,26 @@ func setupRouter(services *service.Services) *gin.Engine {
 	userAPI.POST("/login", handlers.LogIn(services))
 	userAPI.POST("/signup", handlers.SignUp(services))
 	userAPI.POST("/tokens", handlers.NewAccessToken(services))
-	userAPI.POST("/signout", middleware.Auth(services.TokenService), handlers.SignOut(services))
+	userAPI.POST("/signout", middleware.Auth(services.TokenService, I18n), handlers.SignOut(services))
 
 	pipelineAPI := router.Group("/api/pipeline")
-	pipelineAPI.GET("", middleware.Auth(services.TokenService), handlers.GetPipelines(services))
-	pipelineAPI.GET("/:id", middleware.Auth(services.TokenService), handlers.GetPipeline(services))
-	pipelineAPI.GET("/:id/schedule", middleware.Auth(services.TokenService), handlers.GetPipelineSchedule(services))
-	pipelineAPI.POST("/:id/schedule", middleware.Auth(services.TokenService), handlers.CreatePipelineSchedule(services))
-	pipelineAPI.POST("/:id/file", middleware.Auth(services.TokenService), handlers.UploadPipelineFile(services))
-	pipelineAPI.POST("/:id", middleware.Auth(services.TokenService), handlers.UpsertPipeline(services))
-	pipelineAPI.DELETE("", middleware.Auth(services.TokenService), handlers.DeletePipeline(services))
-	pipelineAPI.DELETE("/:id/schedule", middleware.Auth(services.TokenService), handlers.DeletePipelineSchedule(services))
+	pipelineAPI.GET("", middleware.Auth(services.TokenService, I18n), handlers.GetPipelines(services))
+	pipelineAPI.GET("/:id", middleware.Auth(services.TokenService, I18n), handlers.GetPipeline(services, I18n))
+	pipelineAPI.GET("/:id/schedule", middleware.Auth(services.TokenService, I18n), handlers.GetPipelineSchedule(services, I18n))
+	pipelineAPI.POST("/:id/schedule", middleware.Auth(services.TokenService, I18n), handlers.CreatePipelineSchedule(services, I18n))
+	pipelineAPI.POST("/:id/file", middleware.Auth(services.TokenService, I18n), handlers.UploadPipelineFile(services, I18n))
+	pipelineAPI.POST("/:id", middleware.Auth(services.TokenService, I18n), handlers.UpsertPipeline(services))
+	pipelineAPI.DELETE("", middleware.Auth(services.TokenService, I18n), handlers.DeletePipeline(services))
+	pipelineAPI.DELETE("/:id/schedule", middleware.Auth(services.TokenService, I18n), handlers.DeletePipelineSchedule(services, I18n))
 
 	runAPI := router.Group("/api/run")
-	runAPI.GET("", middleware.Auth(services.TokenService), handlers.GetRuns(services))
-	runAPI.GET("/:id", middleware.Auth(services.TokenService), handlers.FindRunsByPipeline(services))
-	runAPI.POST("/:id", middleware.Auth(services.TokenService), handlers.CreateRun(services))
-	runAPI.POST("/execute/:runID", middleware.Auth(services.TokenService), handlers.ExecuteRun(services))
+	runAPI.GET("", middleware.Auth(services.TokenService, I18n), handlers.GetRuns(services))
+	runAPI.GET("/:id", middleware.Auth(services.TokenService, I18n), handlers.FindRunsByPipeline(services, I18n))
+	runAPI.POST("/:id", middleware.Auth(services.TokenService, I18n), handlers.CreateRun(services, I18n))
+	runAPI.POST("/execute/:runID", middleware.Auth(services.TokenService, I18n), handlers.ExecuteRun(services, I18n))
 
 	runResultsAPI := router.Group("/api/runresults")
-	runResultsAPI.GET("/:id", middleware.Auth(services.TokenService), handlers.FindRunResulstById(services))
+	runResultsAPI.GET("/:id", middleware.Auth(services.TokenService, I18n), handlers.FindRunResulstById(services, I18n))
 
 	return router
 }

@@ -2,11 +2,14 @@ package steps
 
 import (
 	"di/model"
+	"errors"
 	"fmt"
+	"log"
 	"os"
 	"strconv"
 
 	"github.com/go-git/go-git/v5"
+	"github.com/nicksnyder/go-i18n/v2/i18n"
 )
 
 type CheckoutRepo struct {
@@ -59,9 +62,24 @@ func (step *CheckoutRepo) GetRunID() uint {
 	return step.RunID
 }
 
-func (step CheckoutRepo) Execute(logFile *os.File) error {
+func (step CheckoutRepo) Execute(logFile *os.File, I18n *i18n.Localizer) error {
 
-	pipelinesWorkDir := os.Getenv("PIPELINES_WORK_DIR")
+	runLogger := log.New(logFile, "", log.Ldate|log.Ltime|log.Lmicroseconds|log.Llongfile)
+
+	pipelinesWorkDir, exists := os.LookupEnv("PIPELINES_WORK_DIR")
+
+	if !exists {
+		errMessage, _ := I18n.Localize(&i18n.LocalizeConfig{
+			MessageID: "env.variable.find.failed",
+			TemplateData: map[string]interface{}{
+				"Name": "PIPELINES_WORK_DIR",
+			},
+		})
+
+		runLogger.Println(errMessage)
+		return errors.New(errMessage)
+	}
+
 	currentPipelineWorkDir := pipelinesWorkDir + "/" + fmt.Sprint(step.PipelineID) + "/" + fmt.Sprint(step.RunID) + "/"
 
 	if _, err := git.PlainClone(currentPipelineWorkDir, false, &git.CloneOptions{

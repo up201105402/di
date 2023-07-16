@@ -13,13 +13,46 @@ import (
 
 func ConnectToDB() (*gorm.DB, error) {
 
-	pgHost := os.Getenv("POSTGRES_HOST")
-	pgPort := os.Getenv("POSTGRES_PORT")
-	pgUser := os.Getenv("POSTGRES_USER")
-	pgPassword := os.Getenv("POSTGRES_PASSWORD")
-	pgDB := os.Getenv("POSTGRES_DB")
-	pgSSL := os.Getenv("POSTGRES_SSL")
-	pgTimezone := os.Getenv("POSTGRES_TIMEZONE")
+	pgHost, exists := os.LookupEnv("POSTGRES_HOST")
+
+	if !exists {
+		panic("POSTGRES_HOST is not defined!")
+	}
+	pgPort, exists := os.LookupEnv("POSTGRES_PORT")
+
+	if !exists {
+		panic("POSTGRES_PORT is not defined!")
+	}
+
+	pgUser, exists := os.LookupEnv("POSTGRES_USER")
+
+	if !exists {
+		panic("POSTGRES_USER is not defined!")
+	}
+
+	pgPassword, exists := os.LookupEnv("POSTGRES_PASSWORD")
+
+	if !exists {
+		panic("POSTGRES_PASSWORD is not defined!")
+	}
+
+	pgDB, exists := os.LookupEnv("POSTGRES_DB")
+
+	if !exists {
+		panic("POSTGRES_DB is not defined!")
+	}
+
+	pgSSL, exists := os.LookupEnv("POSTGRES_SSL")
+
+	if !exists {
+		panic("POSTGRES_SSL is not defined!")
+	}
+
+	pgTimezone, exists := os.LookupEnv("POSTGRES_TIMEZONE")
+
+	if !exists {
+		panic("POSTGRES_TIMEZONE is not defined!")
+	}
 
 	pgConnString := fmt.Sprintf("host=%s port=%s user=%s password=%s dbname=%s sslmode=%s TimeZone=%s", pgHost, pgPort, pgUser, pgPassword, pgDB, pgSSL, pgTimezone)
 

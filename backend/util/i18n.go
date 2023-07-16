@@ -9,7 +9,7 @@ import (
 func GetI18nLocalizer() *i18n.Localizer {
 	bundle := i18n.NewBundle(language.English)
 	bundle.RegisterUnmarshalFunc("toml", toml.Unmarshal)
-	bundle.LoadMessageFile("en.toml")
+	bundle.LoadMessageFile("i18n/en.toml")
 
 	return i18n.NewLocalizer(bundle, language.English.String())
 }

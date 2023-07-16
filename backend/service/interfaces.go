@@ -59,7 +59,7 @@ type RunService interface {
 	NewRunPipelineTask(pipelineID uint, runID uint, graph string, stepIndex uint) (*asynq.Task, error)
 	HandleRunPipelineTask(ctx context.Context, t *asynq.Task) error
 	HandleScheduledRunPipelineTask(ctx context.Context, t *asynq.Task) error
-	UpdateRunStatus(runID uint, statusID uint, errorMessage string)
+	UpdateRunStatus(runID uint, statusID uint, errorMessage string) error
 }
 
 type RunStepStatusService interface {

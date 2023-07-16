@@ -1,0 +1,178 @@
+#
+# General
+#
+[unknown]
+One = "Unknown error"
+
+#
+# Environment
+#
+[env.variable.find.failed]
+One = "{{.Name}} is not defined!"
+
+#
+# Parsing, Binding
+#
+[sys.parsing.string.uint]
+One = "Failed to parse string to uint. Reason: {{.Reason}}"
+
+[sys.binding.req]
+One = "Failed to bind request. Reason: {{.Reason}}"
+
+#
+# Auth
+#
+[auth.header.authorization.empty]
+One = "Authorization header with format `{token}` is missing"
+
+#
+# OS interaction
+#
+[os.cmd.create.file.failed]
+One = "Error removing file {{.Path}}. Reason: {{.Reason}}"
+
+[os.cmd.read.file.failed]
+One = "Error reading file {{.Path}}. Reason: {{.Reason}}"
+
+[os.cmd.rm.file.failed]
+One = "Error removing file {{.Path}}. Reason: {{.Reason}}"
+Other = "Error removing files from {{.Path}}. Reason: {{.Reason}}"
+
+[os.cmd.mkdir.dir.failed]
+One = "Error creating directory {{.Path}}. Reason: {{.Reason}}"
+
+#
+# Users
+#
+[user.repository.find.user.id.failed]
+One = "Failed to get user with id: {{.ID}}. Reason: {{.Reason}}"
+
+[user.repository.find.user.username.failed]
+One = "Failed to get user with username: {{.Username}}. Reason: {{.Reason}}"
+
+[user.repository.create.user.failed]
+One = "Failed to create user. Reason: {{.Reason}}"
+
+[user.repository.update.user.failed]
+One = "Failed to update user. Reason: {{.Reason}}"
+
+[user.service.user.signin.failed]
+One = "Failed to sign in. Reason: {{.Reason}}"
+
+[user.service.user.signin.password.failed]
+One = "Failed to sign in. Wrong password."
+
+#
+# Tokens
+#
+[token.service.id-token.generate.failed]
+One = "Error generating idToken for uid: {{.UID}}. Reason: {{.Reason}}"
+
+[token.service.refresh-token.generate.failed]
+One = "Error generating refreshToken for uid: {{.UID}}. Reason: {{.Reason}}"
+
+[token.service.id-token.store.failed]
+One = "Error storing idToken for uid: {{.UID}}. Reason: {{.Reason}}"
+
+[token.service.id-token.validate.failed]
+One = "Error validating idToken. Reason: {{.Reason}}"
+
+[token.service.refresh-token.validate.failed]
+One = "Error validating refreshToken. Reason: {{.Reason}}"
+
+[token.service.claims.parse.failed]
+One = "Error parsing Claims. Reason: {{.Reason}}"
+
+#
+# Pipelines
+#
+[pipeline.repository.find.pipeline.id.failed]
+One = "Failed to get pipeline with id: {{.ID}}. Reason: {{.Reason}}"
+
+[pipeline.repository.find.schedule.id.failed]
+One = "Failed to get pipeline schedule with id: {{.ID}}. Reason: {{.Reason}}"
+
+[pipeline.repository.find.schedule.all.failed]
+One = "Failed to get all pipeline schedules. Reason: {{.Reason}}"
+
+[pipeline.repository.find.pipeline.owner.failed]
+One = "Failed to get pipelines with username {{.OwnerID}}. Reason: {{.Reason}}"
+
+[pipeline.repository.find.schedule.pipelineID.failed]
+One = "Failed to get schedules for pipeline with id: {{.ID}}. Reason: {{.Reason}}"
+
+[pipeline.repository.create.pipeline.failed]
+One = "Failed to create pipeline. Reason: {{.Reason}}"
+
+[pipeline.repository.update.pipeline.failed]
+One = "Failed to update pipeline with id: {{.ID}}. Reason: {{.Reason}}"
+
+[pipeline.repository.create.schedule.failed]
+One = "Failed to create pipeline schedule. Reason: {{.Reason}}"
+
+[pipeline.repository.delete.pipeline.failed]
+One = "Failed to delete pipeline with id: {{.ID}}. Reason: {{.Reason}}"
+
+[pipeline.repository.delete.schedule.failed]
+One = "Failed to delete pipeline schedule with id {{.ID}}. Reason: {{.Reason}}"
+
+#
+# Runs
+#
+[run.repository.find.run.id.failed]
+One = "Failed to get run with id: {{.ID}}. Reason: {{.Reason}}"
+
+[run.repository.find.run.pipeline.failed]
+One = "Failed to get runs for pipeline with id: {{.ID}}. Reason: {{.Reason}}"
+
+[run.repository.find.step-status.run.failed]
+One = "Failed to get run step statuses for run with id: {{.ID}}. Reason: {{.Reason}}"
+
+[run.repository.create.run.failed]
+One = "Failed to create run. Reason: {{.Reason}}"
+
+[run.repository.create.step-status.failed]
+One = "Failed to create run step status. Reason: {{.Reason}}"
+
+[run.repository.update.run.failed]
+One = "Failed to update run with id: {{.ID}}. Reason: {{.Reason}}"
+
+[run.repository.update.step-status.failed]
+One = "Failed to update run step status with id: {{.ID}}. Reason: {{.Reason}}"
+
+[run.repository.delete.run.failed]
+One = "Failed to delete run with id: {{.ID}}. Reason: {{.Reason}}"
+
+[run.repository.delete.step-status.id.failed]
+One = "Failed to delete pipeline with id: {{.ID}}. Reason: {{.Reason}}"
+
+[run.repository.delete.step-status.all.failed]
+One = "Failed to delete run step statuses for run with id: {{.ID}}. Reason: {{.Reason}}"
+
+[run.service.execute.run.failed]
+One = "Failed to execute run with id: {{.ID}}. Reason: {{.Reason}}"
+
+[run.service.execute.run.success]
+One = "Run with id: {{.ID}} execute with success."
+
+[run.service.execute.step.failed]
+One = "Failed to execute step with id: {{.ID}}. Reason: {{.Reason}}"
+
+[run.service.execute.step.success]
+One = "Step with id: {{.ID}} executed with success."
+
+#
+# Pipeline Steps
+#
+[steps.service.step.new-instance.failed]
+One = "Failed to create new step of type {{.Type}}. Step Type not found."
+
+[steps.service.edge.new-instance.failed]
+One = "Failed to create new step of type {{.Type}}. Step Type not found."
+
+
+#
+# Tasks
+#
+[tasks.client.enqueue.failed]
+One = "Failed to enqueue task into {{.Queue}} queue. Reason: {{.Reason}}"

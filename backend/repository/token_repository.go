@@ -27,8 +27,7 @@ func (r *redisTokenRepository) SetRefreshToken(ctx context.Context, userID uint,
 	// over the user's tokens and delete them in case of token leakage
 	key := fmt.Sprintf("%d:%d", userID, tokenID)
 	if err := r.Redis.Set(ctx, key, 0, expiresIn).Err(); err != nil {
-		log.Printf("Could not SET refresh token to redis for userID/tokenID: %d/%d: %v\n", userID, tokenID, err)
-		return errors.NewInternal()
+		return err
 	}
 	return nil
 }
@@ -41,8 +40,7 @@ func (r *redisTokenRepository) DeleteRefreshToken(ctx context.Context, userID ui
 	result := r.Redis.Del(ctx, key)
 
 	if err := result.Err(); err != nil {
-		log.Printf("Could not delete refresh token to redis for userID/tokenID: %d/%d: %v\n", userID, tokenID, err)
-		return errors.NewInternal()
+		return err
 	}
 
 	// Val returns count of deleted keys.
@@ -76,7 +74,7 @@ func (r *redisTokenRepository) DeleteUserRefreshTokens(ctx context.Context, user
 	}
 
 	if failCount > 0 {
-		return errors.NewInternal()
+		return errors.NewInternal("")
 	}
 
 	return nil

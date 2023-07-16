@@ -12,6 +12,7 @@ import (
 	"time"
 
 	"github.com/gin-gonic/gin"
+	"github.com/nicksnyder/go-i18n/v2/i18n"
 )
 
 func GetPipelines(services *service.Services) gin.HandlerFunc {
@@ -27,11 +28,10 @@ func GetPipelines(services *service.Services) gin.HandlerFunc {
 		pipelines, getError := services.PipelineService.GetByOwner(user.ID)
 
 		if getError != nil {
-			errorMessage := fmt.Sprint("Failed to get pipelines for user with id %v: %v\n", user.ID, getError)
-			log.Printf(errorMessage)
-			err := errors.NewInternal()
+			log.Printf(getError.Error())
+			err := errors.NewInternal(getError.Error())
 			context.JSON(err.Status(), gin.H{
-				"error": errorMessage,
+				"error": err.Message,
 			})
 			return
 		}
@@ -47,7 +47,7 @@ func GetPipelines(services *service.Services) gin.HandlerFunc {
 	}
 }
 
-func GetPipeline(services *service.Services) gin.HandlerFunc {
+func GetPipeline(services *service.Services, I18n *i18n.Localizer) gin.HandlerFunc {
 	return func(context *gin.Context) {
 
 		pipelineId := context.Param("id")
@@ -55,11 +55,16 @@ func GetPipeline(services *service.Services) gin.HandlerFunc {
 		id, parseError := strconv.ParseUint(pipelineId, 10, 64)
 
 		if parseError != nil {
-			errorMessage := fmt.Sprint("Failed to convert pipelineId into uint: %v\n", parseError)
-			log.Printf(errorMessage)
-			err := errors.NewInternal()
+			errMessage, _ := I18n.Localize(&i18n.LocalizeConfig{
+				MessageID: "sys.parsing.string.uint",
+				TemplateData: map[string]interface{}{
+					"Reason": parseError.Error(),
+				},
+			})
+			log.Printf(errMessage)
+			err := errors.NewInternal(errMessage)
 			context.JSON(err.Status(), gin.H{
-				"error": errorMessage,
+				"error": err.Message,
 			})
 			return
 		}
@@ -67,11 +72,10 @@ func GetPipeline(services *service.Services) gin.HandlerFunc {
 		pipeline, getError := services.PipelineService.Get(uint(id))
 
 		if getError != nil {
-			errorMessage := fmt.Sprint("Failed to get pipeline with id %v: %v\n", pipelineId, getError)
-			log.Printf(errorMessage)
-			err := errors.NewInternal()
+			log.Printf(getError.Error())
+			err := errors.NewInternal(getError.Error())
 			context.JSON(err.Status(), gin.H{
-				"error": errorMessage,
+				"error": err.Message,
 			})
 			return
 		}
@@ -84,7 +88,7 @@ func GetPipeline(services *service.Services) gin.HandlerFunc {
 	}
 }
 
-func GetPipelineSchedule(services *service.Services) gin.HandlerFunc {
+func GetPipelineSchedule(services *service.Services, I18n *i18n.Localizer) gin.HandlerFunc {
 	return func(context *gin.Context) {
 
 		pipelineId := context.Param("id")
@@ -92,11 +96,16 @@ func GetPipelineSchedule(services *service.Services) gin.HandlerFunc {
 		id, parseError := strconv.ParseUint(pipelineId, 10, 64)
 
 		if parseError != nil {
-			errorMessage := fmt.Sprint("Failed to convert pipelineId into uint: %v\n", parseError)
-			log.Printf(errorMessage)
-			err := errors.NewInternal()
+			errMessage, _ := I18n.Localize(&i18n.LocalizeConfig{
+				MessageID: "sys.parsing.string.uint",
+				TemplateData: map[string]interface{}{
+					"Reason": parseError.Error(),
+				},
+			})
+			log.Printf(errMessage)
+			err := errors.NewInternal(errMessage)
 			context.JSON(err.Status(), gin.H{
-				"error": errorMessage,
+				"error": err.Message,
 			})
 			return
 		}
@@ -104,11 +113,10 @@ func GetPipelineSchedule(services *service.Services) gin.HandlerFunc {
 		schedules, getError := services.PipelineService.GetPipelineSchedules(uint(id))
 
 		if getError != nil {
-			errorMessage := fmt.Sprint("Failed to get pipeline's schedules with id %s: %v\n", pipelineId, getError)
-			log.Printf(errorMessage)
-			err := errors.NewInternal()
+			log.Printf(getError.Error())
+			err := errors.NewInternal(getError.Error())
 			context.JSON(err.Status(), gin.H{
-				"error": errorMessage,
+				"error": err.Message,
 			})
 			return
 		}
@@ -139,8 +147,7 @@ func UpsertPipeline(services *service.Services) gin.HandlerFunc {
 			pipeline, err := services.PipelineService.Get(req.ID)
 
 			if err != nil {
-				log.Printf("Failed to get pipeline with id %d\n", req.ID)
-				err := errors.NewNotFound("pipeline", string(req.ID))
+				err := errors.NewNotFound(err.Error())
 				context.JSON(err.Status(), gin.H{
 					"error": err.Message,
 				})
@@ -151,11 +158,10 @@ func UpsertPipeline(services *service.Services) gin.HandlerFunc {
 			err = services.PipelineService.Update(pipeline)
 
 			if err != nil {
-				errorMessage := fmt.Sprint("Failed to update pipeline with id &d: %v\n", req.ID, err.Error())
-				log.Printf(errorMessage)
-				err := errors.NewInternal()
+				log.Printf(err.Error())
+				err := errors.NewInternal(err.Error())
 				context.JSON(err.Status(), gin.H{
-					"error": errorMessage,
+					"error": err.Message,
 				})
 				return
 			}
@@ -163,11 +169,10 @@ func UpsertPipeline(services *service.Services) gin.HandlerFunc {
 			serviceError := services.PipelineService.Create(user.ID, req.Name, req.Definition)
 
 			if serviceError != nil {
-				errorMessage := fmt.Sprint("Failed to create pipeline for user: %v\n", err.Error())
-				log.Print(errorMessage)
-				err := errors.NewInternal()
+				log.Print(serviceError.Error())
+				err := errors.NewInternal(serviceError.Error())
 				context.JSON(err.Status(), gin.H{
-					"error": errorMessage,
+					"error": err.Message,
 				})
 				return
 			}
@@ -177,7 +182,7 @@ func UpsertPipeline(services *service.Services) gin.HandlerFunc {
 	}
 }
 
-func CreatePipelineSchedule(services *service.Services) gin.HandlerFunc {
+func CreatePipelineSchedule(services *service.Services, I18n *i18n.Localizer) gin.HandlerFunc {
 	return func(context *gin.Context) {
 
 		pipelineID := context.Param("id")
@@ -185,11 +190,16 @@ func CreatePipelineSchedule(services *service.Services) gin.HandlerFunc {
 		id, parseError := strconv.ParseUint(pipelineID, 10, 64)
 
 		if parseError != nil {
-			errorMessage := fmt.Sprint("Failed to convert pipelineId into uint: %v\n", parseError)
-			log.Printf(errorMessage)
-			err := errors.NewInternal()
+			errMessage, _ := I18n.Localize(&i18n.LocalizeConfig{
+				MessageID: "sys.parsing.string.uint",
+				TemplateData: map[string]interface{}{
+					"Reason": parseError.Error(),
+				},
+			})
+			log.Printf(errMessage)
+			err := errors.NewInternal(errMessage)
 			context.JSON(err.Status(), gin.H{
-				"error": errorMessage,
+				"error": err.Message,
 			})
 			return
 		}
@@ -211,8 +221,7 @@ func CreatePipelineSchedule(services *service.Services) gin.HandlerFunc {
 			pipeline, pipelineErr := services.PipelineService.Get(uint(id))
 
 			if pipelineErr != nil {
-				log.Printf("Failed to get pipeline with id %d\n", req.ID)
-				err := errors.NewNotFound("pipeline", string(req.ID))
+				err := errors.NewNotFound(pipelineErr.Error())
 				context.JSON(err.Status(), gin.H{
 					"error": err.Message,
 				})
@@ -231,11 +240,10 @@ func CreatePipelineSchedule(services *service.Services) gin.HandlerFunc {
 
 			createError := services.PipelineService.CreatePipelineSchedule(pipeline.ID, req.UniqueOcurrence, req.CronExpression)
 			if createError != nil {
-				errorMessage := fmt.Sprint("Failed to get pipeline's schedules with id %s: %v\n", pipelineID, createError)
-				log.Printf(errorMessage)
-				err := errors.NewInternal()
+				log.Printf(createError.Error())
+				err := errors.NewInternal(createError.Error())
 				context.JSON(err.Status(), gin.H{
-					"error": errorMessage,
+					"error": err.Message,
 				})
 				return
 			}
@@ -245,18 +253,24 @@ func CreatePipelineSchedule(services *service.Services) gin.HandlerFunc {
 	}
 }
 
-func UploadPipelineFile(services *service.Services) gin.HandlerFunc {
+func UploadPipelineFile(services *service.Services, I18n *i18n.Localizer) gin.HandlerFunc {
 	return func(context *gin.Context) {
 
 		// Upload the file to specific dst.
 		fileUploadDir, exists := os.LookupEnv("FILE_UPLOAD_DIR")
 
 		if !exists {
-			errorMessage := fmt.Sprint("Upload directory is not defined")
-			log.Printf(errorMessage)
-			err := errors.NewInternal()
+			errMessage, _ := I18n.Localize(&i18n.LocalizeConfig{
+				MessageID: "env.variable.find.failed",
+				TemplateData: map[string]interface{}{
+					"Name": "FILE_UPLOAD_DIR",
+				},
+			})
+
+			log.Printf(errMessage)
+			err := errors.NewInternal(errMessage)
 			context.JSON(err.Status(), gin.H{
-				"error": errorMessage,
+				"error": err.Message,
 			})
 		}
 
@@ -265,11 +279,16 @@ func UploadPipelineFile(services *service.Services) gin.HandlerFunc {
 		_, parseError := strconv.ParseUint(pipelineID, 10, 64)
 
 		if parseError != nil {
-			errorMessage := fmt.Sprint("Failed to convert pipelineId into uint: %v\n", parseError)
-			log.Printf(errorMessage)
-			err := errors.NewInternal()
+			errMessage, _ := I18n.Localize(&i18n.LocalizeConfig{
+				MessageID: "sys.parsing.string.uint",
+				TemplateData: map[string]interface{}{
+					"Reason": parseError.Error(),
+				},
+			})
+			log.Printf(errMessage)
+			err := errors.NewInternal(errMessage)
 			context.JSON(err.Status(), gin.H{
-				"error": errorMessage,
+				"error": err.Message,
 			})
 			return
 		}
@@ -281,11 +300,10 @@ func UploadPipelineFile(services *service.Services) gin.HandlerFunc {
 		err := context.SaveUploadedFile(file, fileUploadDir+"pipelines/"+pipelineID+"/"+file.Filename)
 
 		if err != nil {
-			errorMessage := fmt.Sprintf("Failed to save uploaded file: %v", err.Error())
-			log.Printf(errorMessage)
-			err := errors.NewInternal()
+			log.Printf(err.Error())
+			err := errors.NewInternal(err.Error())
 			context.JSON(err.Status(), gin.H{
-				"error": errorMessage,
+				"error": err.Message,
 			})
 		}
 
@@ -314,11 +332,10 @@ func DeletePipeline(services *service.Services) gin.HandlerFunc {
 		pipeline, getError := services.PipelineService.Get(req.ID)
 
 		if getError != nil {
-			errorMessage := fmt.Sprint("Failed to get pipelines for user with id %v: %v\n", user.ID, getError)
-			log.Printf(errorMessage)
-			err := errors.NewNotFound("pipeline", string(req.ID))
+			log.Printf(getError.Error())
+			err := errors.NewNotFound(getError.Error())
 			context.JSON(err.Status(), gin.H{
-				"error": errorMessage,
+				"error": err.Message,
 			})
 			return
 		}
@@ -336,11 +353,10 @@ func DeletePipeline(services *service.Services) gin.HandlerFunc {
 		deleteError := services.PipelineService.Delete(req.ID)
 
 		if deleteError != nil {
-			errorMessage := fmt.Sprint("Failed to delete pipeline with id %v: %v\n", req.ID, err.Error())
-			log.Printf(errorMessage)
-			err := errors.NewInternal()
+			log.Printf(deleteError.Error())
+			err := errors.NewInternal(deleteError.Error())
 			context.JSON(err.Status(), gin.H{
-				"error": errorMessage,
+				"error": err.Message,
 			})
 			return
 		}
@@ -349,7 +365,7 @@ func DeletePipeline(services *service.Services) gin.HandlerFunc {
 	}
 }
 
-func DeletePipelineSchedule(services *service.Services) gin.HandlerFunc {
+func DeletePipelineSchedule(services *service.Services, I18n *i18n.Localizer) gin.HandlerFunc {
 	return func(context *gin.Context) {
 
 		pipelineId := context.Param("id")
@@ -357,11 +373,16 @@ func DeletePipelineSchedule(services *service.Services) gin.HandlerFunc {
 		pipelineID, parseError := strconv.ParseUint(pipelineId, 10, 64)
 
 		if parseError != nil {
-			errorMessage := fmt.Sprint("Failed to convert pipelineId into uint: %v\n", parseError)
-			log.Printf(errorMessage)
-			err := errors.NewInternal()
+			errMessage, _ := I18n.Localize(&i18n.LocalizeConfig{
+				MessageID: "sys.parsing.string.uint",
+				TemplateData: map[string]interface{}{
+					"Reason": parseError.Error(),
+				},
+			})
+			log.Printf(errMessage)
+			err := errors.NewInternal(errMessage)
 			context.JSON(err.Status(), gin.H{
-				"error": errorMessage,
+				"error": err.Message,
 			})
 			return
 		}
@@ -375,11 +396,10 @@ func DeletePipelineSchedule(services *service.Services) gin.HandlerFunc {
 		pipeline, getError := services.PipelineService.Get(uint(pipelineID))
 
 		if getError != nil {
-			errorMessage := fmt.Sprint("Failed to get pipeline with id %v\n", getError)
-			log.Printf(errorMessage)
-			err := errors.NewNotFound("pipeline", string(pipelineID))
+			log.Printf(getError.Error())
+			err := errors.NewNotFound(getError.Error())
 			context.JSON(err.Status(), gin.H{
-				"error": errorMessage,
+				"error": err.Message,
 			})
 			return
 		}
@@ -404,11 +424,10 @@ func DeletePipelineSchedule(services *service.Services) gin.HandlerFunc {
 		deleteError := services.PipelineService.DeletePipelineSchedule(req.ID)
 
 		if deleteError != nil {
-			errorMessage := fmt.Sprint("Failed to delete pipeline schedule with id %v: %v\n", req.ID, err.Error())
-			log.Printf(errorMessage)
-			err := errors.NewInternal()
+			log.Printf(deleteError.Error())
+			err := errors.NewInternal(deleteError.Error())
 			context.JSON(err.Status(), gin.H{
-				"error": errorMessage,
+				"error": err.Message,
 			})
 			return
 		}
@@ -421,7 +440,7 @@ func getUser(context *gin.Context) (*model.User, *errors.Error) {
 	contextUser, exists := context.Get("user")
 
 	if !exists {
-		err := errors.NewNotFound("user", "")
+		err := errors.NewNotFound("User does not exist!")
 		return nil, err
 	}
 

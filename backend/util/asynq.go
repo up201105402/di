@@ -8,8 +8,17 @@ import (
 
 func GetAsynqClient() *asynq.Client {
 
-	redisHost := os.Getenv("REDIS_HOST")
-	redisPort := os.Getenv("REDIS_PORT")
+	redisHost, exists := os.LookupEnv("REDIS_HOST")
+
+	if !exists {
+		panic("REDIS_HOST is not defined!")
+	}
+
+	redisPort, exists := os.LookupEnv("REDIS_PORT")
+
+	if !exists {
+		panic("REDIS_PORT is not defined!")
+	}
 
 	inspector := asynq.NewInspector(asynq.RedisClientOpt{Addr: redisHost + ":" + redisPort})
 	scheduledTasks, _ := inspector.ListScheduledTasks("runs")
@@ -23,8 +32,17 @@ func GetAsynqClient() *asynq.Client {
 
 func GetAsynqScheduler() *asynq.Scheduler {
 
-	redisHost := os.Getenv("REDIS_HOST")
-	redisPort := os.Getenv("REDIS_PORT")
+	redisHost, exists := os.LookupEnv("REDIS_HOST")
+
+	if !exists {
+		panic("REDIS_HOST is not defined!")
+	}
+
+	redisPort, exists := os.LookupEnv("REDIS_PORT")
+
+	if !exists {
+		panic("REDIS_PORT is not defined!")
+	}
 
 	return asynq.NewScheduler(asynq.RedisClientOpt{Addr: redisHost + ":" + redisPort}, &asynq.SchedulerOpts{})
 }

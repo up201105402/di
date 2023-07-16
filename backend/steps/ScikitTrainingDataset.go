@@ -3,11 +3,14 @@ package steps
 import (
 	"bytes"
 	"di/model"
+	"errors"
 	"fmt"
 	"log"
 	"os"
 	"os/exec"
 	"strconv"
+
+	"github.com/nicksnyder/go-i18n/v2/i18n"
 )
 
 type ScikitTrainingDataset struct {
@@ -61,14 +64,39 @@ func (step *ScikitTrainingDataset) GetRunID() uint {
 	return step.RunID
 }
 
-func (step ScikitTrainingDataset) Execute(logFile *os.File) error {
+func (step ScikitTrainingDataset) Execute(logFile *os.File, I18n *i18n.Localizer) error {
 
 	runLogger := log.New(logFile, "", log.Ldate|log.Ltime|log.Lmicroseconds|log.Llongfile)
 
-	pipelinesWorkDir := os.Getenv("PIPELINES_WORK_DIR")
+	pipelinesWorkDir, exists := os.LookupEnv("PIPELINES_WORK_DIR")
+
+	if !exists {
+		errMessage, _ := I18n.Localize(&i18n.LocalizeConfig{
+			MessageID: "env.variable.find.failed",
+			TemplateData: map[string]interface{}{
+				"Name": "PIPELINES_WORK_DIR",
+			},
+		})
+
+		runLogger.Println(errMessage)
+		return errors.New(errMessage)
+	}
+
 	currentPipelineWorkDir := pipelinesWorkDir + "/" + fmt.Sprint(step.PipelineID) + "/" + fmt.Sprint(step.RunID) + "/"
 
-	scikitSnippetsDir := os.Getenv("SCIKIT_SNIPPETS_DIR") + "datasets/"
+	scikitSnippetsDir, exists := os.LookupEnv("SCIKIT_SNIPPETS_DIR")
+
+	if !exists {
+		errMessage, _ := I18n.Localize(&i18n.LocalizeConfig{
+			MessageID: "env.variable.find.failed",
+			TemplateData: map[string]interface{}{
+				"Name": "SCIKIT_SNIPPETS_DIR",
+			},
+		})
+
+		runLogger.Println(errMessage)
+		return errors.New(errMessage)
+	}
 
 	var args []string
 

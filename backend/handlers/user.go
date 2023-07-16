@@ -40,7 +40,7 @@ func LogIn(services *service.Services) gin.HandlerFunc {
 		err := services.UserService.Signin(user)
 
 		if err != nil {
-			log.Printf("Failed to log in user: %v\n", err.Error())
+			log.Printf(err.Error())
 			context.JSON(http.StatusUnauthorized, gin.H{
 				"error": err.Error(),
 			})
@@ -53,7 +53,7 @@ func LogIn(services *service.Services) gin.HandlerFunc {
 			log.Printf("Failed to create tokens for user: %v\n", err.Error())
 
 			context.JSON(http.StatusInternalServerError, gin.H{
-				"error": err,
+				"error": fmt.Sprint("Failed to create tokens for user: %v\n", err.Error()),
 			})
 
 			return
@@ -77,7 +77,7 @@ func SignUp(services *service.Services) gin.HandlerFunc {
 		err := services.UserService.Signup(req.Username, req.Password)
 
 		if err != nil {
-			log.Printf("Failed to sign up user: %v\n", err.Error())
+			log.Printf(err.Error())
 			context.JSON(http.StatusUnauthorized, gin.H{
 				"error": err.Error(),
 			})
@@ -87,7 +87,7 @@ func SignUp(services *service.Services) gin.HandlerFunc {
 		user, err := services.UserService.GetByUsername(req.Username)
 
 		if err != nil {
-			log.Printf("Failed to get user: %v\n", err.Error())
+			log.Printf(err.Error())
 			context.JSON(http.StatusUnauthorized, gin.H{
 				"error": err.Error(),
 			})
@@ -100,7 +100,7 @@ func SignUp(services *service.Services) gin.HandlerFunc {
 			log.Printf("Failed to create tokens for user: %v\n", err.Error())
 
 			context.JSON(http.StatusInternalServerError, gin.H{
-				"error": err,
+				"error": fmt.Sprint("Failed to create tokens for user: %v\n", err.Error()),
 			})
 			return
 		}

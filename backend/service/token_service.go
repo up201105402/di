@@ -5,7 +5,7 @@ import (
 	"crypto/rsa"
 	"di/model"
 	"di/repository"
-	"di/util/errors"
+	"errors"
 	"fmt"
 	"io/ioutil"
 	"log"
@@ -19,9 +19,6 @@ import (
 	"github.com/nicksnyder/go-i18n/v2/i18n"
 )
 
-// tokenService used for injecting an implementation of TokenRepository
-// for use in service methods along with keys and secrets for
-// signing JWTs
 type tokenService struct {
 	I18n                  *i18n.Localizer
 	TokenRepository       model.TokenRepository
@@ -32,8 +29,6 @@ type tokenService struct {
 	RefreshExpirationSecs int64
 }
 
-// TokenServiceConfig will hold repositories that will eventually be injected into this
-// this service layer
 type TokenServiceConfig struct {
 	RedisClient           *redis.Client
 	PrivKey               *rsa.PrivateKey
@@ -43,7 +38,6 @@ type TokenServiceConfig struct {
 	RefreshExpirationSecs int64
 }
 
-// idTokenCustomClaims holds structure of jwt claims of idToken
 type idTokenCustomClaims struct {
 	User *model.User `json:"user"`
 	jwt.StandardClaims
@@ -75,12 +69,23 @@ func GetTokenServiceConfig(redisClient *redis.Client) (*TokenServiceConfig, erro
 		return nil, fmt.Errorf("Could not parse public key: %w", err)
 	}
 
-	// load refresh token secret from env variable
-	tokenRefreshSecret := os.Getenv("TOKEN_REFRESH_SECRET")
+	tokenRefreshSecret, exists := os.LookupEnv("TOKEN_REFRESH_SECRET")
 
-	// load expiration lengths from env variables and parse as int
-	idTokenDuration := os.Getenv("ID_TOKEN_DURATION")
-	refreshTokenDuration := os.Getenv("REFRESH_TOKEN_DURATION")
+	if !exists {
+		panic("TOKEN_REFRESH_SECRET is not defined!")
+	}
+
+	idTokenDuration, exists := os.LookupEnv("ID_TOKEN_DURATION")
+
+	if !exists {
+		panic("ID_TOKEN_DURATION is not defined!")
+	}
+
+	refreshTokenDuration, exists := os.LookupEnv("REFRESH_TOKEN_DURATION")
+
+	if !exists {
+		panic("REFRESH_TOKEN_DURATION is not defined!")
+	}
 
 	idExp, err := strconv.ParseInt(idTokenDuration, 0, 64)
 	if err != nil {
@@ -102,8 +107,6 @@ func GetTokenServiceConfig(redisClient *redis.Client) (*TokenServiceConfig, erro
 	}, nil
 }
 
-// NewTokenService is a factory function for
-// initializing a UserService with its repository layer dependencies
 func NewTokenService(config *TokenServiceConfig, i18n *i18n.Localizer) TokenService {
 	return &tokenService{
 		I18n:                  i18n,
@@ -116,29 +119,45 @@ func NewTokenService(config *TokenServiceConfig, i18n *i18n.Localizer) TokenServ
 	}
 }
 
-// NewPairFromUser creates fresh id and refresh tokens for the current user
-// If a previous token is included, the previous token is removed from
-// the tokens repository
 func (service *tokenService) NewFirstPairFromUser(ctx context.Context, u *model.User) (*model.TokenPair, error) {
-	// No need to use a repository for idToken as it is unrelated to any data source
 	idToken, err := generateIDToken(u, service.PrivKey, service.IDExpirationSecs)
 
 	if err != nil {
-		log.Printf("Error generating idToken for uid: %v. Error: %v\n", u.ID, err.Error())
-		return nil, errors.NewInternal()
+		errorMessage, _ := service.I18n.Localize(&i18n.LocalizeConfig{
+			MessageID: "token.service.id-token.generate.failed",
+			TemplateData: map[string]interface{}{
+				"UID":    u.ID,
+				"Reason": err.Error(),
+			},
+		})
+		log.Printf(errorMessage)
+		return nil, errors.New(errorMessage)
 	}
 
 	refreshToken, err := generateRefreshToken(u.ID, service.RefreshSecret, service.RefreshExpirationSecs)
 
 	if err != nil {
-		log.Printf("Error generating refreshToken for uid: %v. Error: %v\n", u.ID, err.Error())
-		return nil, errors.NewInternal()
+		errorMessage, _ := service.I18n.Localize(&i18n.LocalizeConfig{
+			MessageID: "token.service.refresh-token.generate.failed",
+			TemplateData: map[string]interface{}{
+				"UID":    u.ID,
+				"Reason": err.Error(),
+			},
+		})
+		log.Printf(errorMessage)
+		return nil, errors.New(errorMessage)
 	}
 
-	// set freshly minted refresh token to valid list
 	if err := service.TokenRepository.SetRefreshToken(ctx, u.ID, refreshToken.ID, refreshToken.ExpiresIn); err != nil {
-		log.Printf("Error storing tokenID for uid: %v. Error: %v\n", u.ID, err.Error())
-		return nil, errors.NewInternal()
+		errorMessage, _ := service.I18n.Localize(&i18n.LocalizeConfig{
+			MessageID: "token.service.id-token.store.failed",
+			TemplateData: map[string]interface{}{
+				"UID":    u.ID,
+				"Reason": err.Error(),
+			},
+		})
+		log.Printf(errorMessage)
+		return nil, errors.New(errorMessage)
 	}
 
 	return &model.TokenPair{
@@ -147,15 +166,19 @@ func (service *tokenService) NewFirstPairFromUser(ctx context.Context, u *model.
 	}, nil
 }
 
-// NewPairFromUser creates fresh id and refresh tokens for the current user
-// If a previous token is included, the previous token is removed from
-// the tokens repository
 func (service *tokenService) NewPairFromUser(ctx context.Context, u *model.User, refreshToken model.RefreshToken) (*model.TokenPair, error) {
 	idToken, err := generateIDToken(u, service.PrivKey, service.IDExpirationSecs)
 
 	if err != nil {
-		log.Printf("Error generating idToken for uid: %v. Error: %v\n", u.ID, err.Error())
-		return nil, errors.NewInternal()
+		errorMessage, _ := service.I18n.Localize(&i18n.LocalizeConfig{
+			MessageID: "token.service.id-token.generate.failed",
+			TemplateData: map[string]interface{}{
+				"UID":    u.ID,
+				"Reason": err.Error(),
+			},
+		})
+		log.Printf(errorMessage)
+		return nil, errors.New(errorMessage)
 	}
 
 	return &model.TokenPair{
@@ -164,44 +187,52 @@ func (service *tokenService) NewPairFromUser(ctx context.Context, u *model.User,
 	}, nil
 }
 
-// Signout reaches out to the repository layer to delete all valid tokens for a user
 func (service *tokenService) Signout(ctx context.Context, id uint) error {
 	return service.TokenRepository.DeleteUserRefreshTokens(ctx, id)
 }
 
-// ValidateIDToken validates the id token jwt string
-// It returns the user extract from the IDTokenCustomClaims
 func (service *tokenService) ValidateIDToken(tokenString string) (*model.User, error) {
-	claims, err := validateIDToken(tokenString, service.PubKey) // uses public RSA key
+	claims, err := validateIDToken(tokenString, service.PubKey)
 
-	// We'll just return unauthorized error in all instances of failing to verify user
 	if err != nil {
-		log.Printf("Unable to validate or parse idToken - Error: %v\n", err)
-		return nil, errors.NewAuthorization("Unable to verify user from idToken")
+		errorMessage, _ := service.I18n.Localize(&i18n.LocalizeConfig{
+			MessageID: "token.service.id-token.validate.failed",
+			TemplateData: map[string]interface{}{
+				"Reason": err.Error(),
+			},
+		})
+		log.Printf(errorMessage)
+		return nil, errors.New(errorMessage)
 	}
 
 	return claims.User, nil
 }
 
-// ValidateRefreshToken checks to make sure the JWT provided by a string is valid
-// and returns a RefreshToken if valid
 func (service *tokenService) ValidateRefreshToken(tokenString string) (*model.RefreshToken, error) {
-	// validate actual JWT with string a secret
 	claims, err := validateRefreshToken(tokenString, service.RefreshSecret)
 
-	// We'll just return unauthorized error in all instances of failing to verify user
 	if err != nil {
-		log.Printf("Unable to validate or parse refreshToken for token string: %s\n%v\n", tokenString, err)
-		return nil, errors.NewAuthorization("Unable to verify user from refresh token")
+		errorMessage, _ := service.I18n.Localize(&i18n.LocalizeConfig{
+			MessageID: "token.service.refresh-token.validate.failed",
+			TemplateData: map[string]interface{}{
+				"Reason": err.Error(),
+			},
+		})
+		log.Printf(errorMessage)
+		return nil, errors.New(errorMessage)
 	}
 
-	// Standard claims store ID as a string. I want "model" to be clear our string
-	// is a UUID. So we parse claims.Id as UUID
 	tokenUUID, err := uuid.Parse(claims.Id)
 
 	if err != nil {
-		log.Printf("Claims ID could not be parsed as UUID: %s\n%v\n", claims.Id, err)
-		return nil, errors.NewAuthorization("Unable to verify user from refresh token")
+		errorMessage, _ := service.I18n.Localize(&i18n.LocalizeConfig{
+			MessageID: "token.service.claims.parse.failed",
+			TemplateData: map[string]interface{}{
+				"Reason": err.Error(),
+			},
+		})
+		log.Printf(errorMessage)
+		return nil, errors.New(errorMessage)
 	}
 
 	return &model.RefreshToken{
@@ -211,8 +242,6 @@ func (service *tokenService) ValidateRefreshToken(tokenString string) (*model.Re
 	}, nil
 }
 
-// generateIDToken generates an IDToken which is a jwt with myCustomClaims
-// Could call this GenerateIDTokenString, but the signature makes this fairly clear
 func generateIDToken(u *model.User, key *rsa.PrivateKey, duration int64) (string, error) {
 	timestamp := time.Now().Unix()
 	tokenExp := timestamp + duration
@@ -236,28 +265,21 @@ func generateIDToken(u *model.User, key *rsa.PrivateKey, duration int64) (string
 	return signedTokenString, nil
 }
 
-// refreshTokenData holds the actual signed jwt string along with the ID
-// We return the id so it can be used without re-parsing the JWT from signed string
 type refreshTokenData struct {
 	SignedTokenString string
 	ID                uint
 	ExpiresIn         time.Duration
 }
 
-// refreshTokenCustomClaims holds the payload of a refresh token
-// This can be used to extract user id for subsequent
-// application operations (IE, fetch user in Redis)
 type refreshTokenCustomClaims struct {
 	UID uint `json:"uid"`
 	jwt.StandardClaims
 }
 
-// generateRefreshToken creates a refresh token
-// The refresh token stores only the user's ID, a string
 func generateRefreshToken(uid uint, key string, duration int64) (*refreshTokenData, error) {
 	timestamp := time.Now()
 	tokenExp := timestamp.Add(time.Duration(duration) * time.Second)
-	tokenID, err := uuid.NewRandom() // v4 uuid in the google uuid lib
+	tokenID, err := uuid.NewRandom()
 
 	if err != nil {
 		log.Println("Failed to generate refresh token ID")
@@ -323,13 +345,13 @@ func validateRefreshToken(tokenString string, key string) (*refreshTokenCustomCl
 	}
 
 	if !token.Valid {
-		return nil, fmt.Errorf("Refresh token is invalid")
+		return nil, errors.New("")
 	}
 
 	claims, ok := token.Claims.(*refreshTokenCustomClaims)
 
 	if !ok {
-		return nil, fmt.Errorf("Refresh token valid but couldn't parse claims")
+		return nil, errors.New("")
 	}
 
 	return claims, nil

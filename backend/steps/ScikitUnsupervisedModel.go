@@ -3,11 +3,14 @@ package steps
 import (
 	"bytes"
 	"di/model"
+	"errors"
 	"fmt"
 	"log"
 	"os"
 	"os/exec"
 	"strconv"
+
+	"github.com/nicksnyder/go-i18n/v2/i18n"
 )
 
 var ScikitUnsupervisedModelTypes = []string{
@@ -99,15 +102,32 @@ func (step *ScikitUnsupervisedModel) GetRunID() uint {
 	return step.RunID
 }
 
-func (step ScikitUnsupervisedModel) Execute(logFile *os.File) error {
+func (step ScikitUnsupervisedModel) Execute(logFile *os.File, I18n *i18n.Localizer) error {
 
 	runLogger := log.New(logFile, "", log.Ldate|log.Ltime|log.Lmicroseconds|log.Llongfile)
 
 	var args []string
 
-	args = step.appendArgs(args)
+	args, err := step.appendArgs(args, I18n, runLogger)
 
-	pipelinesWorkDir := os.Getenv("PIPELINES_WORK_DIR")
+	if err != nil {
+		return err
+	}
+
+	pipelinesWorkDir, exists := os.LookupEnv("PIPELINES_WORK_DIR")
+
+	if !exists {
+		errMessage, _ := I18n.Localize(&i18n.LocalizeConfig{
+			MessageID: "env.variable.find.failed",
+			TemplateData: map[string]interface{}{
+				"Name": "PIPELINES_WORK_DIR",
+			},
+		})
+
+		runLogger.Println(errMessage)
+		return errors.New(errMessage)
+	}
+
 	currentPipelineWorkDir := pipelinesWorkDir + "/" + fmt.Sprint(step.PipelineID) + "/" + fmt.Sprint(step.RunID) + "/"
 
 	cmd := exec.Command("python3", args...)
@@ -116,22 +136,49 @@ func (step ScikitUnsupervisedModel) Execute(logFile *os.File) error {
 	cmd.Stdout = &stdout
 	cmd.Stderr = &stderr
 
-	err := cmd.Run()
+	cmdErr := cmd.Run()
 	runLogger.Println(stderr.String())
 	runLogger.Println(stdout.String())
 
-	return err
+	return cmdErr
 }
 
-func (step ScikitUnsupervisedModel) appendArgs(args []string) []string {
+func (step ScikitUnsupervisedModel) appendArgs(args []string, I18n *i18n.Localizer, runLogger *log.Logger) ([]string, error) {
 
-	scikitSnippetsDir := os.Getenv("SCIKIT_SNIPPETS_DIR") + "models/"
+	scikitSnippetsDir, exists := os.LookupEnv("SCIKIT_SNIPPETS_DIR")
+
+	if !exists {
+		errMessage, _ := I18n.Localize(&i18n.LocalizeConfig{
+			MessageID: "env.variable.find.failed",
+			TemplateData: map[string]interface{}{
+				"Name": "SCIKIT_SNIPPETS_DIR",
+			},
+		})
+
+		runLogger.Println(errMessage)
+		return nil, errors.New(errMessage)
+	}
+
+	scikitSnippetsDir = scikitSnippetsDir + "models/"
 
 	args = append(args, scikitSnippetsDir+"linear_models.py")
 	args = append(args, "--model")
 	args = append(args, step.Model)
 
-	pipelinesWorkDir := os.Getenv("PIPELINES_WORK_DIR")
+	pipelinesWorkDir, exists := os.LookupEnv("PIPELINES_WORK_DIR")
+
+	if !exists {
+		errMessage, _ := I18n.Localize(&i18n.LocalizeConfig{
+			MessageID: "env.variable.find.failed",
+			TemplateData: map[string]interface{}{
+				"Name": "PIPELINES_WORK_DIR",
+			},
+		})
+
+		runLogger.Println(errMessage)
+		return nil, errors.New(errMessage)
+	}
+
 	currentPipelineWorkDir := pipelinesWorkDir + "/" + fmt.Sprint(step.PipelineID) + "/" + fmt.Sprint(step.RunID) + "/"
 
 	args = append(args, "--train_data_path")
@@ -434,5 +481,5 @@ func (step ScikitUnsupervisedModel) appendArgs(args []string) []string {
 		args = append(args, step.DataConfig.Solver_options.String)
 	}
 
-	return args
+	return args, nil
 }

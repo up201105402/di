@@ -3,7 +3,7 @@ package service
 import (
 	"di/model"
 	"di/steps"
-	"di/util/errors"
+	"errors"
 	"fmt"
 	"log"
 	"reflect"
@@ -31,8 +31,15 @@ func (nodeService *nodeServiceImpl) NewStepInstance(pipelineID uint, runID uint,
 	stepTypeStructName := nodeService.StepTypeRegistry[stepType]
 
 	if stepTypeStructName == nil {
-		log.Printf("Unable to create new step of type %v\n", stepType)
-		return nil, errors.NewNotFound("stepType", stepType)
+		errMessage, _ := nodeService.I18n.Localize(&i18n.LocalizeConfig{
+			MessageID: "steps.service.step.new-instance.failed",
+			TemplateData: map[string]interface{}{
+				"Type": stepType,
+			},
+		})
+
+		log.Printf(errMessage)
+		return nil, errors.New(errMessage)
 	}
 
 	stepPtr := reflect.New(stepTypeStructName)
@@ -49,8 +56,15 @@ func (nodeService *nodeServiceImpl) NewEdgeInstance(pipelineID uint, runID uint,
 	edgeTypeStructName := nodeService.EdgeTypeRegistry[edgeType]
 
 	if edgeTypeStructName == nil {
-		log.Printf("Unable to create new edge of type %v\n", edgeType)
-		return nil, errors.NewNotFound("edgeType", edgeType)
+		errMessage, _ := nodeService.I18n.Localize(&i18n.LocalizeConfig{
+			MessageID: "steps.service.edge.new-instance.failed",
+			TemplateData: map[string]interface{}{
+				"Type": edgeType,
+			},
+		})
+
+		log.Printf(errMessage)
+		return nil, errors.New(errMessage)
 	}
 
 	edge := reflect.New(edgeTypeStructName)

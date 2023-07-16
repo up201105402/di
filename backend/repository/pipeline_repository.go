@@ -25,7 +25,6 @@ func (repo *pipelineRepositoryImpl) FindByID(id uint) (*model.Pipeline, error) {
 	result := repo.DB.Preload("User").First(&pipeline, id)
 
 	if errors.Is(result.Error, gorm.ErrRecordNotFound) {
-		log.Printf("Failed to get pipeline with id: %v. Reason: %v\n", id, result.Error)
 		return nil, result.Error
 	}
 
@@ -38,7 +37,6 @@ func (repo *pipelineRepositoryImpl) FindPipelineScheduleByID(pipelineScheduleID 
 	result := repo.DB.First(&pipelineSchedule, pipelineScheduleID)
 
 	if errors.Is(result.Error, gorm.ErrRecordNotFound) {
-		log.Printf("Failed to get pipeline schedule with id: %v. Reason: %v\n", pipelineScheduleID, result.Error)
 		return nil, result.Error
 	}
 
@@ -51,7 +49,6 @@ func (repo *pipelineRepositoryImpl) GetAllPipelineSchedules() ([]model.PipelineS
 	result := repo.DB.Find(&pipelineSchedules)
 
 	if errors.Is(result.Error, gorm.ErrRecordNotFound) {
-		log.Printf("Failed to get pipeline schedules. Reason: %v\n", result.Error)
 		return nil, result.Error
 	}
 
@@ -65,7 +62,6 @@ func (repo *pipelineRepositoryImpl) FindByOwner(ownerId uint) ([]model.Pipeline,
 	result := repo.DB.Preload("User").Where("user_id = ?", ownerId).Order("id").Find(&pipelines)
 
 	if errors.Is(result.Error, gorm.ErrRecordNotFound) {
-		log.Printf("Failed to get pipelines with username: %v. Reason: %v\n", ownerId, result.Error)
 		return nil, result.Error
 	}
 
@@ -77,7 +73,6 @@ func (repo *pipelineRepositoryImpl) FindPipelineScheduleByPipeline(pipelineID ui
 
 	result := repo.DB.Where("pipeline_id = ?", pipelineID).Order("id").Find(&pipelineSchedules)
 	if errors.Is(result.Error, gorm.ErrRecordNotFound) {
-		log.Printf("Failed to get schedules for pipeline with id: %v. Reason: %v\n", pipelineID, result.Error)
 		return nil, result.Error
 	}
 
@@ -88,7 +83,6 @@ func (repo *pipelineRepositoryImpl) Create(pipeline *model.Pipeline) error {
 	result := repo.DB.Create(pipeline)
 
 	if result.Error != nil {
-		log.Printf("Failed to create pipeline. Reason: %v\n", result.Error)
 		return result.Error
 	}
 
@@ -99,7 +93,6 @@ func (repo *pipelineRepositoryImpl) CreatePipelineSchedule(pipelineSchedule *mod
 	result := repo.DB.Create(pipelineSchedule)
 
 	if result.Error != nil {
-		log.Printf("Failed to create pipeline schedule. Reason: %v\n", result.Error)
 		return result.Error
 	}
 

@@ -6,6 +6,7 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/go-playground/validator/v10"
+	"github.com/nicksnyder/go-i18n/v2/i18n"
 )
 
 type authHeader struct {
@@ -19,18 +20,12 @@ type invalidArgument struct {
 	Param string `json:"param"`
 }
 
-// Auth extracts a user from the Authorization header
-// which is of the form "Bearer token"
-// It sets the user to the context if the user exists
-func Auth(tokenService service.TokenService) gin.HandlerFunc {
+func Auth(tokenService service.TokenService, I18n *i18n.Localizer) gin.HandlerFunc {
 	return func(context *gin.Context) {
 		authHeader := authHeader{}
 
-		// bind Authorization Header to h and check for validation errors
 		if err := context.ShouldBindHeader(&authHeader); err != nil {
 			if errs, ok := err.(validator.ValidationErrors); ok {
-				// we used this type in bind_data to extract desired fields from errs
-				// you might consider extracting it
 				var invalidArgs []invalidArgument
 
 				for _, err := range errs {
@@ -42,7 +37,14 @@ func Auth(tokenService service.TokenService) gin.HandlerFunc {
 					})
 				}
 
-				err := errors.NewBadRequest("Invalid request parameters. See invalidArgs")
+				errorMessage, _ := I18n.Localize(&i18n.LocalizeConfig{
+					MessageID: "sys.binding.req",
+					TemplateData: map[string]interface{}{
+						"Reason": err.Error(),
+					},
+				})
+
+				err := errors.NewBadRequest(errorMessage)
 
 				context.JSON(err.Status(), gin.H{
 					"error":       err,
@@ -52,17 +54,19 @@ func Auth(tokenService service.TokenService) gin.HandlerFunc {
 				return
 			}
 
-			// otherwise error type is unknown
-			err := errors.NewInternal()
+			err := errors.NewInternal("")
 			context.JSON(err.Status(), gin.H{
-				"error": err,
+				"error": err.Message,
 			})
 			context.Abort()
 			return
 		}
 
 		if authHeader.IDToken == "" {
-			err := errors.NewAuthorization("Must provide Authorization header with format `{token}`")
+			errorMessage, _ := I18n.Localize(&i18n.LocalizeConfig{
+				MessageID: "auth.header.authorization.empty",
+			})
+			err := errors.NewAuthorization(errorMessage)
 
 			context.JSON(err.Status(), gin.H{
 				"error": err,
@@ -71,11 +75,10 @@ func Auth(tokenService service.TokenService) gin.HandlerFunc {
 			return
 		}
 
-		// validate ID token here
 		user, err := tokenService.ValidateIDToken(authHeader.IDToken)
 
 		if err != nil {
-			err := errors.NewAuthorization("Provided auth token is invalid. Refresh the page or log back in.")
+			err := errors.NewAuthorization(err.Error())
 			context.JSON(err.Status(), gin.H{
 				"error": err,
 			})

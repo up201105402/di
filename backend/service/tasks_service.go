@@ -42,11 +42,19 @@ func NewTaskService(i18n *i18n.Localizer, nodeTypeService *NodeTypeService, runS
 
 func (service *taskServiceImpl) SetupAsynqWorker() {
 
-	redisHost := os.Getenv("REDIS_HOST")
-	redisPort := os.Getenv("REDIS_PORT")
-	redisConnection := asynq.RedisClientOpt{
-		Addr: redisHost + ":" + redisPort,
+	redisHost, exists := os.LookupEnv("REDIS_HOST")
+
+	if !exists {
+		panic("REDIS_HOST is not defined!")
 	}
+
+	redisPort, exists := os.LookupEnv("REDIS_PORT")
+
+	if !exists {
+		panic("REDIS_PORT is not defined!")
+	}
+
+	redisConnection := asynq.RedisClientOpt{Addr: redisHost + ":" + redisPort}
 
 	worker := asynq.NewServer(redisConnection, asynq.Config{
 		Concurrency: 10,

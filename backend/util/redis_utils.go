@@ -10,8 +10,17 @@ import (
 
 func ConnectToRedis() (*redis.Client, error) {
 
-	redisHost := os.Getenv("REDIS_HOST")
-	redisPort := os.Getenv("REDIS_PORT")
+	redisHost, exists := os.LookupEnv("REDIS_HOST")
+
+	if !exists {
+		panic("REDIS_HOST is not defined!")
+	}
+
+	redisPort, exists := os.LookupEnv("REDIS_PORT")
+
+	if !exists {
+		panic("REDIS_PORT is not defined!")
+	}
 
 	rdb := redis.NewClient(&redis.Options{
 		Addr:     fmt.Sprintf("%s:%s", redisHost, redisPort),
