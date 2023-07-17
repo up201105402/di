@@ -115,7 +115,7 @@ const onReloadClicked = () => {
     <LayoutAuthenticated>
         <SectionMain>
             <loading v-model:active="isLoading" :is-full-page="false" />
-            <SectionTitleLineWithButton :hasButton="false" :icon="mdiRunFast" :title="`Pipeline ${pipelineID} Runs`" main>
+            <SectionTitleLineWithButton :hasButton="false" :icon="mdiRunFast" :title="$t('pages.runs.header', { id: pipelineID})" main>
                 <BaseButtons>
                     <BaseButton :icon="mdiReload" color="success" @click="onReloadClicked" />
                     <BaseButton :icon="mdiPlus" color="success" @click="onNewRunClicked" />
@@ -123,8 +123,7 @@ const onReloadClicked = () => {
             </SectionTitleLineWithButton>
             <RunsTable :rows="runs" />
         </SectionMain>
-        <CardBoxModal v-model="isCreateModalActive" @confirm="onCreateRunConfirmed"
-            :title="`Create Run for Pipeline ${pipelineID}?`" button="success" has-cancel />
+        <CardBoxModal v-model="isCreateModalActive" @confirm="onCreateRunConfirmed" :title="$t('pages.runs.dialog.create.header', { id: pipelineID} )" button="success" has-cancel />
         <Toast />
     </LayoutAuthenticated>
 </template>

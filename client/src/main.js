@@ -1,14 +1,13 @@
 import { createApp } from 'vue';
 import { createPinia  } from "pinia";
-import { createI18n } from 'vue-i18n';
-import { messages } from './i18n';
-import App from './App.vue';
+import { i18n } from '@/i18n';
+import App from '@/App.vue';
 
-import router from "./router";
+import router from "@/router";
 import { useAuthStore } from "@/stores/auth";
 import { useStyleStore } from "@/stores/style.js";
 import { darkModeKey, styleKey } from "@/config.js";
-import './css/main.css';
+import '@/css/main.css';
 
 import { plugin as formKitPlugin } from '@formkit/vue';
 import formkitConfig from './../formkit.config'
@@ -22,13 +21,6 @@ import ToastService from 'primevue/toastservice';
 import "primevue/resources/themes/lara-light-indigo/theme.css";     
 //core
 import "primevue/resources/primevue.min.css";
-
-const i18n = createI18n({
-  legacy: false, // you must set `false`, to use Composition API
-  locale: 'en', // set locale
-  fallbackLocale: 'en', // set fallback locale
-  messages
-})
 
 /* Init Pinia */
 const pinia = createPinia();

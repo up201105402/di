@@ -436,17 +436,6 @@ func DeletePipelineSchedule(services *service.Services, I18n *i18n.Localizer) gi
 	}
 }
 
-func getUser(context *gin.Context) (*model.User, *errors.Error) {
-	contextUser, exists := context.Get("user")
-
-	if !exists {
-		err := errors.NewNotFound("User does not exist!")
-		return nil, err
-	}
-
-	return contextUser.(*model.User), nil
-}
-
 func getLastRun(services *service.Services, pipelineID uint) time.Time {
 	runs, _ := services.RunService.GetByPipeline(pipelineID)
 

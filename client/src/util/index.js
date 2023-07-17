@@ -1,5 +1,8 @@
 import axios from 'axios';
 import moment from 'moment';
+import { i18n } from '@/i18n';
+
+const { t } = i18n.global;
 
 export const doRequest = async (reqOptions) => {
   let status;
@@ -81,26 +84,6 @@ export const formatDate = (date) => {
   return moment(date).format('MMMM Do YYYY, h:mm:ss a');
 }
 
-export const golangType = function(type) {
-  if (type == 'text') {
-      return 'string';
-  }
-  if (type == 'number') {
-      return 'float64';
-  }
-  if (type == 'select') {
-      return 'string';
-  }
-  if (type == 'text') {
-      return 'string';
-  }
-  if (type == 'checkbox') {
-    return 'bool';
-  }
-          
-  return type
-}
-
 export const parsePipelineDefinition = (entity, toast) => {
   try {
     return JSON.parse(entity.definition)
@@ -140,4 +123,8 @@ export const deepFilterMenuBarSteps = (subject, key, value) => {
   }
 
   return null
+}
+
+export const i18nFromStepName = (stepName) => {
+  return t('pages.pipelines.edit.dialog.' + stepName + '.label');
 }

@@ -3,6 +3,7 @@ package handlers
 import (
 	"di/model"
 	"di/service"
+	"di/util"
 	"di/util/errors"
 	"fmt"
 	"log"
@@ -10,6 +11,7 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/go-playground/validator/v10"
+	"github.com/nicksnyder/go-i18n/v2/i18n"
 )
 
 type invalidArgument struct {
@@ -21,6 +23,97 @@ type invalidArgument struct {
 
 type tokensReq struct {
 	RefreshToken string `json:"refreshToken" binding:"required"`
+}
+
+func EditUser(services *service.Services, I18n *i18n.Localizer) gin.HandlerFunc {
+	return func(context *gin.Context) {
+
+		var req model.UserReq
+
+		if ok := bindData(context, &req); !ok {
+			return
+		}
+
+		user, err := getUser(context)
+		if err != nil {
+			context.JSON(err.Status(), gin.H{
+				"error": err.Error(),
+			})
+		}
+
+		oldUser, getErr := services.UserService.Get(user.ID)
+
+		if getErr != nil {
+			log.Printf(getErr.Error())
+			context.JSON(http.StatusNotFound, gin.H{
+				"error": getErr.Error(),
+			})
+			return
+		}
+
+		if req.Username != "" {
+			oldUser.Username = req.Username
+		}
+
+		if req.Password != "" {
+			oldPw, err := util.HashPassword(req.Password)
+
+			if oldPw != oldUser.Password {
+				errMessage, _ := I18n.Localize(&i18n.LocalizeConfig{
+					MessageID: "user.handler.edit.password.old.failed",
+				})
+
+				log.Printf(errMessage)
+				context.JSON(http.StatusInternalServerError, gin.H{
+					"error": errMessage,
+				})
+				return
+			}
+
+			pw, err := util.HashPassword(req.NewPassword)
+
+			if err != nil {
+				errMessage, _ := I18n.Localize(&i18n.LocalizeConfig{
+					MessageID: "user.repository.create.user.failed",
+					TemplateData: map[string]interface{}{
+						"Reason": err.Error(),
+					},
+				})
+
+				log.Printf(errMessage)
+				context.JSON(http.StatusInternalServerError, gin.H{
+					"error": errMessage,
+				})
+				return
+			}
+
+			oldUser.Password = pw
+		}
+
+		updateErr := services.UserService.UpdateDetails(oldUser)
+
+		if updateErr != nil {
+			log.Printf(updateErr.Error())
+			context.JSON(http.StatusInternalServerError, gin.H{
+				"error": updateErr.Error(),
+			})
+			return
+		}
+
+		token, tokenErr := services.TokenService.NewFirstPairFromUser(context.Request.Context(), user)
+
+		if tokenErr != nil {
+			log.Printf(tokenErr.Error())
+			context.JSON(http.StatusInternalServerError, gin.H{
+				"error": tokenErr.Error(),
+			})
+			return
+		}
+
+		context.JSON(http.StatusCreated, gin.H{
+			"tokens": token,
+		})
+	}
 }
 
 func LogIn(services *service.Services) gin.HandlerFunc {
@@ -219,4 +312,15 @@ func bindData(c *gin.Context, req interface{}) bool {
 	}
 
 	return true
+}
+
+func getUser(context *gin.Context) (*model.User, *errors.Error) {
+	contextUser, exists := context.Get("user")
+
+	if !exists {
+		err := errors.NewNotFound("User does not exist!")
+		return nil, err
+	}
+
+	return contextUser.(*model.User), nil
 }

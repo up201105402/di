@@ -55,8 +55,8 @@
         <thead>
             <tr>
                 <th />
-                <th>Name</th>
-                <th>Last Run</th>
+                <th>{{ $t('pages.runs.pipelineRuns.table.headers.name') }}</th>
+                <th>{{ $t('pages.runs.pipelineRuns.table.headers.lastRun') }}</th>
                 <th />
             </tr>
         </thead>
@@ -70,7 +70,7 @@
                 <BaseButton v-for="page in pagesList" :key="page" :active="page === currentPage" :label="page + 1"
                     :color="page === currentPage ? 'lightDark' : 'whiteDark'" small @click="currentPage = page" />
             </BaseButtons>
-            <small>Page {{ currentPageHuman }} of {{ numPages }}</small>
+            <small>{{ $t('tables.page', { page: currentPageHuman, count: numPages }) }}</small>
         </BaseLevel>
     </div>
 </template>

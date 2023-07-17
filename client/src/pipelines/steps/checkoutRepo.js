@@ -1,22 +1,35 @@
 import { reactive, toRef, ref, watch } from 'vue';
-import { camel2title, customDelay } from '@/util';
+import { camel2title, i18nFromStepName } from '@/util';
 import { getNode, createMessage } from '@formkit/core';
+import { stepTabs, cancelAndSubmitButtons, getFormBody } from '@/pipelines/steps/formBasics';
+import { i18n } from '@/i18n';
 
-export const checkoutRepoStepConfigFields = [
+const { t } = i18n.global;
+
+export const nameAndTypeGroupChildren = [
     {
         $formkit: 'text',
-        label: 'URL',
+        name: 'name',
+        label: t('pages.pipelines.edit.dialog.nameAndType.name'),
+        placeholder: t('pages.pipelines.edit.dialog.nameAndType.name'),
+        validation: 'required'
+    },
+    {
+        $formkit: 'checkbox',
+        name: 'isFirstStep',
+        label: t('pages.pipelines.edit.dialog.nameAndType.isFirstStep'),
+        if: '$showIsFirstStep == true',
+    },
+]
+
+export const stepConfigGroupChildren = [
+    {
+        $formkit: 'text',
+        label: t('pages.pipelines.edit.dialog.stepConfig.repoUrl'),
         name: 'repoURL',
         validation: 'required|url',
     },
 ]
-
-export const checkoutRepoConfigSection = {
-    $formkit: 'group',
-    id: 'stepConfig',
-    name: 'stepConfig',
-    children: checkoutRepoStepConfigFields,
-}
 
 export const checkoutRepoForm = function (data, onSubmit) {
     const activeStep = ref('');
@@ -105,7 +118,6 @@ export const checkoutRepoForm = function (data, onSubmit) {
         },
         submitForm: async (formData, node) => {
             try {
-                await customDelay(formData);
                 node.clearErrors()
                 onSubmit(formData);
             } catch (err) {
@@ -114,7 +126,8 @@ export const checkoutRepoForm = function (data, onSubmit) {
             }
         },
         stringify: (value) => JSON.stringify(value, null, 2),
-        camel2title
+        camel2title,
+        i18nFromStepName
     })
 
     const formSchema = [
@@ -129,131 +142,9 @@ export const checkoutRepoForm = function (data, onSubmit) {
                 value: { ...data }
             },
             children: [
-                {
-                    $el: 'ul',
-                    attrs: {
-                        class: "steps"
-                    },
-                    children: [
-                        {
-                            $el: 'li',
-                            for: ['step', 'stepName', '$steps'],
-                            attrs: {
-                                class: {
-                                    'step': true,
-                                    'has-errors': '$showStepErrors($stepName)'
-                                },
-                                style: {
-                                    if: '$activeNodeType == ""',
-                                    then: 'display: none;'
-                                },
-                                onClick: '$setActiveStep($stepName)',
-                                'data-step-active': '$activeStep === $stepName',
-                                'data-step-valid': '$stepIsValid($stepName)'
-                            },
-                            children: [
-                                {
-                                    $el: 'span',
-                                    if: '$showStepErrors($stepName)',
-                                    attrs: {
-                                        class: 'step--errors'
-                                    },
-                                    children: '$step.errorCount + $step.blockingCount'
-                                },
-                                '$camel2title($stepName)'
-                            ]
-                        }
-                    ]
-                },
-                {
-                    $el: 'div',
-                    attrs: {
-                        class: 'form-body'
-                    },
-                    children: [
-                        {
-                            $el: 'section',
-                            attrs: {
-                                style: {
-                                    if: '$activeStep !== "nameAndType"',
-                                    then: 'display: none;'
-                                }
-                            },
-                            children: [
-                                {
-                                    $formkit: 'group',
-                                    id: 'nameAndType',
-                                    name: 'nameAndType',
-                                    children: [
-                                        {
-                                            $formkit: 'text',
-                                            name: 'name',
-                                            label: 'Step Name',
-                                            placeholder: 'Step Name',
-                                            validation: 'required'
-                                        },
-                                        {
-                                            $formkit: 'checkbox',
-                                            name: 'isFirstStep',
-                                            label: 'Is First Step?',
-                                            if: '$showIsFirstStep == true',
-                                        },
-                                    ]
-                                }
-                            ]
-                        },
-                        {
-                            $el: 'section',
-                            attrs: {
-                                style: {
-                                    if: '$activeStep !== "stepConfig"',
-                                    then: 'display: none;'
-                                }
-                            },
-                            children: [
-                                checkoutRepoConfigSection
-                            ]
-                        },
-                        {
-                            $el: 'div',
-                            attrs: {
-                                class: 'step-nav'
-                            },
-                            children: [
-                                {
-                                    $formkit: 'button',
-                                    disabled: '$activeStep === "nameAndType"',
-                                    onClick: '$setStep(-1)',
-                                    children: 'Back'
-                                },
-                                {
-                                    $formkit: 'button',
-                                    disabled: '$activeStep === "stepConfig"',
-                                    onClick: '$setStep(1)',
-                                    children: 'Next'
-                                }
-                            ]
-                        },
-                    ]
-                },
-                {
-                    $el: 'div',
-                    attrs: {
-                        class: 'formkit-bottom-buttons'
-                    },
-                    children: [
-                        {
-                            $formkit: 'button',
-                            label: 'Cancel',
-                            id: 'cancel-create-step-button'
-                        },
-                        {
-                            $formkit: 'submit',
-                            label: 'Submit',
-                            disabled: '$get(form).state.valid !== true',
-                        },
-                    ]
-                },
+                stepTabs,
+                getFormBody(nameAndTypeGroupChildren, stepConfigGroupChildren),
+                cancelAndSubmitButtons
             ]
         },
     ];

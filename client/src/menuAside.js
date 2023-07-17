@@ -3,22 +3,25 @@ import {
   mdiRun,
   mdiAccount
 } from "@mdi/js";
+import { i18n } from '@/i18n';
+
+const { t } = i18n.global;
 
 export default [
   {
     to: "/pipelines",
     icon: mdiChartTimelineVariant,
-    label: "Pipelines",
+    label: t('pages.pipelines.name'),
   },
   {
     to: "/runs",
     icon: mdiRun,
-    label: "Runs",
+    label: t('pages.runs.name'),
   },
   {
     to: "/profile",
     icon: mdiAccount,
-    label: "Profile",
+    label: t('pages.profile.name'),
   },
   /*
   {

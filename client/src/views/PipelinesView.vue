@@ -145,24 +145,22 @@
     <SectionMain>
       <loading v-model:active="isLoading" :is-full-page="false" />
 
-      <SectionTitleLineWithButton :hasButton="false" :icon="mdiChartTimelineVariant" :title="$t('pages.pipelines.name')" main>
+      <SectionTitleLineWithButton :hasButton="false" :icon="mdiChartTimelineVariant" :title="$t('pages.pipelines.header')" main>
         <BaseButton :icon="mdiPlus" color="success" @click="onNewPipelineClicked" />
       </SectionTitleLineWithButton>
 
       <PipelinesTable :items="pipelines" @deleteButtonClicked="onDeletePipelineClicked" checkable />
     </SectionMain>
 
-    <CardBoxModal v-model="isCreateModalActive" @confirm="createPipeline(200, createPipelineForm.name)"
-      title="Create Pipeline" button="success" has-cancel>
-      <FormField label="Name" help="Please enter the pipeline name">
-        <FormControl v-model="createPipelineForm.name" name="name" autocomplete="name" placeholder="Name"
-          :focus="isCreateModalActive" />
+    <CardBoxModal v-model="isCreateModalActive" @confirm="createPipeline(200, createPipelineForm.name)" :title="$t('pages.pipelines.dialog.create.header')" button="success" has-cancel>
+      <FormField :label="$t('pages.pipelines.dialog.create.name.label')" :help="$t('pages.pipelines.dialog.create.name.help')">
+        <FormControl v-model="createPipelineForm.name" name="name" autocomplete="name" placeholder="Name" :focus="isCreateModalActive" />
       </FormField>
     </CardBoxModal>
 
-    <CardBoxModal v-model="isDeleteModalActive" title="Confirm Delete" :target-id="pipelineIdToDelete"
+    <CardBoxModal v-model="isDeleteModalActive" :title="$t('pages.pipelines.dialog.delete.header')" :target-id="pipelineIdToDelete"
       @confirm="deletePipeline(200, pipelineIdToDelete)" button="danger" has-cancel>
-      <p>This will permanently delete this pipeline.</p>
+      <p>{{ $t('pages.pipelines.dialog.delete.body') }}</p>
     </CardBoxModal>
 
     <Toast />

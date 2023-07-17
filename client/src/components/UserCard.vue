@@ -20,10 +20,7 @@ const userSwitchVal = ref(false);
     <BaseLevel type="justify-around lg:justify-center">
       <UserAvatarCurrentUser class="lg:mx-12" />
       <div class="space-y-3 text-center md:text-left lg:mx-12">
-        <h1 class="text-2xl">
-          Howdy, <b>{{ userName }}</b
-          >!
-        </h1>
+        <h1 class="text-2xl" v-html="$t('pages.profile.user.greeting', { username: userName })" />
       </div>
     </BaseLevel>
   </CardBox>

@@ -170,10 +170,10 @@
         <td class="border-b-0 lg:w-6 before:hidden">
             <BaseIcon :path="isRowOpen ? mdiChevronDown : mdiChevronRight" @click.prevent="(e) => expandOrCollapseRow(e, parentRow.ID)" />
         </td>
-        <td data-label="Name">
+        <td :data-label="$t('pages.runs.pipelineRuns.table.headers.name')">
             {{ parentRow.name }}
         </td>
-        <td data-label="Created" class="lg:w-1 whitespace-nowrap">
+        <td :data-label="$t('pages.runs.pipelineRuns.table.headers.lastRun')" class="lg:w-1 whitespace-nowrap">
             <small class="text-gray-500 dark:text-slate-400" :title="formatDate(parentRow.LastRun)">{{ formatDate(parentRow.LastRun) }}</small>
         </td>
         <td class="before:hidden lg:w-1 whitespace-nowrap">
@@ -192,7 +192,7 @@
         </td>
     </tr>
 
-    <CardBoxModal v-model="isCreateModalActive" @confirm="onCreateSubrow" :title="`Create Run for Pipeline ${props.parentRow.ID}?`" button="success" has-cancel />
+    <CardBoxModal v-model="isCreateModalActive" @confirm="onCreateSubrow" :title="$t('pages.runs.pipelineRuns.dialog.header', { id: props.parentRow.ID })" button="success" has-cancel />
 
 </template>
 

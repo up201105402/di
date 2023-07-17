@@ -86,22 +86,22 @@ const checked = (isChecked, pipeline) => {
         <thead>
             <tr>
                 <th v-if="checkable" />
-                <th>Name</th>
-                <th>Modified</th>
-                <th>Created</th>
+                <th>{{ $t('pages.pipelines.table.headers.name') }}</th>
+                <th>{{ $t('pages.pipelines.table.headers.modified') }}</th>
+                <th>{{ $t('pages.pipelines.table.headers.created') }}</th>
                 <th />
             </tr>
         </thead>
         <tbody>
             <tr v-for="pipeline in itemsPaginated" :key="pipeline.id">
                 <TableCheckboxCell v-if="checkable" @checked="checked($event, pipeline)" />
-                <td data-label="Name">
+                <td :data-label="$t('pages.pipelines.table.headers.name')">
                     {{ pipeline.name }}
                 </td>
-                <td data-label="Modified" class="lg:w-1 whitespace-nowrap">
+                <td :data-label="$t('pages.pipelines.table.headers.modified')" class="lg:w-1 whitespace-nowrap">
                     <small class="text-gray-500 dark:text-slate-400" :title="formatDate(pipeline.UpdatedAt)">{{ formatDate(pipeline.UpdatedAt) }}</small>
                 </td>
-                <td data-label="Created" class="lg:w-1 whitespace-nowrap">
+                <td :data-label="$t('pages.pipelines.table.headers.created')" class="lg:w-1 whitespace-nowrap">
                     <small class="text-gray-500 dark:text-slate-400" :title="formatDate(pipeline.CreatedAt)">{{ formatDate(pipeline.CreatedAt) }}</small>
                 </td>
                 <td class="before:hidden lg:w-1 whitespace-nowrap">
@@ -119,7 +119,7 @@ const checked = (isChecked, pipeline) => {
                 <BaseButton v-for="page in pagesList" :key="page" :active="page === currentPage" :label="page + 1"
                     :color="page === currentPage ? 'lightDark' : 'whiteDark'" small @click="currentPage = page" />
             </BaseButtons>
-            <small>Page {{ currentPageHuman }} of {{ numPages }}</small>
+            <small>{{ $t('tables.page', {page: currentPageHuman, count: numPages}) }}</small>
         </BaseLevel>
     </div>
 </template>

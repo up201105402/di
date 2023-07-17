@@ -1,29 +1,32 @@
 import { reactive, toRef, ref, watch } from 'vue';
-import { camel2title, customDelay } from '@/util';
+import { camel2title, i18nFromStepName } from '@/util';
 import { getNode, createMessage } from '@formkit/core';
 import { stepTabs, getFormBody, cancelAndSubmitButtons } from '@/pipelines/steps/formBasics';
+import { i18n } from '@/i18n';
+
+const { t } = i18n.global;
 
 const nameAndTypeGroupChildren = [
     {
         $formkit: 'text',
         name: 'name',
-        label: 'Step Name',
-        placeholder: 'Step Name',
+        label: t('pages.pipelines.edit.dialog.nameAndType.name'),
+        placeholder: t('pages.pipelines.edit.dialog.nameAndType.name'),
         validation: 'required'
     },
     {
         $formkit: 'select',
         name: 'scriptType',
-        label: 'Script Type',
+        label: t('pages.pipelines.edit.dialog.nameAndType.scriptType.label'),
         placeholder: "",
         options: [
             {
                 value: 'inline',
-                label: 'Inline'
+                label: t('pages.pipelines.edit.dialog.nameAndType.scriptType.options.inline'),
             }, 
             {
                 value: 'file',
-                label: 'File'
+                label: t('pages.pipelines.edit.dialog.nameAndType.scriptType.options.file'),
             }],
         validation: 'required',
         onChange: "$setActiveType",
@@ -35,7 +38,7 @@ const stepConfigGroupChildren = (pipelineID) => {
         {
             $cmp: 'ScriptEditor',
             name: 'script',
-            label: 'Script',
+            label: t('pages.pipelines.edit.dialog.stepConfig.scriptEditor'),
             bind: '$editorBindingProps',
             if: '$scriptType == "inline"'
         },
@@ -45,17 +48,17 @@ const stepConfigGroupChildren = (pipelineID) => {
                 class: 'formkit-label',
                 for: 'script-file-upload',
             },
-            children: 'File',
+            children: t('pages.pipelines.edit.dialog.stepConfig.scriptFile.label'),
             if: '$scriptType == "file"'
         },
         {
             $cmp: 'FormFilePicker',
             name: 'file',
-            label: 'File Upload',
+            label: t('pages.pipelines.edit.dialog.stepConfig.scriptFile.button'),
             bind: '$filePickerProps',
             props: {
                 id: 'script-file-upload',
-                label: 'File Upload',
+                label: t('pages.pipelines.edit.dialog.stepConfig.scriptFile.button'),
                 url: `/api/pipeline/${pipelineID}/file`
             },
             if: '$scriptType == "file"'
@@ -176,7 +179,8 @@ export const scriptForm = function (data, onSubmit) {
             }
         },
         stringify: (value) => JSON.stringify(value, null, 2),
-        camel2title
+        camel2title,
+        i18nFromStepName
     })
 
     const formSchema = [

@@ -1,6 +1,7 @@
 import { reactive, toRef, ref, watch } from 'vue';
-import { camel2title, customDelay, removeDuplicates, golangType } from '@/util';
+import { camel2title, i18nFromStepName } from '@/util';
 import { getNode, createMessage } from '@formkit/core';
+import { i18n } from '@/i18n';
 
 import { leastSquaresStepConfig } from './leastSquares';
 import { ridgeRegressionStepConfig, ridgeRegressionCVStepConfig } from './ridgeRegression';
@@ -19,6 +20,8 @@ import { huberRegressorStepConfig, ransacRegressorStepConfig, theilSenRegressorS
 import { quantileRegressionStepConfig } from './quantileRegression';
 import { stepTabs, cancelAndSubmitButtons, getFormBody } from '@/pipelines/steps/formBasics';
 
+const { t } = i18n.global;
+
 const nameAndTypeGroupChildren = [
     {
         $formkit: 'group',
@@ -28,14 +31,14 @@ const nameAndTypeGroupChildren = [
             {
                 $formkit: 'text',
                 name: 'name',
-                label: 'Step Name',
-                placeholder: 'Step Name',
+                label: t('pages.pipelines.edit.dialog.nameAndType.name'),
+                placeholder: t('pages.pipelines.edit.dialog.nameAndType.name'),
                 validation: 'required'
             },
             {
                 $formkit: 'checkbox',
                 name: 'isFirstStep',
-                label: 'Is First Step?',
+                label: t('pages.pipelines.edit.dialog.nameAndType.isFirstLabel'),
                 if: '$showIsFirstStep == true',
             },
         ]
@@ -129,7 +132,6 @@ const scikitUnsupervisedModelsForm = (stepConfigGroupChildren) => function (data
         },
         submitForm: async (formData, node) => {
             try {
-                await customDelay(formData);
                 node.clearErrors()
                 onSubmit(formData);
             } catch (err) {
@@ -137,7 +139,8 @@ const scikitUnsupervisedModelsForm = (stepConfigGroupChildren) => function (data
             }
         },
         stringify: (value) => JSON.stringify(value, null, 2),
-        camel2title
+        camel2title,
+        i18nFromStepName
     })
 
     const formSchema = [

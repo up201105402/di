@@ -62,6 +62,9 @@ One = "Failed to sign in. Reason: {{.Reason}}"
 [user.service.user.signin.password.failed]
 One = "Failed to sign in. Wrong password."
 
+[user.handler.edit.password.old.failed]
+One = "Old password is not correct!"
+
 #
 # Tokens
 #

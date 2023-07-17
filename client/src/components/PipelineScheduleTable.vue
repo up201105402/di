@@ -8,7 +8,6 @@ import BaseButton from "@/components/BaseButton.vue";
 import { formatDate } from '@/util';
 
 const props = defineProps({
-    header: Array,
     items: Array,
     checkable: Boolean,
 });
@@ -82,17 +81,19 @@ const checked = (isChecked, pipeline) => {
         <thead>
             <tr>
                 <th v-if="checkable" />
-                <th v-for="item in header">{{ item }}</th>
+                <th>{{ $t('pages.pipelines.edit.scheduling.table.headers.id') }}</th>
+                <th>{{ $t('pages.pipelines.edit.scheduling.table.headers.at') }}</th>
+                <th>{{ $t('pages.pipelines.edit.scheduling.table.headers.cronExpression') }}</th>
             </tr>
         </thead>
         <tbody>
             <tr v-for="pipeline in itemsPaginated" :key="pipeline.id">
                 <TableCheckboxCell v-if="checkable" @checked="checked($event, pipeline)" />
-                <td data-label="Name">{{ pipeline.ID }}</td>
-                <td data-label="Modified" class="lg:w-1 whitespace-nowrap">
+                <td :data-label="$t('pages.pipelines.edit.scheduling.table.headers.id')">{{ pipeline.ID }}</td>
+                <td :data-label="$t('pages.pipelines.edit.scheduling.table.headers.at')" class="lg:w-1 whitespace-nowrap">
                     <small class="text-gray-500 dark:text-slate-400" :title="formatDate(pipeline.uniqueOccurrence)">{{ formatDate(pipeline.uniqueOccurrence) }}</small>
                 </td>
-                <td data-label="Created" class="lg:w-1 whitespace-nowrap">
+                <td :data-label="$t('pages.pipelines.edit.scheduling.table.headers.cronExpression')" class="lg:w-1 whitespace-nowrap">
                     <small class="text-gray-500 dark:text-slate-400" :title="pipeline.cronExpression">{{ pipeline.cronExpression }}</small>
                 </td>
                 <td class="before:hidden lg:w-1 whitespace-nowrap">
@@ -109,6 +110,6 @@ const checked = (isChecked, pipeline) => {
                 <BaseButton v-for="page in pagesList" :key="page" :active="page === currentPage" :label="page + 1"
                     :color="page === currentPage ? 'lightDark' : 'whiteDark'" small @click="currentPage = page" />
             </BaseButtons>
-            <small>Page {{ currentPageHuman }} of {{ numPages }}</small>
+            <small>{{ $t('tables.page', {page: currentPageHuman, count: numPages}) }}</small>
         </BaseLevel>
 </div></template>

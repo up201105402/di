@@ -538,8 +538,8 @@ function toggleClass() {
       <SectionTitleLineWithButton :hasButton="false" :icon="mdiChartTimelineVariant" :title="pipelineTitle" main>
         <div>
           <BaseButtons style="float:right">
-            <BaseButton :disabled="!hasChanges" :label="'Save'" color="success" @click="onPipelineSave" />
-            <BaseButton :label="'Cancel'" color="danger" @click="onPipelineCancel" />
+            <BaseButton :disabled="!hasChanges" :label="$t('buttons.save')" color="success" @click="onPipelineSave" />
+            <BaseButton :label="$t('buttons.cancel')" color="danger" @click="onPipelineCancel" />
           </BaseButtons>
           <!-- <CascadeSelect style="float:right; min-width: 14rem;" v-model="selectedStep" :options="cascadeOptions"
             optionLabel="label" optionGroupLabel="name" :optionGroupChildren="['steps', 'subSteps']"
@@ -606,10 +606,10 @@ function toggleClass() {
         <UpsertStepDialog :key="'createStepDialog_' + count" :formSchema="formSchema" :nodeId="editStepNodeId"
           :nodeData="stepData" @onSubmit="onStepEdited" @onCancel="onCancel" />
       </CardBoxModal>
-      <SectionTitleLineWithButton :hasButton="false" :icon="mdiCalendarEdit" title="Scheduling">
-        <BaseButton label="Add Schedule" :icon="mdiPlus" color="success" @click="onCreateScheduleClick" />
+      <SectionTitleLineWithButton :hasButton="false" :icon="mdiCalendarEdit" :title="$t('pages.pipelines.edit.scheduling.header')">
+        <BaseButton :label="$t('pages.pipelines.edit.scheduling.add')" :icon="mdiPlus" color="success" @click="onCreateScheduleClick" />
       </SectionTitleLineWithButton>
-      <PipelineScheduleTable :header="['ID', 'At', 'Cron Expression']" :items="pipelineSchedules" @delete-button-clicked="onDeletePipelineScheduleClick" />
+      <PipelineScheduleTable :items="pipelineSchedules" @delete-button-clicked="onDeletePipelineScheduleClick" />
       <CardBoxModal v-model="isScheduleDialogActive" has-cancel title="Create Schedule" @confirm="onCreateSchedule" >
         <TabView :activeIndex="activeTabIndex" >
           <TabPanel header="Once">

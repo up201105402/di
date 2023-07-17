@@ -1,10 +1,11 @@
-import { watchEffect } from 'vue';
 import jwt_decode from 'jwt-decode';
 import { doRequest } from '@/util';
 import { useRouter } from 'vue-router';
 import { useStorage } from '@vueuse/core'
-
 import { defineStore, storeToRefs } from "pinia";
+import { i18n } from '@/i18n';
+
+const { t } = i18n.global;
 
 export const useAuthStore = defineStore("auth", {
     state: () => ({
@@ -40,6 +41,59 @@ export const useAuthStore = defineStore("auth", {
             this.accessToken = accessToken.signedString;
             this.refreshToken = refreshToken.signedString;
             router.push(redirectURL);
+            this.isLoading = false;
+        },
+        async editUsername(username, router, redirectURL) {
+            this.isLoading = true;
+            const { data, error } = await doRequest({
+                url: '/api/user',
+                method: 'POST',
+                headers: {
+                  Authorization: `${accessToken.value}`,
+                },
+                data: {
+                    username: username,
+                },
+            });
+              
+
+            if (error) {
+                toast.add({ severity: 'error', summary: 'Error', detail: error, life: 3000 });
+                return;
+            }
+
+            this.error = null;
+            const { accessToken, refreshToken } = data.tokens;
+            this.accessToken = accessToken.signedString;
+            this.refreshToken = refreshToken.signedString;
+            toast.add({ severity: 'error', summary: t('messages.types.success'), detail: t('pages.profile.form.success.usernameChanged'), life: 3000 });
+            this.isLoading = false;
+        },
+        async editPassword(password, toast) {
+            this.isLoading = true;
+            const { data, error } = await doRequest({
+                url: '/api/user',
+                method: 'POST',
+                headers: {
+                  Authorization: `${accessToken.value}`,
+                },
+                data: {
+                    oldPassword: oldPassword,
+                    password: password
+                },
+            });
+              
+
+            if (error) {
+                toast.add({ severity: 'error', summary: t('messages.types.error'), detail: error, life: 3000 });
+                return;
+            }
+
+            this.error = null;
+            const { accessToken, refreshToken } = data.tokens;
+            this.accessToken = accessToken.signedString;
+            this.refreshToken = refreshToken.signedString;
+            toast.add({ severity: 'error', summary: t('messages.types.success'), detail: t('pages.profile.form.success.passwordChanged'), life: 3000 });
             this.isLoading = false;
         },
         async signUp(username, password, router, redirectURL) {

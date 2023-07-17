@@ -1,3 +1,7 @@
+import { i18n } from "@/i18n";
+
+const { t } = i18n.global;
+
 export const cancelAndSubmitButtons = {
     $el: 'div',
     attrs: {
@@ -45,7 +49,7 @@ export const stepTabs = {
                     },
                     children: '$step.errorCount + $step.blockingCount'
                 },
-                '$camel2title($stepName)'
+                '$i18nFromStepName($stepName)'
             ]
         }
     ]
@@ -106,9 +110,9 @@ export const stepNav = {
         {
             $cmp: 'BaseButton',
             onClick: '$setStep(-1)',
-            children: 'Back',
+            children: t('buttons.back'),
             props: {
-                label: 'Back',
+                label: t('buttons.back'),
                 color: 'info',
                 onClick: '$setStep(-1)',
                 disabled: '$activeStep === "nameAndType"',
@@ -117,9 +121,9 @@ export const stepNav = {
         {
             $cmp: 'BaseButton',
             onClick: '$setStep(1)',
-            children: 'Next',
+            children: t('buttons.next'),
             props: {
-                label: 'Next',
+                label: t('buttons.next'),
                 color: 'info',
                 onClick: '$setStep(1)',
                 disabled: '$activeStep === "stepConfig"',

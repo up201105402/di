@@ -1,30 +1,33 @@
 import { reactive, toRef, ref, watch } from 'vue';
-import { camel2title } from '@/util';
+import { camel2title, i18nFromStepName } from '@/util';
 import { getNode, createMessage } from '@formkit/core';
 import { stepTabs, cancelAndSubmitButtons, getFormBody } from '@/pipelines/steps/formBasics';
+import { i18n } from '@/i18n';
+
+const { t } = i18n.global;
 
 export const scikitDatasetOptions = [
-    { id: 0, value: "scikitBreastCancer", label: "Breast Cancer Dataset" },
-    { id: 1, value: "scikitDiabetes", label: "Diabetes Dataset" },
-    { id: 2, value: "scikitDigits", label: "Digits Dataset" },
-    { id: 3, value: "scikitIris", label: "Iris Dataset" },
-    { id: 4, value: "scikitLinerrud", label: "Linnerud Dataset" },
-    { id: 5, value: "scikitWine", label: "Wine Dataset" },
-    { id: 6, value: "scikitLoadFile", label: "Load Daset From File" },
+    { id: 0, value: "scikitBreastCancer", label: t('pages.pipelines.edit.dialog.nameAndType.dataset.options.scikitBreastCancer') },
+    { id: 1, value: "scikitDiabetes", label: t('pages.pipelines.edit.dialog.nameAndType.dataset.options.scikitDiabetes') },
+    { id: 2, value: "scikitDigits", label: t('pages.pipelines.edit.dialog.nameAndType.dataset.options.scikitDigits') },
+    { id: 3, value: "scikitIris", label: t('pages.pipelines.edit.dialog.nameAndType.dataset.options.scikitIris') },
+    { id: 4, value: "scikitLinerrud", label: t('pages.pipelines.edit.dialog.nameAndType.dataset.options.scikitLinerrud') },
+    { id: 5, value: "scikitWine", label: t('pages.pipelines.edit.dialog.nameAndType.dataset.options.scikitWine') },
+    { id: 6, value: "scikitLoadFile", label: t('pages.pipelines.edit.dialog.nameAndType.dataset.options.scikitLoadFile') },
 ];
 
 const nameAndTypeGroupChildren = [
     {
         $formkit: 'text',
         name: 'name',
-        label: 'Step Name',
-        placeholder: 'Step Name',
+        label: t('pages.pipelines.edit.dialog.nameAndType.name'),
+        placeholder: t('pages.pipelines.edit.dialog.nameAndType.name'),
         validation: 'required'
     },
     {
       $formkit: 'select',
       name: 'dataset',
-      label: 'Dataset',
+      label: t('pages.pipelines.edit.dialog.nameAndType.dataset.label'),
       placeholder: "",
       options: scikitDatasetOptions,
       validation: 'required',
@@ -33,7 +36,7 @@ const nameAndTypeGroupChildren = [
     {
         $formkit: 'checkbox',
         name: 'isFirstStep',
-        label: 'Is First Step?',
+        label: t('pages.pipelines.edit.dialog.nameAndType.isFirstStep'),
         if: '$showIsFirstStep == true',
     },
 ];
@@ -42,39 +45,39 @@ export const stepConfigGroupChildren = [
     {
         $formkit: 'text',
         name: "dataFilePath",
-        label: "Data File Path",
+        label: t('pages.pipelines.edit.dialog.stepConfig.dataFilePath'),
         validation: 'required',
         if: '$isActiveDataset("scikitLoadFile")'
     },
     {
         $formkit: 'text',
         name: "targetFilePath",
-        label: "Target File Path",
+        label: t('pages.pipelines.edit.dialog.stepConfig.targetFilePath'),
         validation: 'required',
         if: '$isActiveDataset("scikitLoadFile")'
     },
     {
         $formkit: 'number',
         name: "lowerXRangeIndex",
-        label: "Lower X Range Index",
+        label: t('pages.pipelines.edit.dialog.stepConfig.lowerXRangeIndex'),
         min: 0,
     },
     {
         $formkit: 'number',
         name: "upperXRangeIndex",
-        label: "Upper X Range Index",
+        label: t('pages.pipelines.edit.dialog.stepConfig.upperXRangeIndex'),
         min: 0,
     },
     {
         $formkit: 'number',
         name: "lowerYRangeIndex",
-        label: "Lower Y Range Index",
+        label: t('pages.pipelines.edit.dialog.stepConfig.lowerYRangeIndex'),
         min: 0,
     },
     {
         $formkit: 'number',
         name: "upperYRangeIndex",
-        label: "Upper Y Range Index",
+        label: t('pages.pipelines.edit.dialog.stepConfig.upperYRangeIndex'),
         min: 0,
     },
 ]
@@ -181,7 +184,8 @@ export const scikitDatasetForm = function (data, onSubmit) {
             }
         },
         stringify: (value) => JSON.stringify(value, null, 2),
-        camel2title
+        camel2title,
+        i18nFromStepName
     })
 
     const formSchema = [

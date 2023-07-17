@@ -13,6 +13,7 @@ type User struct {
 }
 
 type UserReq struct {
-	Username string `json:"username" binding:"required,gte=5,lte=30"`
-	Password string `json:"password" binding:"required,gte=5,lte=30"`
+	Username    string `json:"username" binding:"gte=5,lte=30"`
+	Password    string `json:"password" binding:"gte=5,lte=30"`
+	NewPassword string `json:"newPassword"`
 }

@@ -80,6 +80,7 @@ func setupRouter(services *service.Services, I18n *i18n.Localizer) *gin.Engine {
 	})
 
 	userAPI := router.Group("/api/user")
+	userAPI.POST("/", handlers.EditUser(services, I18n))
 	userAPI.POST("/login", handlers.LogIn(services))
 	userAPI.POST("/signup", handlers.SignUp(services))
 	userAPI.POST("/tokens", handlers.NewAccessToken(services))

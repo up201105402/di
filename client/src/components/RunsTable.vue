@@ -108,10 +108,10 @@
     <table>
         <thead>
             <tr>
-                <th>ID</th>
-                <th>Status</th>
-                <th>Created</th>
-                <th>Last Run</th>
+                <th>{{ $t('pages.runs.table.headers.id') }}</th>
+                <th>{{ $t('pages.runs.table.headers.status') }}</th>
+                <th>{{ $t('pages.runs.table.headers.created') }}</th>
+                <th>{{ $t('pages.runs.table.headers.lastRun') }}</th>
             </tr>
         </thead>
         <tbody>
@@ -142,13 +142,12 @@
     <div class="p-3 lg:px-6 border-t border-gray-100 dark:border-slate-800">
         <BaseLevel>
             <BaseButtons>
-                <BaseButton v-for="page in pagesList" :key="page" :active="page === currentPage" :label="page + 1"
-                    :color="page === currentPage ? 'lightDark' : 'whiteDark'" small @click="currentPage = page" />
+                <BaseButton v-for="page in pagesList" :key="page" :active="page === currentPage" :label="page + 1" :color="page === currentPage ? 'lightDark' : 'whiteDark'" small @click="currentPage = page" />
             </BaseButtons>
-            <small>Page {{ currentPageHuman }} of {{ numPages }}</small>
+            <small>{{ $t('tables.page', { page: currentPageHuman, count: numPages }) }}</small>
         </BaseLevel>
     </div>
-    <CardBoxModal v-model="isRunModalActive" @confirm="onExecuteRunConfirmed" :targetId="runIDtoExecute" :title="`Execute run ${runIDtoExecute}?`" button="success" has-cancel>
-        <div>This will erase all previous data associated with the run.</div>
+    <CardBoxModal v-model="isRunModalActive" @confirm="onExecuteRunConfirmed" :targetId="runIDtoExecute" :title="$t('pages.runs.table.dialog.execute.header', { id: runIDtoExecute })" button="success" has-cancel>
+        <div>{{ $t('pages.runs.table.dialog.execute.header') }}</div>
     </CardBoxModal>
 </template>
