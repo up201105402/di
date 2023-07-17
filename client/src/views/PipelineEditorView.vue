@@ -34,6 +34,9 @@ import Calendar from 'primevue/calendar';
 import InputText from 'primevue/inputtext';
 import { useField } from 'vee-validate';
 import cronTime from "cron-time-generator";
+import { i18n } from '@/i18n';
+
+const { t } = i18n.global;
 
 const { accessToken } = storeToRefs(useAuthStore());
 const router = useRouter();
@@ -170,8 +173,7 @@ const onMenubarClick = (e) => {
     }
     let step = e.item.form(stepData.value, onStepEdited);
     formSchema.value = step.formSchema;
-    const label = t('pages.pipelines.steps.' + e.node.data.type);
-    dialogTitle.value = t('pages.pipelines.edit.dialog.create.header', { name: label });
+    dialogTitle.value = t('pages.pipelines.edit.dialog.create.header', { name: e.item.label });
     stepData.value = step.formkitData;
     stepData.value.group = e.item.group;
     stepData.value.type = e.item.type;
@@ -192,13 +194,29 @@ const menubarItems = ref(menubarSteps)
 
 watch(fetchPipelineResponse, (value) => {
   if (value.error) {
-    toast.add({ severity: 'error', summary: 'Error', detail: value.error.message, life: 3000 });
+    let header = t('global.errors.generic.header');
+    let detail = value.error.message;
+
+    if (response.status == 401) {
+      header = t('global.errors.authorization.header');
+      detail = t('global.errors.authorization.detail');
+    }
+
+    toast.add({ severity: 'error', summary: header, detail: detail, life: 3000 });
   }
 })
 
 watch(fetchPipelineSchedulesResponse, (value) => {
   if (value.error) {
-    toast.add({ severity: 'error', summary: 'Error', detail: value.error.message, life: 3000 });
+    let header = t('global.errors.generic.header');
+    let detail = value.error.message;
+
+    if (response.status == 401) {
+      header = t('global.errors.authorization.header');
+      detail = t('global.errors.authorization.detail');
+    }
+
+    toast.add({ severity: 'error', summary: header, detail: detail, life: 3000 });
   }
 })
 
@@ -213,7 +231,15 @@ watch(isPipelineScheduleFetchFinished, () => {
 
 watch(updatePipelineResponse, (value) => {
   if (value.error) {
-    toast.add({ severity: 'error', summary: 'Error', detail: value.error.message, life: 3000 });
+    let header = t('global.errors.generic.header');
+    let detail = value.error.message;
+
+    if (response.status == 401) {
+      header = t('global.errors.authorization.header');
+      detail = t('global.errors.authorization.detail');
+    }
+
+    toast.add({ severity: 'error', summary: header, detail: detail, life: 3000 });
   }
 
   if (value.status === 200) {
@@ -224,7 +250,15 @@ watch(updatePipelineResponse, (value) => {
 
 watch(createPipelineScheduleResponse, (value) => {
   if (value.error) {
-    toast.add({ severity: 'error', summary: 'Error', detail: value.error.message, life: 3000 });
+    let header = t('global.errors.generic.header');
+    let detail = value.error.message;
+
+    if (response.status == 401) {
+      header = t('global.errors.authorization.header');
+      detail = t('global.errors.authorization.detail');
+    }
+
+    toast.add({ severity: 'error', summary: header, detail: detail, life: 3000 });
   }
 
   if (value.status === 200) {
@@ -234,7 +268,15 @@ watch(createPipelineScheduleResponse, (value) => {
 
 watch(deletePipelineScheduleResponse, (value) => {
   if (value.error) {
-    toast.add({ severity: 'error', summary: 'Error', detail: value.error.message, life: 3000 });
+    let header = t('global.errors.generic.header');
+    let detail = value.error.message;
+
+    if (response.status == 401) {
+      header = t('global.errors.authorization.header');
+      detail = t('global.errors.authorization.detail');
+    }
+
+    toast.add({ severity: 'error', summary: header, detail: detail, life: 3000 });
   }
 
   if (value.status === 200) {
@@ -266,7 +308,7 @@ const weekDays = [
   { value: 'sunday', label: 'Sunday' },
 ];
 const selectedWeekDay = ref(weekDays[0].value);
-const scheduledTime = ref(new Date(new Date(Date.now() + 60*60*1000).setSeconds(0))); // one hour in the future
+const scheduledTime = ref(new Date(new Date(Date.now() + 60 * 60 * 1000).setSeconds(0))); // one hour in the future
 
 onBeforeRouteLeave((to, from) => {
   if (hasChanges.value) {
@@ -312,7 +354,7 @@ const onCreateSchedule = (e) => {
 }
 
 const onDeleteSchedule = (id) => {
-  deletePipelineSchedule(null, {ID: id})
+  deletePipelineSchedule(null, { ID: id })
 }
 
 const onNodeDoubleClick = (e) => {
@@ -327,6 +369,7 @@ const onNodeDoubleClick = (e) => {
   count++;
 }
 
+$(document).off("onNodeDelete");
 $(document).on("onNodeDelete", function (e, details) {
   onNodeDelete(details.id);
 })
@@ -530,7 +573,7 @@ function toggleClass() {
           <BaseButton :icon="mdiPlus" color="success" @click="onCreateStepClick" /> -->
         </div>
       </SectionTitleLineWithButton>
-      <Menubar :model="menubarItems" style="margin-right: 10px; "/>
+      <Menubar :model="menubarItems" style="margin-right: 10px; " />
       <VueFlow v-model="elements" :class="{ dark }" class="basicflow" :node-types="nodeTypes"
         @nodeDoubleClick="onNodeDoubleClick" @edge-update="onEdgeUpdate" :default-viewport="{ zoom: 1.5 }" :min-zoom="0.2"
         :max-zoom="4">
@@ -583,26 +626,31 @@ function toggleClass() {
         <UpsertStepDialog :key="'createStepDialog_' + count" :formSchema="formSchema" :nodeId="editStepNodeId"
           :nodeData="stepData" @onSubmit="onStepEdited" @onCancel="onCancel" />
       </CardBoxModal>
-      <SectionTitleLineWithButton :hasButton="false" :icon="mdiCalendarEdit" :title="$t('pages.pipelines.edit.scheduling.header')">
-        <BaseButton :label="$t('pages.pipelines.edit.scheduling.add')" :icon="mdiPlus" color="success" @click="onCreateScheduleClick" />
+      <SectionTitleLineWithButton :hasButton="false" :icon="mdiCalendarEdit"
+        :title="$t('pages.pipelines.edit.scheduling.header')">
+        <BaseButton :label="$t('pages.pipelines.edit.scheduling.add')" :icon="mdiPlus" color="success"
+          @click="onCreateScheduleClick" />
       </SectionTitleLineWithButton>
       <PipelineScheduleTable :items="pipelineSchedules" @delete-button-clicked="onDeletePipelineScheduleClick" />
-      <CardBoxModal v-model="isScheduleDialogActive" has-cancel title="Create Schedule" @confirm="onCreateSchedule" >
-        <TabView :activeIndex="activeTabIndex" >
+      <CardBoxModal v-model="isScheduleDialogActive" has-cancel title="Create Schedule" @confirm="onCreateSchedule">
+        <TabView :activeIndex="activeTabIndex">
           <TabPanel header="Once">
             <Calendar v-model="scheduledTime" showTime hourFormat="12" />
           </TabPanel>
           <TabPanel header="Repeat">
-            <Dropdown style="max-width: 30%; margin-right: 10px;" v-model="selectedWeekDay" :options="weekDays" optionValue="value" optionLabel="label" placeholder="Select a day" class="w-full md:w-14rem" />
+            <Dropdown style="max-width: 30%; margin-right: 10px;" v-model="selectedWeekDay" :options="weekDays"
+              optionValue="value" optionLabel="label" placeholder="Select a day" class="w-full md:w-14rem" />
             <Calendar v-model="scheduledTime" timeOnly hourFormat="12" />
           </TabPanel>
           <TabPanel header="Cron Expression">
-            <InputText id="input-cron" style="margin-right: 10px;" v-model="cronValue" type="text" placeholder="Cron expression" :class="{ 'p-invalid': cronError }" aria-describedby="text-error" />
+            <InputText id="input-cron" style="margin-right: 10px;" v-model="cronValue" type="text"
+              placeholder="Cron expression" :class="{ 'p-invalid': cronError }" aria-describedby="text-error" />
             <span class="p-error" id="cron-error">{{ cronError || '&nbsp;' }}</span>
           </TabPanel>
-      </TabView>
+        </TabView>
       </CardBoxModal>
-      <CardBoxModal v-model="isDeleteScheduleDialogActive" :target-id="pipelineScheduleIdToDelete" has-cancel submitLabel="Confirm" title="Delete Schedule" @confirm="onDeleteSchedule" />
+      <CardBoxModal v-model="isDeleteScheduleDialogActive" :target-id="pipelineScheduleIdToDelete" has-cancel
+        submitLabel="Confirm" title="Delete Schedule" @confirm="onDeleteSchedule" />
     </SectionMain>
     <Toast />
   </LayoutAuthenticated>

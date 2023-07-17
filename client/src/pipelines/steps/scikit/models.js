@@ -45,7 +45,7 @@ const nameAndTypeGroupChildren = [
     }
 ];
 
-const scikitUnsupervisedModelsForm = (stepConfigGroupChildren) => function (data, onSubmit) {
+const scikitUnsupervisedModelsForm = (stepConfigGroupChildren) => function (data, onSubmit, editable = true) {
     const activeStep = ref('');
     const steps = reactive({});
     const visitedSteps = ref([]); // track visited steps
@@ -157,7 +157,7 @@ const scikitUnsupervisedModelsForm = (stepConfigGroupChildren) => function (data
             children: [
                 stepTabs,
                 getFormBody(nameAndTypeGroupChildren, stepConfigGroupChildren),
-                cancelAndSubmitButtons,
+                cancelAndSubmitButtons(editable),
             ]
         },
     ];

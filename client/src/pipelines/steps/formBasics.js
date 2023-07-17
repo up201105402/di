@@ -2,20 +2,22 @@ import { i18n } from "@/i18n";
 
 const { t } = i18n.global;
 
-export const cancelAndSubmitButtons = {
-    $el: 'div',
-    attrs: {
-        class: 'formkit-bottom-buttons'
-    },
-    children: [
-        {
-            $cmp: 'BaseCancelAndSubmitButtons',
-            props: {
-                cancelButtonId: 'cancel-create-step-button',
-                submitEnabled: '$get(form).state.valid == true'
+export const cancelAndSubmitButtons = (isSubmitEnabled = true) => {
+    return {
+        $el: 'div',
+        attrs: {
+            class: 'formkit-bottom-buttons'
+        },
+        children: [
+            {
+                $cmp: 'BaseCancelAndSubmitButtons',
+                props: {
+                    cancelButtonId: 'cancel-create-step-button',
+                    submitEnabled: isSubmitEnabled ? '$get(form).state.valid == true' : false,
+                }
             }
-        }
-    ]
+        ]
+    }
 };
 
 export const stepTabs = {

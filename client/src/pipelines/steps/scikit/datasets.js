@@ -82,7 +82,7 @@ export const stepConfigGroupChildren = [
     },
 ]
 
-export const scikitDatasetForm = function (data, onSubmit) {
+export const scikitDatasetForm = function (data, onSubmit, editable = true) {
     const activeStep = ref('');
     const activeDataset = ref(data?.nameAndType?.dataset || scikitDatasetOptions[0].value);
     const steps = reactive({});
@@ -202,7 +202,7 @@ export const scikitDatasetForm = function (data, onSubmit) {
             children: [
                 stepTabs,
                 getFormBody(nameAndTypeGroupChildren, stepConfigGroupChildren),
-                cancelAndSubmitButtons
+                cancelAndSubmitButtons(editable),
             ]
         },
     ];

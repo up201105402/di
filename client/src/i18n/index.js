@@ -283,7 +283,7 @@ export const messages = {
                     dialog: {
                         execute: {
                             header: 'Execute run {id}?',
-                            body: 'This will erase all previous data associated with the run.',
+                            body: 'This will erase all previous data associated with the run!',
                         }
                     }
                 },
@@ -377,6 +377,19 @@ export const messages = {
             },
             logout: 'Log Out',
             untitled: 'Untitled',
+            errors: {
+                generic: {
+                    header: "Error",
+                },
+                authorization: {
+                    header: "Authorization Error",
+                    detail: "Reload the page to get a new login token",
+                },
+                parsing: {
+                    header: "Error",
+                    detail: "Error parsing pipeline definition",
+                }
+            }
         }
     }
 };

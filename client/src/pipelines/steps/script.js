@@ -66,14 +66,14 @@ const stepConfigGroupChildren = (pipelineID) => {
     ]
 }
 
-export const scriptForm = function (data, onSubmit) {
+export const scriptForm = function (data, onSubmit, editable = true) {
     const activeStep = ref('');
     const steps = reactive({});
     const visitedSteps = ref([]); // track visited steps
     const showIsFirstStep = data.nameAndType == null || data?.nameAndType?.isFirstStep == false;
     const editorBindingProps = {
         modelValue: data?.stepConfig?.script,
-        onModelValueUpdate: (e) => getNode(activeStep.value).value.script = e
+        onModelValueUpdate: (e) => getNode(activeStep.value).value.script = e.textValue
     }
     const filePickerProps = {
         filename: data?.stepConfig?.filename,
@@ -169,7 +169,7 @@ export const scriptForm = function (data, onSubmit) {
         submitForm: async (formData, node) => {
             try {
                 if (formData.stepConfig.script) {
-                    formData.stepConfig.script = formData.stepConfig.script.replaceAll('<p>', '').replaceAll('</p>', '\n')
+                    formData.stepConfig.script = formData.stepConfig.script.replaceAll('<br>', '').replaceAll('<p>', '').replaceAll('</p>', '\n').replace("\u00A0", " ")
                 }
                 node.clearErrors()
                 onSubmit(formData);
@@ -197,7 +197,7 @@ export const scriptForm = function (data, onSubmit) {
             children: [
                 stepTabs,
                 getFormBody(nameAndTypeGroupChildren, stepConfigGroupChildren(data.pipelineID)),
-                cancelAndSubmitButtons
+                cancelAndSubmitButtons(editable),
             ]
         },
     ];

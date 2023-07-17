@@ -480,6 +480,7 @@ func executeRunPipelineTask(runPipelinePayload RunPipelinePayload, service *runS
 	runLogger.Println(msg)
 
 	hasError := false
+	var stepErr error
 
 	graph.BFS(pipelineGraph, firstStepID, func(id int) bool {
 		step, _ := pipelineGraph.Vertex(id)
@@ -505,7 +506,10 @@ func executeRunPipelineTask(runPipelinePayload RunPipelinePayload, service *runS
 			return true
 		}
 
-		if err := step.Execute(logFile); err != nil {
+		if err := step.Execute(logFile, service.I18n); err != nil {
+
+			stepErr = err
+			hasError = true
 
 			errMessage, _ := service.I18n.Localize(&i18n.LocalizeConfig{
 				MessageID: "run.service.execute.step.failed",
@@ -513,6 +517,7 @@ func executeRunPipelineTask(runPipelinePayload RunPipelinePayload, service *runS
 					"ID":     step.GetID(),
 					"Reason": err.Error(),
 				},
+				PluralCount: 1,
 			})
 
 			runLogger.Println(errMessage)
@@ -523,17 +528,20 @@ func executeRunPipelineTask(runPipelinePayload RunPipelinePayload, service *runS
 				log.Println(errMessage)
 			}
 
-			hasError = true
-
 			return true
 		} else {
-			errMessage, _ := service.I18n.Localize(&i18n.LocalizeConfig{
+			errMessage, err1 := service.I18n.Localize(&i18n.LocalizeConfig{
 				MessageID: "run.service.execute.step.success",
 				TemplateData: map[string]interface{}{
-					"ID":     step.GetID(),
-					"Reason": err.Error(),
+					"ID": step.GetID(),
 				},
+				PluralCount: 1,
 			})
+
+			if err1 != nil {
+				log.Println(err1.Error())
+			}
+
 			runLogger.Println(errMessage)
 			log.Println(errMessage)
 		}
@@ -541,6 +549,8 @@ func executeRunPipelineTask(runPipelinePayload RunPipelinePayload, service *runS
 		if err := service.updateStepRunStatus(runStepStatus, 4, ""); err != nil {
 			runLogger.Println(err.Error())
 			log.Println(err.Error())
+			stepErr = err
+			hasError = true
 			return true
 		}
 
@@ -557,7 +567,7 @@ func executeRunPipelineTask(runPipelinePayload RunPipelinePayload, service *runS
 			MessageID: "run.service.execute.run.failed",
 			TemplateData: map[string]interface{}{
 				"ID":     runPipelinePayload.RunID,
-				"Reason": err.Error(),
+				"Reason": stepErr.Error(),
 			},
 		})
 
@@ -572,8 +582,7 @@ func executeRunPipelineTask(runPipelinePayload RunPipelinePayload, service *runS
 		errMessage, _ := service.I18n.Localize(&i18n.LocalizeConfig{
 			MessageID: "run.service.execute.run.success",
 			TemplateData: map[string]interface{}{
-				"ID":     runPipelinePayload.RunID,
-				"Reason": err.Error(),
+				"ID": runPipelinePayload.RunID,
 			},
 		})
 

@@ -9,7 +9,10 @@ import (
 	"os"
 	"os/exec"
 	"strconv"
+	"strings"
 	"time"
+
+	"github.com/nicksnyder/go-i18n/v2/i18n"
 )
 
 type ShellScript struct {
@@ -66,7 +69,7 @@ func (step *ShellScript) GetRunID() uint {
 	return step.RunID
 }
 
-func (step ShellScript) Execute(logFile *os.File) error {
+func (step ShellScript) Execute(logFile *os.File, I18n *i18n.Localizer) error {
 
 	runLogger := log.New(logFile, "", log.Ldate|log.Ltime|log.Lmicroseconds|log.Llongfile)
 
@@ -91,7 +94,8 @@ func (step ShellScript) Execute(logFile *os.File) error {
 			return errors.New(errMessage)
 		}
 
-		scriptFile.WriteString(step.InlineScript)
+		processedString := strings.ReplaceAll(step.InlineScript, "\u00a0", " ")
+		scriptFile.WriteString(processedString)
 
 	} else if step.ScriptType != "file" {
 		errMessage := "Invalid script type for shell script step!"

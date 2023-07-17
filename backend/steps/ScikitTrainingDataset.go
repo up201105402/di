@@ -98,6 +98,8 @@ func (step ScikitTrainingDataset) Execute(logFile *os.File, I18n *i18n.Localizer
 		return errors.New(errMessage)
 	}
 
+	scikitSnippetsDir = scikitSnippetsDir + "datasets/"
+
 	var args []string
 
 	switch step.Dataset {

@@ -1,4 +1,4 @@
-import { reactive, toRef, ref, watch } from 'vue';
+import { reactive, toRef, ref, watch, isReadonly } from 'vue';
 import { camel2title, i18nFromStepName } from '@/util';
 import { getNode, createMessage } from '@formkit/core';
 import { stepTabs, cancelAndSubmitButtons, getFormBody } from '@/pipelines/steps/formBasics';
@@ -31,7 +31,7 @@ export const stepConfigGroupChildren = [
     },
 ]
 
-export const checkoutRepoForm = function (data, onSubmit) {
+export const checkoutRepoForm = function (data, onSubmit, editable = true) {
     const activeStep = ref('');
     const steps = reactive({});
     const visitedSteps = ref([]); // track visited steps
@@ -144,7 +144,7 @@ export const checkoutRepoForm = function (data, onSubmit) {
             children: [
                 stepTabs,
                 getFormBody(nameAndTypeGroupChildren, stepConfigGroupChildren),
-                cancelAndSubmitButtons
+                cancelAndSubmitButtons(editable),
             ]
         },
     ];

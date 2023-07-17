@@ -32,8 +32,7 @@
     const emit = defineEmits(['change', 'gradient'])
 
     const onDeleteClick = (e) => {
-        $(document).trigger('onNodeDelete', { id: props.id });
-        //props.events.onNodeDelete(props.id);
+        $(document).trigger('onNodeDelete', { id: props.data.id });
     }
 
     const sourceHandleStyle = computed(() => ({

@@ -1,10 +1,11 @@
 <script setup>
-    import { Handle, Position, NodeIdInjection } from '@vue-flow/core';
+    import { Handle, Position } from '@vue-flow/core';
     import { NodeToolbar } from '@vue-flow/node-toolbar';
     import { computed } from 'vue';
     import BaseIcon from "@/components/BaseIcon.vue";
     import { mdiCloseCircle, mdiAlertCircle, mdiCancel, mdiCheckCircleOutline, mdiDotsCircle } from "@mdi/js";
     import { camel2title } from '@/util';
+    import $ from 'jquery';
 
     const props = defineProps({
         data: {
@@ -51,6 +52,10 @@
         } else if (props.data.status == 4) {
             return mdiCheckCircleOutline;
         }
+    }
+
+    const onDeleteClick = (e) => {
+        $(document).trigger('onNodeDelete', { id: props.data.id });
     }
 
 </script>

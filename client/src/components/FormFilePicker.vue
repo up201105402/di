@@ -7,9 +7,9 @@ import { doRequest } from "@/util";
 import { useAuthStore } from "@/stores/auth";
 import { useToast } from 'primevue/usetoast';
 import BaseButton from "@/components/BaseButton.vue";
-import Loading from "vue-loading-overlay";
 import ProgressBar from 'primevue/progressbar';
 import Toast from 'primevue/toast';
+import { i18n } from "@/i18n";
 
 const props = defineProps({
   modelValue: {
@@ -45,6 +45,8 @@ const props = defineProps({
 
 const emit = defineEmits(["update:modelValue", "fileUpdated"]);
 
+const { t } = i18n.global;
+
 const { accessToken } = storeToRefs(useAuthStore());
 const toast = useToast();
 
@@ -77,7 +79,15 @@ const { isLoading: isUpdatingFile, state: uploadFileResponse, isReady: isFileUpl
 
 watch(uploadFileResponse, (response) => {
   if (response.error) {
-    toast.add({ severity: 'error', summary: 'Error', detail: response.error.message, life: 3000 });
+    let header = t('global.errors.generic.header');
+    let detail = response.error.message;
+
+    if (response.status == 401) {
+      header = t('global.errors.authorization.header');
+      detail = t('global.errors.authorization.detail');
+    }
+
+    toast.add({ severity: 'error', summary: header, detail: detail, life: 3000 });
   } else {
     toast.add({ severity: 'info', summary: 'Success', detail: 'Upload Completed', life: 3000 });
     filename.value = response.data.filename;

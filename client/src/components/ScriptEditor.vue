@@ -6,12 +6,17 @@
     const emit = defineEmits(['modelValueUpdate']) // this is need instead of update:modelValue because FormKit does not seem to support v-model
 
     const quillModules = {
-        "toolbar": false
+        "toolbar": false,
     }
 
-    const text = ref(props.modelValue);
+    const html = props.modelValue ? '<p>' + props.modelValue.replaceAll('\n', '</p><p>') + '</p>' : '';
+    const text = ref(html.replace('<p></p>', '<p>&nbsp;</p>'), '');
 
     const onModelValueUpdate = (e) => {
+        // emit('modelValueUpdate', e);
+    }
+
+    const onTextChange = (e) => {
         emit('modelValueUpdate', e);
     }
 
@@ -20,6 +25,14 @@
 <template>
     <div>
         <label class="formkit-label" for="script-editor">Script</label>
-        <Editor id="formkit-label" v-model="text" @update:modelValue="onModelValueUpdate" editorStyle="height: 320px; margin-bottom:10px" :modules="quillModules" />
+        <Editor id="formkit-label" v-model="text" @text-change="onTextChange" @update:modelValue="onModelValueUpdate" editorStyle="height: 320px; margin-bottom:10px" :modules="quillModules" />
     </div>
 </template>
+
+<style>
+    .ql-editor {
+        tab-size: 20;
+        -moz-tab-size: 20;
+        -o-tab-size: 20;
+    }
+</style>

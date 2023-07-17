@@ -82,13 +82,29 @@ const {
 
 watch(fetchRunsResponse, (value) => {
     if (value.error) {
-        toast.add({ severity: 'error', summary: 'Error', detail: value.error.message, life: 3000 });
+        let header = t('global.errors.generic.header');
+        let detail = value.error.message;
+
+        if (response.status == 401) {
+            header = t('global.errors.authorization.header');
+            detail = t('global.errors.authorization.detail');
+        }
+
+        toast.add({ severity: 'error', summary: header, detail: detail, life: 3000 });
     }
 })
 
 watch(createRunResponse, (value) => {
     if (value.error) {
-        toast.add({ severity: 'error', summary: 'Error', detail: value.error.message, life: 3000 });
+        let header = t('global.errors.generic.header');
+        let detail = value.error.message;
+
+        if (response.status == 401) {
+            header = t('global.errors.authorization.header');
+            detail = t('global.errors.authorization.detail');
+        }
+
+        toast.add({ severity: 'error', summary: header, detail: detail, life: 3000 });
     } else {
         fetchRuns(null);
     }
@@ -121,7 +137,7 @@ const onReloadClicked = () => {
                     <BaseButton :icon="mdiPlus" color="success" @click="onNewRunClicked" />
                 </BaseButtons>
             </SectionTitleLineWithButton>
-            <RunsTable :rows="runs" />
+            <RunsTable :pipelineID="pipelineID" :rows="runs" />
         </SectionMain>
         <CardBoxModal v-model="isCreateModalActive" @confirm="onCreateRunConfirmed" :title="$t('pages.runs.dialog.create.header', { id: pipelineID} )" button="success" has-cancel />
         <Toast />
