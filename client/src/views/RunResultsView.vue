@@ -6,7 +6,7 @@ import { Controls } from '@vue-flow/controls';
 import { MiniMap } from '@vue-flow/minimap';
 import { ref, computed, watch } from "vue";
 import { useAsyncState } from "@vueuse/core";
-import { doRequest } from "@/util";
+import { doRequest, deepFilterMenuBarSteps } from "@/util";
 import { useAuthStore } from "@/stores/auth";
 import { useRoute } from 'vue-router';
 import {
@@ -21,9 +21,10 @@ import UpsertStepDialog from '@/components/UpsertStepDialog.vue';
 import Toast from 'primevue/toast';
 import { useToast } from 'primevue/usetoast';
 import Loading from "vue-loading-overlay";
-import { nodeTypes } from "@/pipelines/steps";
+import { nodeTypes, menubarSteps } from "@/pipelines/steps";
 import { camel2title } from '@/util';
 import Editor from 'primevue/editor';
+import { i18n } from '@/i18n';
 
 const { accessToken, requireAuthRoute } = storeToRefs(useAuthStore());
 const route = useRoute();
@@ -31,6 +32,7 @@ const elements = ref([]);
 const log = ref('');
 const runTitle = ref('');
 const toast = useToast();
+const { t } = i18n.global;
 
 const quillModules = {
   "toolbar": false
@@ -56,7 +58,6 @@ const { isLoading: isFetching, state: fetchResponse, isReady: isFetchFinished, e
 );
 
 const selectedStep = ref();
-const cascadeOptions = ref(steps);
 
 watch(fetchResponse, (value) => {
   if (value.error) {
@@ -86,7 +87,7 @@ watch(isFetchFinished, () => {
       }
     })
   });
-  runTitle.value = fetchResponse.value?.data ? fetchResponse.value.data.run.Pipeline.name + " - " + "Run " + fetchResponse.value.data.run.ID : 'Untitled';
+  runTitle.value = fetchResponse.value?.data ? t('pages.runs.results.header', { pipelineName: fetchResponse.value.data.run.Pipeline.name, runID: fetchResponse.value.data.run.ID }) : t('global.untitled');
   log.value = fetchResponse.value?.data ? formatValue(fetchResponse.value.data.log) : "";
 })
 
@@ -108,9 +109,10 @@ const onNodeDoubleClick = (e) => {
   isStepDialogActive.value = true;
   editStepNodeId.value = e.node.id;
   stepData.value = { ...e.node.data }
-  const formkitObject = getSchemaFromType(e.node.data.group, e.node.data.type).form({ ...e.node.data }, () => { });
+  const formkitObject = deepFilterMenuBarSteps(menubarSteps, 'type', e.node.data.type).form({ ...e.node.data }, () => { });
   formSchema.value = formkitObject.formSchema;
-  dialogTitle.value = 'Edit ' + camel2title(e.node.data.type) + ' Step';
+  const label = t('pages.pipelines.steps.' + e.node.data.type);
+  dialogTitle.value = t('pages.runs.results.dialog.edit.header', { name: label });
   stepData.value = formkitObject.formkitData;
   count++;
 }
@@ -237,7 +239,7 @@ function toggleClass() {
         <UpsertStepDialog :key="'createStepDialog_' + count" :formSchema="formSchema" :nodeId="editStepNodeId"
           :nodeData="stepData" @onCancel="onCancel" />
       </CardBoxModal>
-      <SectionTitleLineWithButton :hasButton="false" :icon="mdiFileDocumentOutline" title="Log" />
+      <SectionTitleLineWithButton :hasButton="false" :icon="mdiFileDocumentOutline" :title="$t('pages.runs.results.log.header')" />
       <Editor id="run-results-log" v-model="log" editorStyle="height: 320px" :modules="quillModules" readonly />
     </SectionMain>
     <Toast />

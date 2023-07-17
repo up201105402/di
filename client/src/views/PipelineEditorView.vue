@@ -170,7 +170,8 @@ const onMenubarClick = (e) => {
     }
     let step = e.item.form(stepData.value, onStepEdited);
     formSchema.value = step.formSchema;
-    dialogTitle.value = 'Create ' + camel2title(e.item.type) + ' Step';
+    const label = t('pages.pipelines.steps.' + e.node.data.type);
+    dialogTitle.value = t('pages.pipelines.edit.dialog.create.header', { name: label });
     stepData.value = step.formkitData;
     stepData.value.group = e.item.group;
     stepData.value.type = e.item.type;
@@ -287,31 +288,6 @@ onBeforeRouteUpdate((to, from) => {
   }
 })
 
-const onCreateStepClick = (e) => {
-  editStepNodeId.value = "-1";
-  stepData.value = {
-    pipelineID: route.params.id
-  };
-
-  if (selectedStep.value) {
-    isStepDialogActive.value = !isStepDialogActive.value;
-    if (elements.value == null || elements.value.length == 0) {
-      stepData.value = {
-        nameAndType: {
-          isFirstStep: true
-        },
-      }
-    }
-    let step = selectedStep.value.form(stepData.value, onStepEdited);
-    formSchema.value = step.formSchema;
-    dialogTitle.value = 'Create ' + camel2title(selectedStep.value.type) + ' Step';
-    stepData.value = step.formkitData;
-    stepData.value.group = selectedStep.value.group;
-    stepData.value.type = selectedStep.value.type;
-    count++;
-  }
-}
-
 const onCreateScheduleClick = (e) => {
   isScheduleDialogActive.value = true;
 }
@@ -345,7 +321,8 @@ const onNodeDoubleClick = (e) => {
   stepData.value = { ...e.node.data }
   const formkitObject = deepFilterMenuBarSteps(menubarSteps, 'type', e.node.data.type).form({ ...e.node.data }, onStepEdited);
   formSchema.value = formkitObject.formSchema;
-  dialogTitle.value = 'Edit ' + camel2title(e.node.data.type) + ' Step';
+  const label = t('pages.pipelines.steps.' + e.node.data.type);
+  dialogTitle.value = t('pages.pipelines.edit.dialog.edit.header', { name: label });
   stepData.value = formkitObject.formkitData;
   count++;
 }

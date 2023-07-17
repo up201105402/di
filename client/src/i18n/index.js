@@ -144,10 +144,10 @@ export const messages = {
                     header: "Pipeline {id}",
                     dialog: {
                         create: {
-
+                            header: 'Create {name} Step',
                         },
                         edit: {
-
+                            header: 'Edit {name} Step',
                         },
                         nameAndType: {
                             label: 'Name and Type',
@@ -200,6 +200,50 @@ export const messages = {
                             },
                         }
                     }
+                },
+                steps: {
+                    checkoutRepo: 'Checkout Repository',
+                    shellScript: 'Shell Script',
+                    pythonScript: 'Python Script',
+                    scikitTrainingDataset: 'Load Training Dataset',
+                    scikitTestingDataset: 'Load Testing Dataset',
+                    scikitUnsupervisedModels: 'Scikit Unsupervised Models',
+                    leastSquares: 'Least Squares',
+                    ridgeRegression: 'Ridge Regression',
+                    ridgeRegressionCV: 'Ridge Regression CV',
+                    ridgeClassifier: 'Ridge Classifier',
+                    ridgeClassifierCV: 'Ridge Classifier CV',
+                    lasso: 'Lasso',
+                    lassoCV: 'Lasso CV',
+                    lassoLars: 'Lasso Lars',
+                    lassoLarsCV: 'Lasso Lars CV',
+                    lassoLarsIC: 'Lasso Lars IC',
+                    multiTaskLasso: 'Multi Task Lasso',
+                    multiTaskLassoCV: 'Multi Task Lasso CV',
+                    elasticNet: 'Elastic Net',
+                    elasticNetCV: 'Elastic Net CV',
+                    multiTaskElasticNet: 'Multi Task Elastic Net',
+                    multiTaskElasticNetCV: 'Multi Task Elastic Net CV',
+                    lars: 'Lars',
+                    larsCV: 'Lars CV',
+                    omp: 'OMP',
+                    ompCV: 'OMP CV',
+                    bayesianRidge: 'Bayesian Ridge',
+                    bayesianARD: 'Bayesian ARD',
+                    logisticRegression: 'Logistic Regression',
+                    logisticRegressionCV: 'Logistic Regression CV',
+                    tweedieRegressor: 'Tweedie Regressor',
+                    poissonRegressor: 'Poisson Regressor',
+                    gammaRegressor: 'Gamma Regressor',
+                    sgdClassifier: 'SGD Classifier',
+                    sgdRegressor: 'SGD Regressor',
+                    perceptron: 'Perceptron',
+                    passiveAgressiveClassifier: 'Passive Agressive Classifier',
+                    passiveAgressiveRegressor: 'Passive Agressive Regressor',
+                    huberRegression: 'Huber Regression',
+                    ransacRegression: 'Ransac Regression',
+                    theilSenRegression: 'Theil Sen Regression',
+                    quantileRegression: 'Quantile Regressiom',
                 }
             },
             runs: {
@@ -216,6 +260,17 @@ export const messages = {
                     },
                     dialog: {
                         header: 'Create Run for Pipeline {id}?'
+                    }
+                },
+                results: {
+                    header: '{pipelineName} - Run {runID}',
+                    dialog: {
+                        edit: {
+                            header: 'Edit {name} Step',
+                        },
+                    },
+                    log: {
+                        header: 'Log',
                     }
                 },
                 table: {
@@ -236,7 +291,7 @@ export const messages = {
                     create: {
                         header: 'Create Run for Pipeline ${id}?'
                     }
-                }
+                },
             },
             profile: {
                 name: "Profile",
@@ -321,6 +376,7 @@ export const messages = {
                 name: 'DI'
             },
             logout: 'Log Out',
+            untitled: 'Untitled',
         }
     }
 };

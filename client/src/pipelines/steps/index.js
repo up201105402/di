@@ -1,5 +1,4 @@
 import { markRaw } from 'vue';
-import { camel2title } from '@/util';
 import General from '@/pipelines/steps/components/nodes/General.vue';
 import ScikitDatasets from '@/pipelines/steps/components/nodes/ScikitDatasets.vue';
 import ScikitUnsupervisedModels from '@/pipelines/steps/components/nodes/ScikitUnsupervisedModels.vue';
@@ -13,6 +12,9 @@ import PythonScriptNode from '@/pipelines/steps/components/nodes/PythonScript.vu
 import ShellScriptNode from '@/pipelines/steps/components/nodes/ShellScript.vue';
 import BaseButton from '@/components/BaseButton.vue';
 import BaseCancelAndSubmitButtons from '@/components/BaseCancelAndSubmitButtons.vue';
+import { i18n } from '@/i18n';
+
+const { t } = i18n.global;
 
 export const nodeTypes = {
   general: markRaw(General),
@@ -32,7 +34,7 @@ const scikitUnsupervisedSteps = Object.entries(scikitUnsupervisedModels)
     return {
       group: 'scikitUnsupervisedModels',
       type: item[0],
-      label: camel2title(item[0]),
+      label: t('pages.pipelines.steps.' + item[0]),
       form: item[1]
     }
   });
@@ -44,7 +46,7 @@ export const menubarSteps = [
     items: [
       {
         type: 'checkoutRepo',
-        label: 'Checkout Repository',
+        label: t('pages.pipelines.steps.checkoutRepo'),
         form: checkoutRepoForm
       },
       {
@@ -52,12 +54,12 @@ export const menubarSteps = [
       },
       {
         type: 'shellScript',
-        label: 'Shell Script',
+        label: t('pages.pipelines.steps.shellScript'),
         form: scriptForm
       },
       {
         type: 'pythonScript',
-        label: 'Python Script',
+        label: t('pages.pipelines.steps.pythonScript'),
         form: scriptForm
       }
     ]
@@ -73,20 +75,20 @@ export const menubarSteps = [
           {
             group: 'scikitDatasets',
             type: 'scikitTrainingDataset',
-            label: 'Load Training Dataset',
+            label: t('pages.pipelines.steps.scikitTrainingDataset'),
             form: scikitDatasetForm
           },
           {
             group: 'scikitDatasets',
             type: 'scikitTestingDataset',
-            label: 'Load Testing Dataset',
+            label: t('pages.pipelines.steps.scikitTestingDataset'),
             form: scikitDatasetForm
           },
         ]
       },
       {
         type: 'scikitUnsupervisedModels',
-        label: 'Scikit Unsupervised Models',
+        label: t('pages.pipelines.steps.scikitUnsupervisedModels'),
         items: scikitUnsupervisedSteps
       },
     ]
