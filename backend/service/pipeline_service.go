@@ -98,12 +98,13 @@ func (service *pipelineServiceImpl) Get(id uint) (*model.Pipeline, error) {
 	pipeline, err := service.PipelineRepository.FindByID(id)
 
 	if err != nil {
-		errMessage, _ := service.I18n.Localize(&i18n.LocalizeConfig{
+		errMessage := service.I18n.MustLocalize(&i18n.LocalizeConfig{
 			MessageID: "pipeline.repository.find.pipeline.id.failed",
 			TemplateData: map[string]interface{}{
 				"ID":     id,
 				"Reason": err.Error(),
 			},
+			PluralCount: 1,
 		})
 
 		return pipeline, errors.New(errMessage)
@@ -116,12 +117,13 @@ func (service *pipelineServiceImpl) GetPipelineSchedule(id uint) (*model.Pipelin
 	pipelineSchedule, err := service.PipelineRepository.FindPipelineScheduleByID(id)
 
 	if err != nil {
-		errMessage, _ := service.I18n.Localize(&i18n.LocalizeConfig{
+		errMessage := service.I18n.MustLocalize(&i18n.LocalizeConfig{
 			MessageID: "pipeline.repository.find.schedule.id.failed",
 			TemplateData: map[string]interface{}{
 				"ID":     id,
 				"Reason": err.Error(),
 			},
+			PluralCount: 1,
 		})
 
 		return pipelineSchedule, errors.New(errMessage)
@@ -134,12 +136,13 @@ func (service *pipelineServiceImpl) GetPipelineSchedules(id uint) ([]model.Pipel
 	schedules, err := service.PipelineRepository.FindPipelineScheduleByPipeline(id)
 
 	if err != nil {
-		errMessage, _ := service.I18n.Localize(&i18n.LocalizeConfig{
+		errMessage := service.I18n.MustLocalize(&i18n.LocalizeConfig{
 			MessageID: "pipeline.repository.find.schedule.pipelineID.failed",
 			TemplateData: map[string]interface{}{
 				"ID":     id,
 				"Reason": err.Error(),
 			},
+			PluralCount: 1,
 		})
 
 		return schedules, errors.New(errMessage)
@@ -152,11 +155,12 @@ func (service *pipelineServiceImpl) GetAllPipelineSchedules() ([]model.PipelineS
 	schedules, err := service.PipelineRepository.GetAllPipelineSchedules()
 
 	if err != nil {
-		errMessage, _ := service.I18n.Localize(&i18n.LocalizeConfig{
+		errMessage := service.I18n.MustLocalize(&i18n.LocalizeConfig{
 			MessageID: "pipeline.repository.find.schedule.all.failed",
 			TemplateData: map[string]interface{}{
 				"Reason": err.Error(),
 			},
+			PluralCount: 1,
 		})
 
 		return schedules, errors.New(errMessage)
@@ -169,12 +173,13 @@ func (service *pipelineServiceImpl) GetByOwner(ownerId uint) ([]model.Pipeline, 
 	pipelines, err := service.PipelineRepository.FindByOwner(ownerId)
 
 	if err != nil {
-		errMessage, _ := service.I18n.Localize(&i18n.LocalizeConfig{
+		errMessage := service.I18n.MustLocalize(&i18n.LocalizeConfig{
 			MessageID: "pipeline.repository.find.pipeline.owner.failed",
 			TemplateData: map[string]interface{}{
 				"OwnerID": ownerId,
 				"Reason":  err.Error(),
 			},
+			PluralCount: 1,
 		})
 
 		return pipelines, errors.New(errMessage)
@@ -185,11 +190,12 @@ func (service *pipelineServiceImpl) GetByOwner(ownerId uint) ([]model.Pipeline, 
 
 func (service *pipelineServiceImpl) Create(userId uint, name string, definition string) error {
 	if err := service.PipelineRepository.Create(&model.Pipeline{UserID: userId, Name: name, Definition: definition}); err != nil {
-		errMessage, _ := service.I18n.Localize(&i18n.LocalizeConfig{
+		errMessage := service.I18n.MustLocalize(&i18n.LocalizeConfig{
 			MessageID: "pipeline.repository.create.pipeline.failed",
 			TemplateData: map[string]interface{}{
 				"Reason": err.Error(),
 			},
+			PluralCount: 1,
 		})
 
 		return errors.New(errMessage)
@@ -203,11 +209,12 @@ func (service *pipelineServiceImpl) CreatePipelineSchedule(pipelineID uint, uniq
 
 		pipelineSchedule := &model.PipelineSchedule{PipelineID: pipelineID, UniqueOcurrence: uniqueOcurrence, CronExpression: cronExpression}
 		if err := service.PipelineRepository.CreatePipelineSchedule(pipelineSchedule); err != nil {
-			errMessage, _ := service.I18n.Localize(&i18n.LocalizeConfig{
+			errMessage := service.I18n.MustLocalize(&i18n.LocalizeConfig{
 				MessageID: "pipeline.repository.create.pipeline.failed",
 				TemplateData: map[string]interface{}{
 					"Reason": err.Error(),
 				},
+				PluralCount: 1,
 			})
 
 			return errors.New(errMessage)
@@ -242,7 +249,7 @@ func (service *pipelineServiceImpl) enqueueTask(uniqueOcurrence time.Time, cronE
 		return err
 	}
 
-	service.TaskQueueClient.Enqueue(task, asynq.Queue("runs"), asynq.ProcessAt(nextExec))
+	service.TaskQueueClient.Enqueue(task, asynq.Queue("runs"), asynq.Timeout(0), asynq.ProcessAt(nextExec))
 	return nil
 }
 
@@ -250,12 +257,13 @@ func (service *pipelineServiceImpl) Update(pipeline *model.Pipeline) error {
 	err := service.PipelineRepository.Update(pipeline)
 
 	if err != nil {
-		errMessage, _ := service.I18n.Localize(&i18n.LocalizeConfig{
+		errMessage := service.I18n.MustLocalize(&i18n.LocalizeConfig{
 			MessageID: "pipeline.repository.create.pipeline.failed",
 			TemplateData: map[string]interface{}{
 				"ID":     pipeline.ID,
 				"Reason": err.Error(),
 			},
+			PluralCount: 1,
 		})
 
 		return errors.New(errMessage)
@@ -268,12 +276,13 @@ func (service *pipelineServiceImpl) Delete(id uint) error {
 	err := service.PipelineRepository.Delete(id)
 
 	if err != nil {
-		errMessage, _ := service.I18n.Localize(&i18n.LocalizeConfig{
+		errMessage := service.I18n.MustLocalize(&i18n.LocalizeConfig{
 			MessageID: "pipeline.repository.delete.pipeline.failed",
 			TemplateData: map[string]interface{}{
 				"ID":     id,
 				"Reason": err.Error(),
 			},
+			PluralCount: 1,
 		})
 
 		return errors.New(errMessage)
@@ -286,12 +295,13 @@ func (service *pipelineServiceImpl) DeletePipelineSchedule(id uint) error {
 	err := service.PipelineRepository.DeletePipelineSchedule(id)
 
 	if err != nil {
-		errMessage, _ := service.I18n.Localize(&i18n.LocalizeConfig{
+		errMessage := service.I18n.MustLocalize(&i18n.LocalizeConfig{
 			MessageID: "pipeline.repository.delete.schedule.failed",
 			TemplateData: map[string]interface{}{
 				"ID":     id,
 				"Reason": err.Error(),
 			},
+			PluralCount: 1,
 		})
 
 		return errors.New(errMessage)

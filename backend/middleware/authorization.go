@@ -37,11 +37,12 @@ func Auth(tokenService service.TokenService, I18n *i18n.Localizer) gin.HandlerFu
 					})
 				}
 
-				errorMessage, _ := I18n.Localize(&i18n.LocalizeConfig{
+				errorMessage := I18n.MustLocalize(&i18n.LocalizeConfig{
 					MessageID: "sys.binding.req",
 					TemplateData: map[string]interface{}{
 						"Reason": err.Error(),
 					},
+					PluralCount: 1,
 				})
 
 				err := errors.NewBadRequest(errorMessage)
@@ -63,7 +64,7 @@ func Auth(tokenService service.TokenService, I18n *i18n.Localizer) gin.HandlerFu
 		}
 
 		if authHeader.IDToken == "" {
-			errorMessage, _ := I18n.Localize(&i18n.LocalizeConfig{
+			errorMessage := I18n.MustLocalize(&i18n.LocalizeConfig{
 				MessageID: "auth.header.authorization.empty",
 			})
 			err := errors.NewAuthorization(errorMessage)

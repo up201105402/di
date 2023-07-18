@@ -123,12 +123,13 @@ func (service *tokenService) NewFirstPairFromUser(ctx context.Context, u *model.
 	idToken, err := generateIDToken(u, service.PrivKey, service.IDExpirationSecs)
 
 	if err != nil {
-		errorMessage, _ := service.I18n.Localize(&i18n.LocalizeConfig{
+		errorMessage := service.I18n.MustLocalize(&i18n.LocalizeConfig{
 			MessageID: "token.service.id-token.generate.failed",
 			TemplateData: map[string]interface{}{
 				"UID":    u.ID,
 				"Reason": err.Error(),
 			},
+			PluralCount: 1,
 		})
 		log.Printf(errorMessage)
 		return nil, errors.New(errorMessage)
@@ -137,24 +138,26 @@ func (service *tokenService) NewFirstPairFromUser(ctx context.Context, u *model.
 	refreshToken, err := generateRefreshToken(u.ID, service.RefreshSecret, service.RefreshExpirationSecs)
 
 	if err != nil {
-		errorMessage, _ := service.I18n.Localize(&i18n.LocalizeConfig{
+		errorMessage := service.I18n.MustLocalize(&i18n.LocalizeConfig{
 			MessageID: "token.service.refresh-token.generate.failed",
 			TemplateData: map[string]interface{}{
 				"UID":    u.ID,
 				"Reason": err.Error(),
 			},
+			PluralCount: 1,
 		})
 		log.Printf(errorMessage)
 		return nil, errors.New(errorMessage)
 	}
 
 	if err := service.TokenRepository.SetRefreshToken(ctx, u.ID, refreshToken.ID, refreshToken.ExpiresIn); err != nil {
-		errorMessage, _ := service.I18n.Localize(&i18n.LocalizeConfig{
+		errorMessage := service.I18n.MustLocalize(&i18n.LocalizeConfig{
 			MessageID: "token.service.id-token.store.failed",
 			TemplateData: map[string]interface{}{
 				"UID":    u.ID,
 				"Reason": err.Error(),
 			},
+			PluralCount: 1,
 		})
 		log.Printf(errorMessage)
 		return nil, errors.New(errorMessage)
@@ -170,12 +173,13 @@ func (service *tokenService) NewPairFromUser(ctx context.Context, u *model.User,
 	idToken, err := generateIDToken(u, service.PrivKey, service.IDExpirationSecs)
 
 	if err != nil {
-		errorMessage, _ := service.I18n.Localize(&i18n.LocalizeConfig{
+		errorMessage := service.I18n.MustLocalize(&i18n.LocalizeConfig{
 			MessageID: "token.service.id-token.generate.failed",
 			TemplateData: map[string]interface{}{
 				"UID":    u.ID,
 				"Reason": err.Error(),
 			},
+			PluralCount: 1,
 		})
 		log.Printf(errorMessage)
 		return nil, errors.New(errorMessage)
@@ -195,11 +199,12 @@ func (service *tokenService) ValidateIDToken(tokenString string) (*model.User, e
 	claims, err := validateIDToken(tokenString, service.PubKey)
 
 	if err != nil {
-		errorMessage, _ := service.I18n.Localize(&i18n.LocalizeConfig{
+		errorMessage := service.I18n.MustLocalize(&i18n.LocalizeConfig{
 			MessageID: "token.service.id-token.validate.failed",
 			TemplateData: map[string]interface{}{
 				"Reason": err.Error(),
 			},
+			PluralCount: 1,
 		})
 		log.Printf(errorMessage)
 		return nil, errors.New(errorMessage)
@@ -212,11 +217,12 @@ func (service *tokenService) ValidateRefreshToken(tokenString string) (*model.Re
 	claims, err := validateRefreshToken(tokenString, service.RefreshSecret)
 
 	if err != nil {
-		errorMessage, _ := service.I18n.Localize(&i18n.LocalizeConfig{
+		errorMessage := service.I18n.MustLocalize(&i18n.LocalizeConfig{
 			MessageID: "token.service.refresh-token.validate.failed",
 			TemplateData: map[string]interface{}{
 				"Reason": err.Error(),
 			},
+			PluralCount: 1,
 		})
 		log.Printf(errorMessage)
 		return nil, errors.New(errorMessage)
@@ -225,11 +231,12 @@ func (service *tokenService) ValidateRefreshToken(tokenString string) (*model.Re
 	tokenUUID, err := uuid.Parse(claims.Id)
 
 	if err != nil {
-		errorMessage, _ := service.I18n.Localize(&i18n.LocalizeConfig{
+		errorMessage := service.I18n.MustLocalize(&i18n.LocalizeConfig{
 			MessageID: "token.service.claims.parse.failed",
 			TemplateData: map[string]interface{}{
 				"Reason": err.Error(),
 			},
+			PluralCount: 1,
 		})
 		log.Printf(errorMessage)
 		return nil, errors.New(errorMessage)

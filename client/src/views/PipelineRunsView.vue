@@ -17,7 +17,9 @@ import BaseButtons from "@/components/BaseButtons.vue";
 import RunsTable from '@/components/RunsTable.vue';
 import CardBoxModal from "@/components/CardBoxModal.vue";
 import Loading from "vue-loading-overlay";
+import { i18n } from '@/i18n';
 
+const { t } = i18n.global;
 const { accessToken } = storeToRefs(useAuthStore());
 const route = useRoute();
 const toast = useToast();
@@ -85,7 +87,7 @@ watch(fetchRunsResponse, (value) => {
         let header = t('global.errors.generic.header');
         let detail = value.error.message;
 
-        if (response.status == 401) {
+        if (value.status == 401) {
             header = t('global.errors.authorization.header');
             detail = t('global.errors.authorization.detail');
         }
@@ -99,7 +101,7 @@ watch(createRunResponse, (value) => {
         let header = t('global.errors.generic.header');
         let detail = value.error.message;
 
-        if (response.status == 401) {
+        if (value.status == 401) {
             header = t('global.errors.authorization.header');
             detail = t('global.errors.authorization.detail');
         }

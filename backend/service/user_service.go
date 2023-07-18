@@ -26,12 +26,13 @@ func (service *userServiceImpl) Get(id uint) (*model.User, error) {
 	user, err := service.UserRepository.FindByID(id)
 
 	if err != nil {
-		errMessage, _ := service.I18n.Localize(&i18n.LocalizeConfig{
+		errMessage := service.I18n.MustLocalize(&i18n.LocalizeConfig{
 			MessageID: "user.repository.find.user.id.failed",
 			TemplateData: map[string]interface{}{
 				"ID":     id,
 				"Reason": err.Error(),
 			},
+			PluralCount: 1,
 		})
 
 		return user, errors.New(errMessage)
@@ -44,12 +45,13 @@ func (service *userServiceImpl) GetByUsername(username string) (*model.User, err
 	user, err := service.UserRepository.FindByUsername(username)
 
 	if err != nil {
-		errMessage, _ := service.I18n.Localize(&i18n.LocalizeConfig{
+		errMessage := service.I18n.MustLocalize(&i18n.LocalizeConfig{
 			MessageID: "user.repository.find.user.username.failed",
 			TemplateData: map[string]interface{}{
 				"Username": username,
 				"Reason":   err.Error(),
 			},
+			PluralCount: 1,
 		})
 
 		return user, errors.New(errMessage)
@@ -62,22 +64,24 @@ func (service *userServiceImpl) Signup(username string, password string) error {
 	pw, err := util.HashPassword(password)
 
 	if err != nil {
-		errMessage, _ := service.I18n.Localize(&i18n.LocalizeConfig{
+		errMessage := service.I18n.MustLocalize(&i18n.LocalizeConfig{
 			MessageID: "user.repository.create.user.failed",
 			TemplateData: map[string]interface{}{
 				"Reason": err.Error(),
 			},
+			PluralCount: 1,
 		})
 
 		return errors.New(errMessage)
 	}
 
 	if err := service.UserRepository.Create(&model.User{Username: username, Password: pw}); err != nil {
-		errMessage, _ := service.I18n.Localize(&i18n.LocalizeConfig{
+		errMessage := service.I18n.MustLocalize(&i18n.LocalizeConfig{
 			MessageID: "user.repository.create.user.failed",
 			TemplateData: map[string]interface{}{
 				"Reason": err.Error(),
 			},
+			PluralCount: 1,
 		})
 
 		return errors.New(errMessage)
@@ -90,12 +94,13 @@ func (service *userServiceImpl) Signin(user *model.User) error {
 	uFetched, err := service.UserRepository.FindByUsername(user.Username)
 
 	if err != nil {
-		errMessage, _ := service.I18n.Localize(&i18n.LocalizeConfig{
+		errMessage := service.I18n.MustLocalize(&i18n.LocalizeConfig{
 			MessageID: "user.repository.find.user.username.failed",
 			TemplateData: map[string]interface{}{
 				"Username": user.Username,
 				"Reason":   err.Error(),
 			},
+			PluralCount: 1,
 		})
 
 		return errors.New(errMessage)
@@ -104,18 +109,19 @@ func (service *userServiceImpl) Signin(user *model.User) error {
 	match, err := util.ComparePasswords(uFetched.Password, user.Password)
 
 	if err != nil {
-		errMessage, _ := service.I18n.Localize(&i18n.LocalizeConfig{
+		errMessage := service.I18n.MustLocalize(&i18n.LocalizeConfig{
 			MessageID: "user.service.user.signin.failed",
 			TemplateData: map[string]interface{}{
 				"Reason": err.Error(),
 			},
+			PluralCount: 1,
 		})
 
 		return errors.New(errMessage)
 	}
 
 	if !match {
-		errMessage, _ := service.I18n.Localize(&i18n.LocalizeConfig{
+		errMessage := service.I18n.MustLocalize(&i18n.LocalizeConfig{
 			MessageID: "user.service.user.signin.password.failed",
 		})
 
@@ -130,11 +136,12 @@ func (service *userServiceImpl) UpdateDetails(user *model.User) error {
 	err := service.UserRepository.Update(user)
 
 	if err != nil {
-		errMessage, _ := service.I18n.Localize(&i18n.LocalizeConfig{
+		errMessage := service.I18n.MustLocalize(&i18n.LocalizeConfig{
 			MessageID: "user.repository.update.user.failed",
 			TemplateData: map[string]interface{}{
 				"Reason": err.Error(),
 			},
+			PluralCount: 1,
 		})
 
 		return errors.New(errMessage)

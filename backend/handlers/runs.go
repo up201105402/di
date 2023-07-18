@@ -49,11 +49,12 @@ func FindRunsByPipeline(services *service.Services, I18n *i18n.Localizer) gin.Ha
 		pipelineID, parseError := strconv.ParseUint(id, 10, 64)
 
 		if parseError != nil {
-			errMessage, _ := I18n.Localize(&i18n.LocalizeConfig{
+			errMessage := I18n.MustLocalize(&i18n.LocalizeConfig{
 				MessageID: "sys.parsing.string.uint",
 				TemplateData: map[string]interface{}{
 					"Reason": parseError.Error(),
 				},
+				PluralCount: 1,
 			})
 			log.Printf(errMessage)
 			err := errors.NewInternal(errMessage)
@@ -99,11 +100,12 @@ func CreateRun(services *service.Services, I18n *i18n.Localizer) gin.HandlerFunc
 		pipelineID, parseError := strconv.ParseUint(id, 10, 64)
 
 		if parseError != nil {
-			errMessage, _ := I18n.Localize(&i18n.LocalizeConfig{
+			errMessage := I18n.MustLocalize(&i18n.LocalizeConfig{
 				MessageID: "sys.parsing.string.uint",
 				TemplateData: map[string]interface{}{
 					"Reason": parseError.Error(),
 				},
+				PluralCount: 1,
 			})
 			log.Printf(errMessage)
 			err := errors.NewInternal(errMessage)
@@ -183,11 +185,12 @@ func ExecuteRun(services *service.Services, I18n *i18n.Localizer) gin.HandlerFun
 		runID, parseError := strconv.ParseUint(id, 10, 64)
 
 		if parseError != nil {
-			errMessage, _ := I18n.Localize(&i18n.LocalizeConfig{
+			errMessage := I18n.MustLocalize(&i18n.LocalizeConfig{
 				MessageID: "sys.parsing.string.uint",
 				TemplateData: map[string]interface{}{
 					"Reason": parseError.Error(),
 				},
+				PluralCount: 1,
 			})
 			log.Printf(errMessage)
 			err := errors.NewInternal(errMessage)
@@ -248,11 +251,12 @@ func FindRunResulstById(services *service.Services, I18n *i18n.Localizer) gin.Ha
 		runID, parseError := strconv.ParseUint(id, 10, 64)
 
 		if parseError != nil {
-			errMessage, _ := I18n.Localize(&i18n.LocalizeConfig{
+			errMessage := I18n.MustLocalize(&i18n.LocalizeConfig{
 				MessageID: "sys.parsing.string.uint",
 				TemplateData: map[string]interface{}{
 					"Reason": parseError.Error(),
 				},
+				PluralCount: 1,
 			})
 			log.Printf(errMessage)
 			err := errors.NewInternal(errMessage)
@@ -287,11 +291,12 @@ func FindRunResulstById(services *service.Services, I18n *i18n.Localizer) gin.Ha
 		runLogsDir, exists := os.LookupEnv("RUN_LOGS_DIR")
 
 		if !exists {
-			errMessage, _ := I18n.Localize(&i18n.LocalizeConfig{
+			errMessage := I18n.MustLocalize(&i18n.LocalizeConfig{
 				MessageID: "env.variable.find.failed",
 				TemplateData: map[string]interface{}{
 					"Name": "RUN_LOGS_DIR",
 				},
+				PluralCount: 1,
 			})
 			log.Printf(errMessage)
 			err := errors.NewInternal(errMessage)
@@ -304,11 +309,12 @@ func FindRunResulstById(services *service.Services, I18n *i18n.Localizer) gin.Ha
 		logFileName, exists := os.LookupEnv("RUN_LOG_FILE_NAME")
 
 		if !exists {
-			errMessage, _ := I18n.Localize(&i18n.LocalizeConfig{
+			errMessage := I18n.MustLocalize(&i18n.LocalizeConfig{
 				MessageID: "env.variable.find.failed",
 				TemplateData: map[string]interface{}{
 					"Name": "RUN_LOG_FILE_NAME",
 				},
+				PluralCount: 1,
 			})
 			log.Printf(errMessage)
 			err := errors.NewInternal(errMessage)
@@ -322,12 +328,13 @@ func FindRunResulstById(services *service.Services, I18n *i18n.Localizer) gin.Ha
 		logFile, err := os.ReadFile(runLogDir + logFileName)
 
 		if err != nil {
-			errMessage, _ := I18n.Localize(&i18n.LocalizeConfig{
+			errMessage := I18n.MustLocalize(&i18n.LocalizeConfig{
 				MessageID: "os.cmd.read.file.failed",
 				TemplateData: map[string]interface{}{
 					"Path":   runLogDir + logFileName,
 					"Reason": err.Error(),
 				},
+				PluralCount: 1,
 			})
 			log.Printf(errMessage)
 			err := errors.NewInternal(errMessage)

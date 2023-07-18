@@ -69,11 +69,12 @@ func (step CheckoutRepo) Execute(logFile *os.File, I18n *i18n.Localizer) error {
 	pipelinesWorkDir, exists := os.LookupEnv("PIPELINES_WORK_DIR")
 
 	if !exists {
-		errMessage, _ := I18n.Localize(&i18n.LocalizeConfig{
+		errMessage := I18n.MustLocalize(&i18n.LocalizeConfig{
 			MessageID: "env.variable.find.failed",
 			TemplateData: map[string]interface{}{
 				"Name": "PIPELINES_WORK_DIR",
 			},
+			PluralCount: 1,
 		})
 
 		runLogger.Println(errMessage)

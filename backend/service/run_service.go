@@ -42,12 +42,13 @@ func (service *runServiceImpl) Get(id uint) (*model.Run, error) {
 	run, err := service.RunRepository.FindByID(id)
 
 	if err != nil {
-		errMessage, _ := service.I18n.Localize(&i18n.LocalizeConfig{
+		errMessage := service.I18n.MustLocalize(&i18n.LocalizeConfig{
 			MessageID: "run.repository.find.run.id.failed",
 			TemplateData: map[string]interface{}{
 				"ID":     id,
 				"Reason": err.Error(),
 			},
+			PluralCount: 1,
 		})
 
 		return run, errors.New(errMessage)
@@ -60,12 +61,13 @@ func (service *runServiceImpl) GetByPipeline(pipelineId uint) ([]model.Run, erro
 	runs, err := service.RunRepository.FindByPipeline(pipelineId)
 
 	if err != nil {
-		errMessage, _ := service.I18n.Localize(&i18n.LocalizeConfig{
+		errMessage := service.I18n.MustLocalize(&i18n.LocalizeConfig{
 			MessageID: "run.repository.find.run.pipeline.failed",
 			TemplateData: map[string]interface{}{
 				"ID":     pipelineId,
 				"Reason": err.Error(),
 			},
+			PluralCount: 1,
 		})
 
 		return runs, errors.New(errMessage)
@@ -78,12 +80,13 @@ func (service *runServiceImpl) FindRunStepStatusesByRun(runID uint) ([]model.Run
 	runStepStatuses, err := service.RunRepository.FindRunStepStatusesByRun(runID)
 
 	if err != nil {
-		errMessage, _ := service.I18n.Localize(&i18n.LocalizeConfig{
+		errMessage := service.I18n.MustLocalize(&i18n.LocalizeConfig{
 			MessageID: "run.repository.find.step-status.run.failed",
 			TemplateData: map[string]interface{}{
 				"ID":     runID,
 				"Reason": err.Error(),
 			},
+			PluralCount: 1,
 		})
 
 		return runStepStatuses, errors.New(errMessage)
@@ -95,11 +98,12 @@ func (service *runServiceImpl) FindRunStepStatusesByRun(runID uint) ([]model.Run
 func (service *runServiceImpl) Create(pipeline model.Pipeline) (model.Run, error) {
 	newRun := &model.Run{PipelineID: pipeline.ID, RunStatusID: 1, Definition: pipeline.Definition}
 	if err := service.RunRepository.Create(newRun); err != nil {
-		errMessage, _ := service.I18n.Localize(&i18n.LocalizeConfig{
+		errMessage := service.I18n.MustLocalize(&i18n.LocalizeConfig{
 			MessageID: "run.repository.create.run.failed",
 			TemplateData: map[string]interface{}{
 				"Reason": err.Error(),
 			},
+			PluralCount: 1,
 		})
 
 		return *newRun, errors.New(errMessage)
@@ -111,11 +115,12 @@ func (service *runServiceImpl) Create(pipeline model.Pipeline) (model.Run, error
 func (service *runServiceImpl) CreateRunStepStatus(runID uint, stepID int, runStatusID uint, errorMessage string) error {
 	newRunStepStatus := &model.RunStepStatus{RunID: runID, StepID: stepID, RunStatusID: runStatusID, LastRun: time.Now()}
 	if err := service.RunRepository.CreateRunStepStatus(newRunStepStatus); err != nil {
-		errMessage, _ := service.I18n.Localize(&i18n.LocalizeConfig{
+		errMessage := service.I18n.MustLocalize(&i18n.LocalizeConfig{
 			MessageID: "run.repository.create.step-status.failed",
 			TemplateData: map[string]interface{}{
 				"Reason": err.Error(),
 			},
+			PluralCount: 1,
 		})
 
 		return errors.New(errMessage)
@@ -129,12 +134,13 @@ func (service *runServiceImpl) Execute(runID uint) error {
 	run, err := service.RunRepository.FindByID(runID)
 
 	if err != nil {
-		errMessage, _ := service.I18n.Localize(&i18n.LocalizeConfig{
+		errMessage := service.I18n.MustLocalize(&i18n.LocalizeConfig{
 			MessageID: "run.repository.find.run.id.failed",
 			TemplateData: map[string]interface{}{
 				"ID":     runID,
 				"Reason": err.Error(),
 			},
+			PluralCount: 1,
 		})
 
 		return errors.New(errMessage)
@@ -147,12 +153,13 @@ func (service *runServiceImpl) Execute(runID uint) error {
 	err = service.RunRepository.DeleteAllRunStepStatuses(runID)
 
 	if err != nil {
-		errMessage, _ := service.I18n.Localize(&i18n.LocalizeConfig{
+		errMessage := service.I18n.MustLocalize(&i18n.LocalizeConfig{
 			MessageID: "run.repository.delete.step-status.all.failed",
 			TemplateData: map[string]interface{}{
 				"ID":     runID,
 				"Reason": err.Error(),
 			},
+			PluralCount: 1,
 		})
 
 		return errors.New(errMessage)
@@ -170,13 +177,14 @@ func (service *runServiceImpl) Execute(runID uint) error {
 		return err
 	}
 
-	if _, err := service.TaskQueueClient.Enqueue(runPipelineTask, asynq.Queue("runs")); err != nil {
-		errMessage, _ := service.I18n.Localize(&i18n.LocalizeConfig{
+	if _, err := service.TaskQueueClient.Enqueue(runPipelineTask, asynq.Queue("runs"), asynq.Timeout(0)); err != nil {
+		errMessage := service.I18n.MustLocalize(&i18n.LocalizeConfig{
 			MessageID: "tasks.client.enqueue.failed",
 			TemplateData: map[string]interface{}{
 				"Queue":  "runs",
 				"Reason": err.Error(),
 			},
+			PluralCount: 1,
 		})
 
 		return errors.New(errMessage)
@@ -189,12 +197,13 @@ func (service *runServiceImpl) Update(run *model.Run) error {
 	err := service.RunRepository.Update(run)
 
 	if err != nil {
-		errMessage, _ := service.I18n.Localize(&i18n.LocalizeConfig{
+		errMessage := service.I18n.MustLocalize(&i18n.LocalizeConfig{
 			MessageID: "run.repository.update.run.failed",
 			TemplateData: map[string]interface{}{
 				"ID":     run.ID,
 				"Reason": err.Error(),
 			},
+			PluralCount: 1,
 		})
 
 		return errors.New(errMessage)
@@ -207,12 +216,13 @@ func (service *runServiceImpl) UpdateRunStepStatus(runStepStatus *model.RunStepS
 	err := service.RunRepository.UpdateRunStepStatus(runStepStatus)
 
 	if err != nil {
-		errMessage, _ := service.I18n.Localize(&i18n.LocalizeConfig{
+		errMessage := service.I18n.MustLocalize(&i18n.LocalizeConfig{
 			MessageID: "run.repository.update.step-status.failed",
 			TemplateData: map[string]interface{}{
 				"ID":     runStepStatus.ID,
 				"Reason": err.Error(),
 			},
+			PluralCount: 1,
 		})
 
 		return errors.New(errMessage)
@@ -225,12 +235,13 @@ func (service *runServiceImpl) Delete(id uint) error {
 	err := service.RunRepository.Delete(id)
 
 	if err != nil {
-		errMessage, _ := service.I18n.Localize(&i18n.LocalizeConfig{
+		errMessage := service.I18n.MustLocalize(&i18n.LocalizeConfig{
 			MessageID: "run.repository.delete.run.failed",
 			TemplateData: map[string]interface{}{
 				"ID":     id,
 				"Reason": err.Error(),
 			},
+			PluralCount: 1,
 		})
 
 		return errors.New(errMessage)
@@ -243,12 +254,13 @@ func (service *runServiceImpl) DeleteRunStepStatus(id uint) error {
 	err := service.RunRepository.DeleteRunStepStatus(id)
 
 	if err != nil {
-		errMessage, _ := service.I18n.Localize(&i18n.LocalizeConfig{
+		errMessage := service.I18n.MustLocalize(&i18n.LocalizeConfig{
 			MessageID: "run.repository.delete.step-status.id.failed",
 			TemplateData: map[string]interface{}{
 				"ID":     id,
 				"Reason": err.Error(),
 			},
+			PluralCount: 1,
 		})
 
 		return errors.New(errMessage)
@@ -330,11 +342,12 @@ func executeRunPipelineTask(runPipelinePayload RunPipelinePayload, service *runS
 	pipelinesWorkDir, exists := os.LookupEnv("PIPELINES_WORK_DIR")
 
 	if !exists {
-		errMessage, _ := service.I18n.Localize(&i18n.LocalizeConfig{
+		errMessage := service.I18n.MustLocalize(&i18n.LocalizeConfig{
 			MessageID: "env.variable.find.failed",
 			TemplateData: map[string]interface{}{
 				"Name": "PIPELINES_WORK_DIR",
 			},
+			PluralCount: 1,
 		})
 
 		log.Println(errMessage)
@@ -349,11 +362,12 @@ func executeRunPipelineTask(runPipelinePayload RunPipelinePayload, service *runS
 	runLogsDir, exists := os.LookupEnv("RUN_LOGS_DIR")
 
 	if !exists {
-		errMessage, _ := service.I18n.Localize(&i18n.LocalizeConfig{
+		errMessage := service.I18n.MustLocalize(&i18n.LocalizeConfig{
 			MessageID: "env.variable.find.failed",
 			TemplateData: map[string]interface{}{
 				"Name": "RUN_LOGS_DIR",
 			},
+			PluralCount: 1,
 		})
 
 		log.Println(errMessage)
@@ -369,7 +383,7 @@ func executeRunPipelineTask(runPipelinePayload RunPipelinePayload, service *runS
 	currentRunLogDir := runLogsDir + "/pipelines/" + fmt.Sprint(runPipelinePayload.PipelineID) + "/" + fmt.Sprint(runPipelinePayload.RunID) + "/"
 
 	if err := os.RemoveAll(currentPipelineWorkDir); err != nil {
-		errMessage, _ := service.I18n.Localize(&i18n.LocalizeConfig{
+		errMessage := service.I18n.MustLocalize(&i18n.LocalizeConfig{
 			MessageID: "env.variable.find.failed",
 			TemplateData: map[string]interface{}{
 				"Path":   currentPipelineWorkDir,
@@ -388,12 +402,13 @@ func executeRunPipelineTask(runPipelinePayload RunPipelinePayload, service *runS
 	}
 
 	if err := os.MkdirAll(currentPipelineWorkDir, os.ModePerm); err != nil {
-		errMessage, _ := service.I18n.Localize(&i18n.LocalizeConfig{
+		errMessage := service.I18n.MustLocalize(&i18n.LocalizeConfig{
 			MessageID: "os.cmd.mkdir.dir.failed",
 			TemplateData: map[string]interface{}{
 				"Path":   currentPipelineWorkDir,
 				"Reason": err.Error(),
 			},
+			PluralCount: 1,
 		})
 
 		log.Println(errMessage)
@@ -406,13 +421,13 @@ func executeRunPipelineTask(runPipelinePayload RunPipelinePayload, service *runS
 	}
 
 	if err := os.RemoveAll(currentRunLogDir); err != nil {
-		errMessage, _ := service.I18n.Localize(&i18n.LocalizeConfig{
+		errMessage := service.I18n.MustLocalize(&i18n.LocalizeConfig{
 			MessageID: "env.variable.find.failed",
 			TemplateData: map[string]interface{}{
 				"Path":   currentRunLogDir,
 				"Reason": err.Error(),
 			},
-			PluralCount: 2,
+			PluralCount: 1,
 		})
 
 		log.Println(errMessage)
@@ -425,12 +440,13 @@ func executeRunPipelineTask(runPipelinePayload RunPipelinePayload, service *runS
 	}
 
 	if err := os.MkdirAll(currentRunLogDir, os.ModePerm); err != nil {
-		errMessage, _ := service.I18n.Localize(&i18n.LocalizeConfig{
+		errMessage := service.I18n.MustLocalize(&i18n.LocalizeConfig{
 			MessageID: "os.cmd.mkdir.dir.failed",
 			TemplateData: map[string]interface{}{
 				"Path":   currentRunLogDir,
 				"Reason": err.Error(),
 			},
+			PluralCount: 1,
 		})
 
 		log.Println(errMessage)
@@ -445,11 +461,12 @@ func executeRunPipelineTask(runPipelinePayload RunPipelinePayload, service *runS
 	logFileName, exists := os.LookupEnv("RUN_LOG_FILE_NAME")
 
 	if !exists {
-		errMessage, _ := service.I18n.Localize(&i18n.LocalizeConfig{
+		errMessage := service.I18n.MustLocalize(&i18n.LocalizeConfig{
 			MessageID: "env.variable.find.failed",
 			TemplateData: map[string]interface{}{
 				"Name": "RUN_LOG_FILE_NAME",
 			},
+			PluralCount: 1,
 		})
 
 		service.UpdateRunStatus(runPipelinePayload.RunID, 3, errMessage)
@@ -460,12 +477,13 @@ func executeRunPipelineTask(runPipelinePayload RunPipelinePayload, service *runS
 	logFile, err := os.Create(currentRunLogDir + logFileName)
 
 	if err != nil {
-		errMessage, _ := service.I18n.Localize(&i18n.LocalizeConfig{
+		errMessage := service.I18n.MustLocalize(&i18n.LocalizeConfig{
 			MessageID: "os.cmd.create.file.failed",
 			TemplateData: map[string]interface{}{
 				"Name":   currentRunLogDir + logFileName,
 				"Reason": err.Error(),
 			},
+			PluralCount: 1,
 		})
 
 		log.Print(errMessage)
@@ -511,7 +529,7 @@ func executeRunPipelineTask(runPipelinePayload RunPipelinePayload, service *runS
 			stepErr = err
 			hasError = true
 
-			errMessage, _ := service.I18n.Localize(&i18n.LocalizeConfig{
+			errMessage := service.I18n.MustLocalize(&i18n.LocalizeConfig{
 				MessageID: "run.service.execute.step.failed",
 				TemplateData: map[string]interface{}{
 					"ID":     step.GetID(),
@@ -530,17 +548,13 @@ func executeRunPipelineTask(runPipelinePayload RunPipelinePayload, service *runS
 
 			return true
 		} else {
-			errMessage, err1 := service.I18n.Localize(&i18n.LocalizeConfig{
+			errMessage := service.I18n.MustLocalize(&i18n.LocalizeConfig{
 				MessageID: "run.service.execute.step.success",
 				TemplateData: map[string]interface{}{
 					"ID": step.GetID(),
 				},
 				PluralCount: 1,
 			})
-
-			if err1 != nil {
-				log.Println(err1.Error())
-			}
 
 			runLogger.Println(errMessage)
 			log.Println(errMessage)
@@ -563,12 +577,13 @@ func executeRunPipelineTask(runPipelinePayload RunPipelinePayload, service *runS
 			runLogger.Println(err.Error())
 		}
 
-		errMessage, _ := service.I18n.Localize(&i18n.LocalizeConfig{
+		errMessage := service.I18n.MustLocalize(&i18n.LocalizeConfig{
 			MessageID: "run.service.execute.run.failed",
 			TemplateData: map[string]interface{}{
 				"ID":     runPipelinePayload.RunID,
 				"Reason": stepErr.Error(),
 			},
+			PluralCount: 1,
 		})
 
 		log.Println(errMessage)
@@ -579,11 +594,12 @@ func executeRunPipelineTask(runPipelinePayload RunPipelinePayload, service *runS
 			runLogger.Println(err.Error())
 		}
 
-		errMessage, _ := service.I18n.Localize(&i18n.LocalizeConfig{
+		errMessage := service.I18n.MustLocalize(&i18n.LocalizeConfig{
 			MessageID: "run.service.execute.run.success",
 			TemplateData: map[string]interface{}{
 				"ID": runPipelinePayload.RunID,
 			},
+			PluralCount: 1,
 		})
 
 		log.Println(errMessage)
@@ -640,13 +656,14 @@ func (service *runServiceImpl) HandleScheduledRunPipelineTask(ctx context.Contex
 			return err
 		}
 
-		if _, err = service.TaskQueueClient.Enqueue(task, asynq.Queue("runs"), asynq.ProcessAt(nextExec)); err != nil {
-			errMessage, _ := service.I18n.Localize(&i18n.LocalizeConfig{
+		if _, err = service.TaskQueueClient.Enqueue(task, asynq.Queue("runs"), asynq.Timeout(0), asynq.ProcessAt(nextExec)); err != nil {
+			errMessage := service.I18n.MustLocalize(&i18n.LocalizeConfig{
 				MessageID: "tasks.client.enqueue.failed",
 				TemplateData: map[string]interface{}{
 					"Queue":  "runs",
 					"Reason": err.Error(),
 				},
+				PluralCount: 1,
 			})
 
 			return errors.New(errMessage)
@@ -672,12 +689,13 @@ func (service *runServiceImpl) UpdateRunStatus(runID uint, statusID uint, errorM
 	run.LastRun = time.Now()
 
 	if err := service.RunRepository.Update(run); err != nil {
-		errMessage, _ := service.I18n.Localize(&i18n.LocalizeConfig{
+		errMessage := service.I18n.MustLocalize(&i18n.LocalizeConfig{
 			MessageID: "run.repository.update.run.failed",
 			TemplateData: map[string]interface{}{
 				"ID":     runID,
 				"Reason": err.Error(),
 			},
+			PluralCount: 1,
 		})
 
 		return errors.New(errMessage)
@@ -694,12 +712,13 @@ func (service *runServiceImpl) updateStepRunStatus(runStepStatus *model.RunStepS
 	runStepStatus.LastRun = time.Now()
 
 	if err := service.RunRepository.UpdateRunStepStatus(runStepStatus); err != nil {
-		errMessage, _ := service.I18n.Localize(&i18n.LocalizeConfig{
+		errMessage := service.I18n.MustLocalize(&i18n.LocalizeConfig{
 			MessageID: "run.repository.update.step-status.failed",
 			TemplateData: map[string]interface{}{
 				"ID":     runStepStatus.ID,
 				"Reason": err.Error(),
 			},
+			PluralCount: 1,
 		})
 
 		return errors.New(errMessage)

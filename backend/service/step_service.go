@@ -31,11 +31,12 @@ func (nodeService *nodeServiceImpl) NewStepInstance(pipelineID uint, runID uint,
 	stepTypeStructName := nodeService.StepTypeRegistry[stepType]
 
 	if stepTypeStructName == nil {
-		errMessage, _ := nodeService.I18n.Localize(&i18n.LocalizeConfig{
+		errMessage := nodeService.I18n.MustLocalize(&i18n.LocalizeConfig{
 			MessageID: "steps.service.step.new-instance.failed",
 			TemplateData: map[string]interface{}{
 				"Type": stepType,
 			},
+			PluralCount: 1,
 		})
 
 		log.Printf(errMessage)
@@ -56,11 +57,12 @@ func (nodeService *nodeServiceImpl) NewEdgeInstance(pipelineID uint, runID uint,
 	edgeTypeStructName := nodeService.EdgeTypeRegistry[edgeType]
 
 	if edgeTypeStructName == nil {
-		errMessage, _ := nodeService.I18n.Localize(&i18n.LocalizeConfig{
+		errMessage := nodeService.I18n.MustLocalize(&i18n.LocalizeConfig{
 			MessageID: "steps.service.edge.new-instance.failed",
 			TemplateData: map[string]interface{}{
 				"Type": edgeType,
 			},
+			PluralCount: 1,
 		})
 
 		log.Printf(errMessage)

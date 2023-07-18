@@ -142,6 +142,11 @@ export const messages = {
                 },
                 edit: {
                     header: "Pipeline {id}",
+                    menubar: {
+                        general: 'General',
+                        scikit: 'Scikit',
+                        hitl: 'HITL',
+                    },
                     dialog: {
                         create: {
                             header: 'Create {name} Step',
@@ -199,7 +204,7 @@ export const messages = {
                                 cronExpression: 'Cron Expression',
                             },
                         }
-                    }
+                    },
                 },
                 steps: {
                     checkoutRepo: 'Checkout Repository',
@@ -244,7 +249,7 @@ export const messages = {
                     ransacRegression: 'Ransac Regression',
                     theilSenRegression: 'Theil Sen Regression',
                     quantileRegression: 'Quantile Regressiom',
-                }
+                },
             },
             runs: {
                 name: "Runs",

@@ -42,7 +42,7 @@ const scikitUnsupervisedSteps = Object.entries(scikitUnsupervisedModels)
 export const menubarSteps = [
   {
     type: 'general',
-    label: 'General',
+    label: t('pages.pipelines.edit.menubar.general'),
     items: [
       {
         type: 'checkoutRepo',
@@ -66,7 +66,7 @@ export const menubarSteps = [
   },
   {
     type: 'scikit',
-    label: 'Scikit',
+    label: t('pages.pipelines.edit.menubar.scikit'),
     items: [
       {
         type: 'scikitDatasets',
@@ -93,6 +93,18 @@ export const menubarSteps = [
       },
     ]
   },
+  {
+    type: 'hitl',
+    label: t('pages.pipelines.edit.menubar.hitl'),
+    items: [
+      {
+        group: 'hitl',
+        type: 'scikitTrainingDataset',
+        label: t('pages.pipelines.steps.scikitTrainingDataset'),
+        form: hitlForm
+      }
+    ]
+  }
 ];
 
 export const library = markRaw({

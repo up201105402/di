@@ -45,7 +45,7 @@ one = "Error creating directory {{.Path}}. Reason: {{.Reason}}"
 # Users
 #
 [user.repository.find.user.id.failed]
-one = "Failed to get user with id: {{.ID}}. Reason: {{.Reason}}"
+one = "Failed to get user with id {{.ID}}. Reason: {{.Reason}}"
 
 [user.repository.find.user.username.failed]
 one = "Failed to get user with username: {{.Username}}. Reason: {{.Reason}}"
@@ -90,10 +90,10 @@ one = "Error parsing Claims. Reason: {{.Reason}}"
 # Pipelines
 #
 [pipeline.repository.find.pipeline.id.failed]
-one = "Failed to get pipeline with id: {{.ID}}. Reason: {{.Reason}}"
+one = "Failed to get pipeline with id {{.ID}}. Reason: {{.Reason}}"
 
 [pipeline.repository.find.schedule.id.failed]
-one = "Failed to get pipeline schedule with id: {{.ID}}. Reason: {{.Reason}}"
+one = "Failed to get pipeline schedule with id {{.ID}}. Reason: {{.Reason}}"
 
 [pipeline.repository.find.schedule.all.failed]
 one = "Failed to get all pipeline schedules. Reason: {{.Reason}}"
@@ -102,19 +102,19 @@ one = "Failed to get all pipeline schedules. Reason: {{.Reason}}"
 one = "Failed to get pipelines with username {{.OwnerID}}. Reason: {{.Reason}}"
 
 [pipeline.repository.find.schedule.pipelineID.failed]
-one = "Failed to get schedules for pipeline with id: {{.ID}}. Reason: {{.Reason}}"
+one = "Failed to get schedules for pipeline with id {{.ID}}. Reason: {{.Reason}}"
 
 [pipeline.repository.create.pipeline.failed]
 one = "Failed to create pipeline. Reason: {{.Reason}}"
 
 [pipeline.repository.update.pipeline.failed]
-one = "Failed to update pipeline with id: {{.ID}}. Reason: {{.Reason}}"
+one = "Failed to update pipeline with id {{.ID}}. Reason: {{.Reason}}"
 
 [pipeline.repository.create.schedule.failed]
 one = "Failed to create pipeline schedule. Reason: {{.Reason}}"
 
 [pipeline.repository.delete.pipeline.failed]
-one = "Failed to delete pipeline with id: {{.ID}}. Reason: {{.Reason}}"
+one = "Failed to delete pipeline with id {{.ID}}. Reason: {{.Reason}}"
 
 [pipeline.repository.delete.schedule.failed]
 one = "Failed to delete pipeline schedule with id {{.ID}}. Reason: {{.Reason}}"
@@ -123,13 +123,13 @@ one = "Failed to delete pipeline schedule with id {{.ID}}. Reason: {{.Reason}}"
 # Runs
 #
 [run.repository.find.run.id.failed]
-one = "Failed to get run with id: {{.ID}}. Reason: {{.Reason}}"
+one = "Failed to get run with id {{.ID}}. Reason: {{.Reason}}"
 
 [run.repository.find.run.pipeline.failed]
-one = "Failed to get runs for pipeline with id: {{.ID}}. Reason: {{.Reason}}"
+one = "Failed to get runs for pipeline with id {{.ID}}. Reason: {{.Reason}}"
 
 [run.repository.find.step-status.run.failed]
-one = "Failed to get run step statuses for run with id: {{.ID}}. Reason: {{.Reason}}"
+one = "Failed to get run step statuses for run with id {{.ID}}. Reason: {{.Reason}}"
 
 [run.repository.create.run.failed]
 one = "Failed to create run. Reason: {{.Reason}}"
@@ -138,31 +138,31 @@ one = "Failed to create run. Reason: {{.Reason}}"
 one = "Failed to create run step status. Reason: {{.Reason}}"
 
 [run.repository.update.run.failed]
-one = "Failed to update run with id: {{.ID}}. Reason: {{.Reason}}"
+one = "Failed to update run with id {{.ID}}. Reason: {{.Reason}}"
 
 [run.repository.update.step-status.failed]
-one = "Failed to update run step status with id: {{.ID}}. Reason: {{.Reason}}"
+one = "Failed to update run step status with id {{.ID}}. Reason: {{.Reason}}"
 
 [run.repository.delete.run.failed]
-one = "Failed to delete run with id: {{.ID}}. Reason: {{.Reason}}"
+one = "Failed to delete run with id {{.ID}}. Reason: {{.Reason}}"
 
 [run.repository.delete.step-status.id.failed]
-one = "Failed to delete pipeline with id: {{.ID}}. Reason: {{.Reason}}"
+one = "Failed to delete pipeline with id {{.ID}}. Reason: {{.Reason}}"
 
 [run.repository.delete.step-status.all.failed]
-one = "Failed to delete run step statuses for run with id: {{.ID}}. Reason: {{.Reason}}"
+one = "Failed to delete run step statuses for run with id {{.ID}}. Reason: {{.Reason}}"
 
 [run.service.execute.run.failed]
-one = "Failed to execute run with id: {{.ID}}. Reason: {{.Reason}}"
+one = "Failed to execute run with id {{.ID}}. Reason: {{.Reason}}"
 
 [run.service.execute.run.success]
-one = "Run with id: {{.ID}} execute with success."
+one = "Run with id {{.ID}} execute with success."
 
 [run.service.execute.step.failed]
-one = "Failed to execute step with id: {{.ID}}. Reason: {{.Reason}}"
+one = "Failed to execute step with id {{.ID}}. Reason: {{.Reason}}"
 
 [run.service.execute.step.success]
-one = "Step with id: {{.ID}} executed with success."
+one = "Step with id {{.ID}} executed with success."
 
 #
 # Pipeline Steps

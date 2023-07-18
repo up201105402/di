@@ -59,7 +59,7 @@ func EditUser(services *service.Services, I18n *i18n.Localizer) gin.HandlerFunc 
 			oldPw, err := util.HashPassword(req.Password)
 
 			if oldPw != oldUser.Password {
-				errMessage, _ := I18n.Localize(&i18n.LocalizeConfig{
+				errMessage := I18n.MustLocalize(&i18n.LocalizeConfig{
 					MessageID: "user.handler.edit.password.old.failed",
 				})
 
@@ -73,11 +73,12 @@ func EditUser(services *service.Services, I18n *i18n.Localizer) gin.HandlerFunc 
 			pw, err := util.HashPassword(req.NewPassword)
 
 			if err != nil {
-				errMessage, _ := I18n.Localize(&i18n.LocalizeConfig{
+				errMessage := I18n.MustLocalize(&i18n.LocalizeConfig{
 					MessageID: "user.repository.create.user.failed",
 					TemplateData: map[string]interface{}{
 						"Reason": err.Error(),
 					},
+					PluralCount: 1,
 				})
 
 				log.Printf(errMessage)

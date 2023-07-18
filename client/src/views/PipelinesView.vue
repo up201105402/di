@@ -21,7 +21,9 @@ import Toast from 'primevue/toast';
 import { useToast } from 'primevue/usetoast';
 import Loading from "vue-loading-overlay";
 import "vue-loading-overlay/dist/css/index.css";
+import { i18n } from '@/i18n';
 
+const { t } = i18n.global;
 const { accessToken } = storeToRefs(useAuthStore());
 const toast = useToast();
 
@@ -49,7 +51,7 @@ watch(fetchResponse, (value) => {
     let header = t('global.errors.generic.header');
     let detail = value.error.message;
 
-    if (response.status == 401) {
+    if (value.status == 401) {
       header = t('global.errors.authorization.header');
       detail = t('global.errors.authorization.detail');
     }
@@ -97,7 +99,7 @@ watch(createResponse, (value) => {
     let header = t('global.errors.generic.header');
     let detail = value.error.message;
 
-    if (response.status == 401) {
+    if (value.status == 401) {
       header = t('global.errors.authorization.header');
       detail = t('global.errors.authorization.detail');
     }
@@ -148,7 +150,7 @@ watch(deleteResponse, (value) => {
     let header = t('global.errors.generic.header');
     let detail = value.error.message;
 
-    if (response.status == 401) {
+    if (value.status == 401) {
       header = t('global.errors.authorization.header');
       detail = t('global.errors.authorization.detail');
     }

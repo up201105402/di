@@ -197,7 +197,7 @@ watch(fetchPipelineResponse, (value) => {
     let header = t('global.errors.generic.header');
     let detail = value.error.message;
 
-    if (response.status == 401) {
+    if (value.status == 401) {
       header = t('global.errors.authorization.header');
       detail = t('global.errors.authorization.detail');
     }
@@ -211,7 +211,7 @@ watch(fetchPipelineSchedulesResponse, (value) => {
     let header = t('global.errors.generic.header');
     let detail = value.error.message;
 
-    if (response.status == 401) {
+    if (value.status == 401) {
       header = t('global.errors.authorization.header');
       detail = t('global.errors.authorization.detail');
     }
@@ -234,7 +234,7 @@ watch(updatePipelineResponse, (value) => {
     let header = t('global.errors.generic.header');
     let detail = value.error.message;
 
-    if (response.status == 401) {
+    if (value.status == 401) {
       header = t('global.errors.authorization.header');
       detail = t('global.errors.authorization.detail');
     }
@@ -253,7 +253,7 @@ watch(createPipelineScheduleResponse, (value) => {
     let header = t('global.errors.generic.header');
     let detail = value.error.message;
 
-    if (response.status == 401) {
+    if (value.status == 401) {
       header = t('global.errors.authorization.header');
       detail = t('global.errors.authorization.detail');
     }
@@ -271,7 +271,7 @@ watch(deletePipelineScheduleResponse, (value) => {
     let header = t('global.errors.generic.header');
     let detail = value.error.message;
 
-    if (response.status == 401) {
+    if (value.status == 401) {
       header = t('global.errors.authorization.header');
       detail = t('global.errors.authorization.detail');
     }

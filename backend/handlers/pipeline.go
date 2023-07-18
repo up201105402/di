@@ -55,11 +55,12 @@ func GetPipeline(services *service.Services, I18n *i18n.Localizer) gin.HandlerFu
 		id, parseError := strconv.ParseUint(pipelineId, 10, 64)
 
 		if parseError != nil {
-			errMessage, _ := I18n.Localize(&i18n.LocalizeConfig{
+			errMessage := I18n.MustLocalize(&i18n.LocalizeConfig{
 				MessageID: "sys.parsing.string.uint",
 				TemplateData: map[string]interface{}{
 					"Reason": parseError.Error(),
 				},
+				PluralCount: 1,
 			})
 			log.Printf(errMessage)
 			err := errors.NewInternal(errMessage)
@@ -96,11 +97,12 @@ func GetPipelineSchedule(services *service.Services, I18n *i18n.Localizer) gin.H
 		id, parseError := strconv.ParseUint(pipelineId, 10, 64)
 
 		if parseError != nil {
-			errMessage, _ := I18n.Localize(&i18n.LocalizeConfig{
+			errMessage := I18n.MustLocalize(&i18n.LocalizeConfig{
 				MessageID: "sys.parsing.string.uint",
 				TemplateData: map[string]interface{}{
 					"Reason": parseError.Error(),
 				},
+				PluralCount: 1,
 			})
 			log.Printf(errMessage)
 			err := errors.NewInternal(errMessage)
@@ -190,11 +192,12 @@ func CreatePipelineSchedule(services *service.Services, I18n *i18n.Localizer) gi
 		id, parseError := strconv.ParseUint(pipelineID, 10, 64)
 
 		if parseError != nil {
-			errMessage, _ := I18n.Localize(&i18n.LocalizeConfig{
+			errMessage := I18n.MustLocalize(&i18n.LocalizeConfig{
 				MessageID: "sys.parsing.string.uint",
 				TemplateData: map[string]interface{}{
 					"Reason": parseError.Error(),
 				},
+				PluralCount: 1,
 			})
 			log.Printf(errMessage)
 			err := errors.NewInternal(errMessage)
@@ -260,11 +263,12 @@ func UploadPipelineFile(services *service.Services, I18n *i18n.Localizer) gin.Ha
 		fileUploadDir, exists := os.LookupEnv("FILE_UPLOAD_DIR")
 
 		if !exists {
-			errMessage, _ := I18n.Localize(&i18n.LocalizeConfig{
+			errMessage := I18n.MustLocalize(&i18n.LocalizeConfig{
 				MessageID: "env.variable.find.failed",
 				TemplateData: map[string]interface{}{
 					"Name": "FILE_UPLOAD_DIR",
 				},
+				PluralCount: 1,
 			})
 
 			log.Printf(errMessage)
@@ -279,11 +283,12 @@ func UploadPipelineFile(services *service.Services, I18n *i18n.Localizer) gin.Ha
 		_, parseError := strconv.ParseUint(pipelineID, 10, 64)
 
 		if parseError != nil {
-			errMessage, _ := I18n.Localize(&i18n.LocalizeConfig{
+			errMessage := I18n.MustLocalize(&i18n.LocalizeConfig{
 				MessageID: "sys.parsing.string.uint",
 				TemplateData: map[string]interface{}{
 					"Reason": parseError.Error(),
 				},
+				PluralCount: 1,
 			})
 			log.Printf(errMessage)
 			err := errors.NewInternal(errMessage)
@@ -373,11 +378,12 @@ func DeletePipelineSchedule(services *service.Services, I18n *i18n.Localizer) gi
 		pipelineID, parseError := strconv.ParseUint(pipelineId, 10, 64)
 
 		if parseError != nil {
-			errMessage, _ := I18n.Localize(&i18n.LocalizeConfig{
+			errMessage := I18n.MustLocalize(&i18n.LocalizeConfig{
 				MessageID: "sys.parsing.string.uint",
 				TemplateData: map[string]interface{}{
 					"Reason": parseError.Error(),
 				},
+				PluralCount: 1,
 			})
 			log.Printf(errMessage)
 			err := errors.NewInternal(errMessage)
