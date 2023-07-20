@@ -64,7 +64,7 @@ func (step *ScikitTrainingDataset) GetRunID() uint {
 	return step.RunID
 }
 
-func (step ScikitTrainingDataset) Execute(logFile *os.File, I18n *i18n.Localizer) error {
+func (step ScikitTrainingDataset) Execute(logFile *os.File, I18n *i18n.Localizer) ([]model.HumanFeedbackQuery, error) {
 
 	runLogger := log.New(logFile, "", log.Ldate|log.Ltime|log.Lmicroseconds|log.Llongfile)
 
@@ -80,7 +80,7 @@ func (step ScikitTrainingDataset) Execute(logFile *os.File, I18n *i18n.Localizer
 		})
 
 		runLogger.Println(errMessage)
-		return errors.New(errMessage)
+		return nil, errors.New(errMessage)
 	}
 
 	currentPipelineWorkDir := pipelinesWorkDir + "/" + fmt.Sprint(step.PipelineID) + "/" + fmt.Sprint(step.RunID) + "/"
@@ -97,10 +97,10 @@ func (step ScikitTrainingDataset) Execute(logFile *os.File, I18n *i18n.Localizer
 		})
 
 		runLogger.Println(errMessage)
-		return errors.New(errMessage)
+		return nil, errors.New(errMessage)
 	}
 
-	scikitSnippetsDir = scikitSnippetsDir + "datasets/"
+	scikitSnippetsDir = scikitSnippetsDir + "/datasets/"
 
 	var args []string
 
@@ -167,5 +167,5 @@ func (step ScikitTrainingDataset) Execute(logFile *os.File, I18n *i18n.Localizer
 	runLogger.Println(stderr.String())
 	runLogger.Println(stdout.String())
 
-	return err
+	return nil, err
 }

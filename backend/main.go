@@ -70,8 +70,15 @@ func setupRouter(services *service.Services, I18n *i18n.Localizer) *gin.Engine {
 	router := gin.Default()
 
 	router.Static("/public", "../client/public")
-	router.Static("/data-sources", "../client/public/data-sources")
 	router.Static("/assets", "../client/src/assets")
+
+	workDir, exists := os.LookupEnv("PIPELINES_WORK_DIR")
+
+	if !exists {
+		panic("PIPELINES_WORK_DIR is not defined")
+	}
+
+	router.StaticFS("/work", http.Dir(workDir))
 
 	router.LoadHTMLFiles("../client/index.html")
 

@@ -102,7 +102,7 @@ func (step *ScikitUnsupervisedModel) GetRunID() uint {
 	return step.RunID
 }
 
-func (step ScikitUnsupervisedModel) Execute(logFile *os.File, I18n *i18n.Localizer) error {
+func (step ScikitUnsupervisedModel) Execute(logFile *os.File, I18n *i18n.Localizer) ([]model.HumanFeedbackQuery, error) {
 
 	runLogger := log.New(logFile, "", log.Ldate|log.Ltime|log.Lmicroseconds|log.Llongfile)
 
@@ -111,7 +111,7 @@ func (step ScikitUnsupervisedModel) Execute(logFile *os.File, I18n *i18n.Localiz
 	args, err := step.appendArgs(args, I18n, runLogger)
 
 	if err != nil {
-		return err
+		return nil, err
 	}
 
 	pipelinesWorkDir, exists := os.LookupEnv("PIPELINES_WORK_DIR")
@@ -126,7 +126,7 @@ func (step ScikitUnsupervisedModel) Execute(logFile *os.File, I18n *i18n.Localiz
 		})
 
 		runLogger.Println(errMessage)
-		return errors.New(errMessage)
+		return nil, errors.New(errMessage)
 	}
 
 	currentPipelineWorkDir := pipelinesWorkDir + "/" + fmt.Sprint(step.PipelineID) + "/" + fmt.Sprint(step.RunID) + "/"
@@ -141,7 +141,7 @@ func (step ScikitUnsupervisedModel) Execute(logFile *os.File, I18n *i18n.Localiz
 	runLogger.Println(stderr.String())
 	runLogger.Println(stdout.String())
 
-	return cmdErr
+	return nil, cmdErr
 }
 
 func (step ScikitUnsupervisedModel) appendArgs(args []string, I18n *i18n.Localizer, runLogger *log.Logger) ([]string, error) {

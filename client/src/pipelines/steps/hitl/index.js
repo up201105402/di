@@ -1,16 +1,10 @@
 import { reactive, toRef, ref, watch } from 'vue';
-import { camel2title, i18nFromStepName } from '@/util';
+import { i18nFromStepName } from '@/util';
 import { getNode, createMessage } from '@formkit/core';
 import { stepTabs, cancelAndSubmitButtons, getFormBody } from '@/pipelines/steps/formBasics';
 import { i18n } from '@/i18n';
 
 const { t } = i18n.global;
-
-export const datesetOptions = [
-    { id: 0, value: "scikitBreastCancer", label: t('pages.pipelines.edit.dialog.nameAndType.dataset.options.scikitBreastCancer') },
-    { id: 1, value: "scikitDiabetes", label: t('pages.pipelines.edit.dialog.nameAndType.dataset.options.scikitDiabetes') },
-    { id: 2, value: "scikitDigits", label: t('pages.pipelines.edit.dialog.nameAndType.dataset.options.scikitDigits') },
-];
 
 const nameAndTypeGroupChildren = [
     {
@@ -26,80 +20,90 @@ export const stepConfigGroupChildren = [
     {
         $formkit: 'text',
         name: 'data_dir',
-        label: 'pages.pipelines.edit.dialog.stepConfig.data_dir',
-        validation: 'required'
+        label: t('pages.pipelines.edit.dialog.stepConfig.data_dir'),
+        validation: 'required|dirPath',
     },
     {
         $formkit: 'text',
         name: 'models_dir',
-        label: 'pages.pipelines.edit.dialog.stepConfig.models_dir',
-        validation: 'required'
+        label: t('pages.pipelines.edit.dialog.stepConfig.models_dir'),
+        validation: 'required|dirPath',
     },
     {
         $formkit: 'text',
+        name: 'epochs_dir',
+        label: t('pages.pipelines.edit.dialog.stepConfig.epochs_dir'),
+        validation: 'required|dirPath',
+    },
+    {
+        $formkit: 'number',
         name: 'epochs',
-        label: 'pages.pipelines.edit.dialog.stepConfig.epochs',
-        validation: 'required'
+        label: t('pages.pipelines.edit.dialog.stepConfig.epochs'),
+        validation: 'required|min:0',
     },
     {
-        $formkit: 'text',
+        $formkit: 'number',
         name: 'tr_fraction',
-        label: 'pages.pipelines.edit.dialog.stepConfig.tr_fraction',
-        validation: 'required'
+        label: t('pages.pipelines.edit.dialog.stepConfig.tr_fraction'),
+        validation: 'required',
+        step: 'any',
     },
     {
-        $formkit: 'text',
+        $formkit: 'number',
         name: 'val_fraction',
-        label: 'pages.pipelines.edit.dialog.stepConfig.val_fraction',
-        validation: 'required'
+        label: t('pages.pipelines.edit.dialog.stepConfig.val_fraction'),
+        validation: 'required',
+        step: 'any',
     },
     {
         $formkit: 'text',
         name: 'train_desc',
-        label: 'pages.pipelines.edit.dialog.stepConfig.train_desc',
-        validation: 'required'
+        label: t('pages.pipelines.edit.dialog.stepConfig.train_desc'),
+        validation: 'required',
     },
     {
-        $formkit: 'text',
+        $formkit: 'select',
         name: 'sampling',
-        label: 'pages.pipelines.edit.dialog.stepConfig.sampling',
-        validation: 'required'
+        label: t('pages.pipelines.edit.dialog.stepConfig.sampling'),
+        validation: 'required',
+        options: ['low_entropy', 'high_entropy'],
     },
     {
-        $formkit: 'text',
+        $formkit: 'number',
         name: 'entropy_thresh',
-        label: 'pages.pipelines.edit.dialog.stepConfig.entropy_thresh',
-        validation: 'required'
+        label: t('pages.pipelines.edit.dialog.stepConfig.entropy_thresh'),
+        validation: 'required',
+        step: 'any',
     },
     {
-        $formkit: 'text',
+        $formkit: 'number',
         name: 'nr_queries',
-        label: 'pages.pipelines.edit.dialog.stepConfig.nr_queries',
-        validation: 'required'
+        label: t('pages.pipelines.edit.dialog.stepConfig.nr_queries'),
+        validation: 'required|min:0',
     },
     {
-        $formkit: 'text',
+        $formkit: 'checkbox',
         name: 'isOversampled',
-        label: 'pages.pipelines.edit.dialog.stepConfig.isOversampled',
-        validation: 'required'
+        label: t('pages.pipelines.edit.dialog.stepConfig.isOversampled'),
+        validation: 'required',
     },
     {
-        $formkit: 'text',
+        $formkit: 'number',
         name: 'start_epoch',
-        label: 'pages.pipelines.edit.dialog.stepConfig.start_epoch',
-        validation: 'required'
+        label: t('pages.pipelines.edit.dialog.stepConfig.start_epoch'),
+        validation: 'required|min:0',
     },
     {
-        $formkit: 'text',
+        $formkit: 'select',
         name: 'dataset',
-        label: 'pages.pipelines.edit.dialog.stepConfig.dataset',
-        validation: 'required'
+        label: t('pages.pipelines.edit.dialog.stepConfig.dataset'),
+        validation: 'required',
+        options: ['APTOS19', 'ISIC17','NCI'],
     }
-]
+];
 
 export const hitlForm = function (data, onSubmit, editable = true) {
     const activeStep = ref('');
-    const activeDataset = ref(data?.nameAndType?.dataset || datesetOptions[0].value);
     const steps = reactive({});
     const visitedSteps = ref([]); // track visited steps
     const showIsFirstStep = data.nameAndType == null || data?.nameAndType?.isFirstStep == false;
@@ -168,16 +172,9 @@ export const hitlForm = function (data, onSubmit, editable = true) {
         visitedSteps,
         activeStep,
         showIsFirstStep,
-        activeDataset,
         plugins: [
             stepPlugin
         ],
-        isActiveDataset: (dataset) => {
-            return activeDataset.value == dataset;
-        },
-        setActiveDataset: (changeEvent) => {
-            activeDataset.value = changeEvent.target.value;
-        },
         setStep: target => () => {
             setStep(target)
         },
@@ -199,7 +196,6 @@ export const hitlForm = function (data, onSubmit, editable = true) {
             }
         },
         stringify: (value) => JSON.stringify(value, null, 2),
-        camel2title,
         i18nFromStepName
     })
 

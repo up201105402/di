@@ -69,15 +69,21 @@ func (step *ShellScript) GetRunID() uint {
 	return step.RunID
 }
 
-func (step ShellScript) Execute(logFile *os.File, I18n *i18n.Localizer) error {
+func (step ShellScript) Execute(logFile *os.File, I18n *i18n.Localizer) ([]model.HumanFeedbackQuery, error) {
 
 	runLogger := log.New(logFile, "", log.Ldate|log.Ltime|log.Lmicroseconds|log.Llongfile)
 
 	pipelinesWorkDir, exists := os.LookupEnv("PIPELINES_WORK_DIR")
 
 	if !exists {
-		errMessage := "Pipelines work directory is not defined!"
-		return errors.New(errMessage)
+		errMessage := I18n.MustLocalize(&i18n.LocalizeConfig{
+			MessageID: "env.variable.find.failed",
+			TemplateData: map[string]interface{}{
+				"Name": "PIPELINES_WORK_DIR",
+			},
+			PluralCount: 1,
+		})
+		return nil, errors.New(errMessage)
 	}
 
 	currentPipelineWorkDir := pipelinesWorkDir + "/" + fmt.Sprint(step.PipelineID) + "/" + fmt.Sprint(step.RunID) + "/"
@@ -91,7 +97,7 @@ func (step ShellScript) Execute(logFile *os.File, I18n *i18n.Localizer) error {
 
 		if err != nil {
 			errMessage := fmt.Sprintf("Error creating script file from inline script: %v", err.Error())
-			return errors.New(errMessage)
+			return nil, errors.New(errMessage)
 		}
 
 		processedString := strings.ReplaceAll(step.InlineScript, "\u00a0", " ")
@@ -99,7 +105,7 @@ func (step ShellScript) Execute(logFile *os.File, I18n *i18n.Localizer) error {
 
 	} else if step.ScriptType != "file" {
 		errMessage := "Invalid script type for shell script step!"
-		return errors.New(errMessage)
+		return nil, errors.New(errMessage)
 	}
 
 	cmd := exec.Command("python3", filename)
@@ -112,5 +118,5 @@ func (step ShellScript) Execute(logFile *os.File, I18n *i18n.Localizer) error {
 	runLogger.Println(stderr.String())
 	runLogger.Println(stdout.String())
 
-	return err
+	return nil, err
 }

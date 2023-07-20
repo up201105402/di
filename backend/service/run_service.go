@@ -129,6 +129,28 @@ func (service *runServiceImpl) CreateRunStepStatus(runID uint, stepID int, runSt
 	return nil
 }
 
+func (service *runServiceImpl) CreateHumanFeedbackQuery(epoch uint, runID uint, stepID int, rectCoordinates string) error {
+	newHumandFeedbackQuery := &model.HumanFeedbackQuery{
+		Epoch:           epoch,
+		StepID:          stepID,
+		RunID:           runID,
+		RectCoordinates: rectCoordinates,
+	}
+	if err := service.RunRepository.CreateHumanFeedbackQuery(newHumandFeedbackQuery); err != nil {
+		errMessage := service.I18n.MustLocalize(&i18n.LocalizeConfig{
+			MessageID: "run.repository.create.human-feedback-query.failed",
+			TemplateData: map[string]interface{}{
+				"Reason": err.Error(),
+			},
+			PluralCount: 1,
+		})
+
+		return errors.New(errMessage)
+	}
+
+	return nil
+}
+
 func (service *runServiceImpl) Execute(runID uint) error {
 
 	run, err := service.RunRepository.FindByID(runID)
@@ -524,7 +546,7 @@ func executeRunPipelineTask(runPipelinePayload RunPipelinePayload, service *runS
 			return true
 		}
 
-		if err := step.Execute(logFile, service.I18n); err != nil {
+		if feedbackQueries, err := step.Execute(logFile, service.I18n); err != nil {
 
 			stepErr = err
 			hasError = true
@@ -548,16 +570,39 @@ func executeRunPipelineTask(runPipelinePayload RunPipelinePayload, service *runS
 
 			return true
 		} else {
-			errMessage := service.I18n.MustLocalize(&i18n.LocalizeConfig{
-				MessageID: "run.service.execute.step.success",
-				TemplateData: map[string]interface{}{
-					"ID": step.GetID(),
-				},
-				PluralCount: 1,
-			})
+			for _, feedback := range feedbackQueries {
+				err = service.CreateHumanFeedbackQuery(feedback.Epoch, feedback.RunID, feedback.StepID, feedback.RectCoordinates)
+			}
 
-			runLogger.Println(errMessage)
-			log.Println(errMessage)
+			if err != nil {
+				errMessage := service.I18n.MustLocalize(&i18n.LocalizeConfig{
+					MessageID: "run.service.execute.step.failed",
+					TemplateData: map[string]interface{}{
+						"ID":     step.GetID(),
+						"Reason": err.Error(),
+					},
+					PluralCount: 1,
+				})
+
+				runLogger.Println(errMessage)
+				log.Println(errMessage)
+
+				if err := service.updateStepRunStatus(runStepStatus, 3, err.Error()); err != nil {
+					runLogger.Println(errMessage)
+					log.Println(errMessage)
+				}
+			} else {
+				errMessage := service.I18n.MustLocalize(&i18n.LocalizeConfig{
+					MessageID: "run.service.execute.step.success",
+					TemplateData: map[string]interface{}{
+						"ID": step.GetID(),
+					},
+					PluralCount: 1,
+				})
+
+				runLogger.Println(errMessage)
+				log.Println(errMessage)
+			}
 		}
 
 		if err := service.updateStepRunStatus(runStepStatus, 4, ""); err != nil {

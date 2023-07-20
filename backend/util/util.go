@@ -1,5 +1,11 @@
 package util
 
+import (
+	"encoding/csv"
+	"log"
+	"os"
+)
+
 func Filter[T any](data []T, f func(T) bool) []T {
 
 	fltd := make([]T, 0, len(data))
@@ -31,4 +37,20 @@ func StringArrayContains(array []string, str string) bool {
 		}
 	}
 	return false
+}
+
+func ReadCsvFile(filePath string) ([][]string, bool) {
+	f, err := os.Open(filePath)
+	if err != nil {
+		return nil, false
+	}
+	defer f.Close()
+
+	csvReader := csv.NewReader(f)
+	records, err := csvReader.ReadAll()
+	if err != nil {
+		log.Println(err.Error())
+	}
+
+	return records, true
 }

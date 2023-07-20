@@ -76,6 +76,16 @@ func (repo *runRepositoryImpl) CreateRunStepStatus(runStepStatus *model.RunStepS
 	return nil
 }
 
+func (repo *runRepositoryImpl) CreateHumanFeedbackQuery(humanFeedbackQuery *model.HumanFeedbackQuery) error {
+	result := repo.DB.Create(humanFeedbackQuery)
+
+	if result.Error != nil {
+		return result.Error
+	}
+
+	return nil
+}
+
 func (repo *runRepositoryImpl) Update(run *model.Run) error {
 	result := repo.DB.Save(run)
 

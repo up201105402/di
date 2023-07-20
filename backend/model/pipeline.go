@@ -128,6 +128,20 @@ type StepDataConfig struct {
 	N_subsamples        null.String `json:"n_subsamples"`
 	Quantile            null.String `json:"quantile"`
 	Solver_options      null.String `json:"solver_options"`
+	// HITL
+	Data_dir       null.String `json:"data_dir"`
+	Models_dir     null.String `json:"models_dir"`
+	Epochs_dir     null.String `json:"epochs_dir"`
+	Epochs         null.Int    `json:"epochs"`
+	Tr_fraction    null.String `json:"tr_fraction"`
+	Val_fraction   null.String `json:"val_fraction"`
+	Train_desc     null.String `json:"train_desc"`
+	Sampling       null.String `json:"sampling"`
+	Entropy_thresh null.String `json:"entropy_thresh"`
+	Nr_queries     null.Int    `json:"nr_queries"`
+	IsOversampled  null.Bool   `json:"isOversampled"`
+	Start_epoch    null.Int    `json:"start_epoch"`
+	Dataset        null.String `json:"dataset"`
 }
 
 type StepData struct {

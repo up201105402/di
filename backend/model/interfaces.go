@@ -30,6 +30,7 @@ type RunRepository interface {
 	FindRunStepStatusesByRun(runID uint) ([]RunStepStatus, error)
 	Create(run *Run) error
 	CreateRunStepStatus(runStepStatus *RunStepStatus) error
+	CreateHumanFeedbackQuery(humanFeedbackQuery *HumanFeedbackQuery) error
 	Update(run *Run) error
 	UpdateRunStepStatus(runStepStatus *RunStepStatus) error
 	Delete(runID uint) error

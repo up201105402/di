@@ -5,6 +5,7 @@ import Runs from "@/views/RunsView.vue";
 import PipelineRuns from "@/views/PipelineRunsView.vue";
 import PipelineEditor from "@/views/PipelineEditorView.vue";
 import RunResults from "@/views/RunResultsView.vue";
+import Feedback from "@/views/FeedbackView.vue";
 
 const routes = [
   // {
@@ -67,6 +68,15 @@ const routes = [
     path: "/runresults/:id",
     name: "runsresults",
     component: RunResults,
+    private: true,
+  },
+  {
+    meta: {
+      title: "Human Feedback",
+    },
+    path: "/feedback/:id",
+    name: "feedback",
+    component: Feedback,
     private: true,
   },
   {

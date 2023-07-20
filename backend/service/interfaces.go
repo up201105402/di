@@ -51,6 +51,7 @@ type RunService interface {
 	FindRunStepStatusesByRun(runID uint) ([]model.RunStepStatus, error)
 	Create(pipeline model.Pipeline) (model.Run, error)
 	CreateRunStepStatus(runID uint, stepID int, runStatusID uint, errorMessage string) error
+	CreateHumanFeedbackQuery(epoch uint, runID uint, stepID int, rectCoordinates string) error
 	Execute(runID uint) error
 	Update(run *model.Run) error
 	UpdateRunStepStatus(run *model.RunStepStatus) error

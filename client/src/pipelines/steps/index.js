@@ -4,6 +4,7 @@ import ScikitDatasets from '@/pipelines/steps/components/nodes/ScikitDatasets.vu
 import ScikitUnsupervisedModels from '@/pipelines/steps/components/nodes/ScikitUnsupervisedModels.vue';
 import { checkoutRepoForm } from '@/pipelines/steps/checkoutRepo';
 import { scriptForm } from '@/pipelines/steps/script';
+import { hitlForm } from '@/pipelines/steps/hitl';
 import { scikitDatasetForm } from '@/pipelines/steps/scikit/datasets';
 import { scikitUnsupervisedModels } from '@/pipelines/steps/scikit/models';
 import ScriptEditor from '@/components/ScriptEditor.vue';
@@ -99,9 +100,9 @@ export const menubarSteps = [
     items: [
       {
         group: 'hitl',
-        type: 'scikitTrainingDataset',
-        label: t('pages.pipelines.steps.scikitTrainingDataset'),
-        form: hitlForm
+        type: 'humanFeedbackNN',
+        label: t('pages.pipelines.steps.humanFeedbackNN'),
+        form: hitlForm,
       }
     ]
   }

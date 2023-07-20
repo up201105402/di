@@ -137,6 +137,9 @@ one = "Failed to create run. Reason: {{.Reason}}"
 [run.repository.create.step-status.failed]
 one = "Failed to create run step status. Reason: {{.Reason}}"
 
+[run.repository.create.human-feedback-query.failed]
+one = "Failed to create human feedback query. Reason: {{.Reason}}"
+
 [run.repository.update.run.failed]
 one = "Failed to update run with id {{.ID}}. Reason: {{.Reason}}"
 

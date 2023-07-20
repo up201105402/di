@@ -62,7 +62,7 @@ func (step *CheckoutRepo) GetRunID() uint {
 	return step.RunID
 }
 
-func (step CheckoutRepo) Execute(logFile *os.File, I18n *i18n.Localizer) error {
+func (step CheckoutRepo) Execute(logFile *os.File, I18n *i18n.Localizer) ([]model.HumanFeedbackQuery, error) {
 
 	runLogger := log.New(logFile, "", log.Ldate|log.Ltime|log.Lmicroseconds|log.Llongfile)
 
@@ -78,7 +78,7 @@ func (step CheckoutRepo) Execute(logFile *os.File, I18n *i18n.Localizer) error {
 		})
 
 		runLogger.Println(errMessage)
-		return errors.New(errMessage)
+		return nil, errors.New(errMessage)
 	}
 
 	currentPipelineWorkDir := pipelinesWorkDir + "/" + fmt.Sprint(step.PipelineID) + "/" + fmt.Sprint(step.RunID) + "/"
@@ -91,8 +91,8 @@ func (step CheckoutRepo) Execute(logFile *os.File, I18n *i18n.Localizer) error {
 		// 	return err
 		// }
 
-		return err
+		return nil, err
 	}
 
-	return nil
+	return nil, nil
 }

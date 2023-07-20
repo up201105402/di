@@ -35,6 +35,16 @@ type RunStepStatus struct {
 	LastRun      time.Time
 }
 
+type HumanFeedbackQuery struct {
+	gorm.Model
+	Epoch           uint
+	StepID          int
+	RunID           uint
+	Run             Run
+	RectCoordinates string
+	Selected        bool
+}
+
 type CreateRunReq struct {
 	Execute bool `json:"execute"`
 }
