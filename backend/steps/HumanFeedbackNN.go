@@ -157,7 +157,7 @@ func (step HumanFeedbackNN) Execute(logFile *os.File, I18n *i18n.Localizer) ([]m
 
 			matched, err := regexp.Match(`query_\d+_rects.csv`, []byte(info.Name()))
 			if matched {
-				stoppedEpoch = epoch
+				stoppedEpoch = uint(epoch)
 				csv, exists := util.ReadCsvFile(path + info.Name())
 				if exists {
 					for _, row := range csv {
