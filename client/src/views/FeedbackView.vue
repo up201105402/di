@@ -137,34 +137,19 @@
 
     const isLoading = computed(() => isFetching.value);
 
-    const mouseClick = (e) => {
-        rect.startX = e.pageX - e.target.offsetLeft;
-        rect.startY = e.pageY - e.target.offsetTop;
-        console.error("rect.startX = " + rect.startX);
-        console.error("rect.startY = " + rect.startY);
+    const onImageClicked = (queryID, ptX, ptY) => {
+        const queryIndex = queries.value.findIndex(query => query.HumanFeedbackQuery.ID == queryID);
+        const rectIndex = queries.value[queryIndex].HumanFeedbackRects.findIndex(rect => {
+            return (ptX >= rect.X1) && (ptX <= rect.X2) && (ptY >= rect.Y1) && (ptY <= rect.Y2);
+        });
+
+        const rect = queries.value[queryIndex].HumanFeedbackRects[rectIndex]
+
+        if (rect) {
+            console.error(rect)
+            queries.value[queryIndex].HumanFeedbackRects[rectIndex].Selected = !rect.Selected
+        }
     }
-
-    var canvas
-    var ctx
-    var imageObj
-    var rect = {}
-
-    onMounted(() => {
-        queries.value.forEach(query => {
-            canvas = document.getElementById(`query-${query.HumanFeedbackQuery.ID}-canvas`);
-            ctx = canvas.getContext('2d');
-            imageObj = new Image();
-
-            imageObj.onload = function (e) {
-                ctx.drawImage(imageObj, 0, 0, imageObj.width, imageObj.height);
-            };
-            imageObj.src = query.ImageURL;
-
-            // ctx.globalAlpha = 0.5;
-
-            canvas.addEventListener('click', mouseClick, false);
-        })
-    });
 
 </script>
 
@@ -176,7 +161,7 @@
             <Carousel :value="queries" :numVisible="1" :numScroll="1" :responsiveOptions="responsiveOptions">
                 <template #item="slotProps">
                     <div class="border-1 surface-border border-round m-2 text-center py-5 px-3">
-                        <FeedbackCanvas :id="slotProps.data.HumanFeedbackQuery.ID" :imageURL="slotProps.data.ImageURL" />
+                        <FeedbackCanvas :id="slotProps.data.HumanFeedbackQuery.ID" :imageURL="slotProps.data.ImageURL" @mouseClick="onImageClicked" />
                         <div>
                             <h4 class="mb-1">Query {{ slotProps.data.HumanFeedbackQuery.QueryID }}</h4>
                             <h4 class="mb-1">{{ slotProps.data.RunStepStatus.Name }} ({{ slotProps.data.RunStepStatus.ID }})</h4>

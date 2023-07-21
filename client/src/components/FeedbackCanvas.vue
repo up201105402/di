@@ -17,13 +17,10 @@
     const emit = defineEmits(["mouseClick"])
 
     const mouseClick = (e) => {
-        const offsetLeft = $("#" + e.target.id).offset().left
-        const offsetTop = $("#" + e.target.id).offset().top
-        const startX = e.pageX - offsetLeft;
-        const startY = e.pageY - offsetTop;
-        console.error("rect.startX = " + startX);
-        console.error("rect.startY = " + startY);
-        emit("mouseClick", props.id, e)
+        const $canvas = $("#" + e.target.id);
+        const ptX = e.pageX - $canvas.offset().left;
+        const ptY = e.pageY - $canvas.offset().top;
+        emit("mouseClick", props.id, ptX, ptY)
     }
 
     onMounted(() => {

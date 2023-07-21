@@ -25,7 +25,8 @@
     
     const perPage = ref(5);
     const currentPage = ref(0);
-    const checkedRows = ref([]);
+    const selectedRects = props.items.filter(item => item.Selected)
+    const checkedRows = ref(selectedRects);
     
     const itemsPaginated = computed(() => {
         return props.items ? props.items.slice(
