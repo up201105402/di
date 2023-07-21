@@ -9,7 +9,11 @@ const props = defineProps({
   isChecked: {
     type: Boolean,
     default: false,
-  }
+  },
+  isDisabled: {
+    type: Boolean,
+    default: false,
+  },
 });
 
 const emit = defineEmits(["checked"]);
@@ -24,7 +28,7 @@ watch(checked, (newVal) => {
 <template>
   <component :is="type" class="lg:w-1">
     <label class="checkbox">
-      <input v-model="checked" type="checkbox" />
+      <input type="checkbox" :checked="isChecked" isDisabled />
       <span class="check" />
     </label>
   </component>
