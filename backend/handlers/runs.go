@@ -118,7 +118,7 @@ func CreateRun(services *service.Services, I18n *i18n.Localizer) gin.HandlerFunc
 
 		var req model.CreateRunReq
 
-		if ok := bindData(context, &req); !ok {
+		if ok := util.BindData(context, &req); !ok {
 			return
 		}
 
@@ -516,5 +516,174 @@ func FindRunFeedbackQueriesById(services *service.Services, I18n *i18n.Localizer
 		context.JSON(http.StatusOK, gin.H{
 			"queries": completeFeedbackResponse,
 		})
+	}
+}
+
+func SubmitRunFeedback(services *service.Services, I18n *i18n.Localizer) gin.HandlerFunc {
+	return func(context *gin.Context) {
+
+		id := context.Param("id")
+
+		runID, parseError := strconv.ParseUint(id, 10, 64)
+
+		if parseError != nil {
+			errMessage := I18n.MustLocalize(&i18n.LocalizeConfig{
+				MessageID: "sys.parsing.string.uint",
+				TemplateData: map[string]interface{}{
+					"Reason": parseError.Error(),
+				},
+				PluralCount: 1,
+			})
+			log.Printf(errMessage)
+			err := errors.NewInternal(errMessage)
+			context.JSON(err.Status(), gin.H{
+				"error": err.Message,
+			})
+			return
+		}
+
+		run, serviceError := services.RunService.Get(uint(runID))
+
+		if serviceError != nil {
+			log.Printf(serviceError.Error())
+			err := errors.NewInternal(serviceError.Error())
+			context.JSON(err.Status(), gin.H{
+				"error": err.Message,
+			})
+			return
+		}
+
+		if run.RunStatusID != 5 {
+			errMessage := I18n.MustLocalize(&i18n.LocalizeConfig{
+				MessageID: "run.handler.feedback.status.error",
+				TemplateData: map[string]interface{}{
+					"Reason": parseError.Error(),
+				},
+				PluralCount: 1,
+			})
+			log.Printf(errMessage)
+			err := errors.NewInternal(errMessage)
+			context.JSON(err.Status(), gin.H{
+				"error": err.Message,
+			})
+			return
+		}
+
+		runStepStatuses, getError := services.RunService.FindRunStepStatusesByRun(run.ID)
+
+		if getError != nil {
+			log.Printf(getError.Error())
+			err := errors.NewInternal(getError.Error())
+			context.JSON(err.Status(), gin.H{
+				"error": err.Message,
+			})
+			return
+		}
+
+		runStepStatuses = util.Filter(runStepStatuses, func(runStateStatus model.RunStepStatus) bool {
+			return runStateStatus.RunStatusID == 5
+		})
+
+		if len(runStepStatuses) == 0 {
+			errMessage := I18n.MustLocalize(&i18n.LocalizeConfig{
+				MessageID: "run.handler.feedback.status.error",
+				TemplateData: map[string]interface{}{
+					"Reason": parseError.Error(),
+				},
+				PluralCount: 1,
+			})
+			log.Printf(errMessage)
+			err := errors.NewInternal(errMessage)
+			context.JSON(err.Status(), gin.H{
+				"error": err.Message,
+			})
+			return
+		}
+
+		humanFeedbackQueries, err := services.RunService.FindHumanFeedbackQueriesByStepID(uint(runStepStatuses[0].StepID))
+
+		if err != nil {
+			errMessage := I18n.MustLocalize(&i18n.LocalizeConfig{
+				MessageID: "run.handler.feedback.find.fail",
+				TemplateData: map[string]interface{}{
+					"ID":     runStepStatuses[0].StepID,
+					"Reason": err.Error(),
+				},
+				PluralCount: 1,
+			})
+			log.Printf(errMessage)
+			err := errors.NewInternal(errMessage)
+			context.JSON(err.Status(), gin.H{
+				"error": err.Message,
+			})
+			return
+		}
+
+		var req model.HumanFeedbackQueryReq
+
+		if ok := util.BindData(context, &req); !ok {
+			return
+		}
+
+		for _, humanFeedbackQuery := range humanFeedbackQueries {
+			feedbackRects, err := services.RunService.FindHumanFeedbackRectsByHumanFeedbackQueryID(humanFeedbackQuery.ID)
+
+			if err != nil {
+				errMessage := I18n.MustLocalize(&i18n.LocalizeConfig{
+					MessageID: "run.handler.feedback.find.fail",
+					TemplateData: map[string]interface{}{
+						"ID":     runStepStatuses[0].StepID,
+						"Reason": err.Error(),
+					},
+					PluralCount: 1,
+				})
+				log.Printf(errMessage)
+				err := errors.NewInternal(errMessage)
+				context.JSON(err.Status(), gin.H{
+					"error": err.Message,
+				})
+				return
+			}
+
+			for _, humanFeedbackQueryReq := range req.SingleHumanFeedbackQueryReqs {
+				if humanFeedbackQueryReq.HumanFeedbackQueryID == humanFeedbackQuery.ID {
+					humanFeedbackQuery.QueryStatusID = 2
+
+					for _, feedbackRectReq := range humanFeedbackQueryReq.Rects {
+						for _, feedbackRect := range feedbackRects {
+							if feedbackRect.ID == feedbackRectReq.RectID {
+								feedbackRect.Selected = feedbackRectReq.Selected
+							}
+						}
+					}
+				}
+			}
+
+			err = services.RunService.UpdateHumanFeedbackRects(feedbackRects)
+
+			if err != nil {
+				log.Printf(err.Error())
+				err := errors.NewInternal(err.Error())
+				context.JSON(err.Status(), gin.H{
+					"error": err.Message,
+				})
+				return
+			}
+
+			humanFeedbackQuery.QueryStatusID = 2
+
+			err = services.RunService.UpdateHumanFeedbackQuery(&humanFeedbackQuery)
+
+			if err != nil {
+				log.Printf(err.Error())
+				err := errors.NewInternal(err.Error())
+				context.JSON(err.Status(), gin.H{
+					"error": err.Message,
+				})
+				return
+			}
+		}
+
+		context.JSON(http.StatusOK, gin.H{})
 	}
 }

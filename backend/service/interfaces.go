@@ -57,6 +57,8 @@ type RunService interface {
 	Execute(runID uint) error
 	Update(run *model.Run) error
 	UpdateRunStepStatus(run *model.RunStepStatus) error
+	UpdateHumanFeedbackQuery(query *model.HumanFeedbackQuery) error
+	UpdateHumanFeedbackRects(rects []model.HumanFeedbackRect) error
 	Delete(id uint) error
 	DeleteRunStepStatus(id uint) error
 	NewRunPipelineTask(pipelineID uint, runID uint, graph string, stepIndex uint) (*asynq.Task, error)

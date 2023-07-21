@@ -12,20 +12,18 @@
   import {
     mdiChartTimelineVariant,
     mdiFileDocumentOutline,
-    mdiPlus
+    mdiMessageAlertOutline
   } from "@mdi/js";
   import SectionMain from "@/components/SectionMain.vue";
   import LayoutAuthenticated from "@/layouts/LayoutAuthenticated.vue";
   import SectionTitleLineWithButton from "@/components/SectionTitleLineWithButton.vue";
   import CardBoxModal from '@/components/CardBoxModal.vue';
   import UpsertStepDialog from '@/components/UpsertStepDialog.vue';
-  import BaseButtons from '@/components/BaseButton.vue';
   import BaseButton from '@/components/BaseButton.vue';
   import Toast from 'primevue/toast';
   import { useToast } from 'primevue/usetoast';
   import Loading from "vue-loading-overlay";
   import { nodeTypes, menubarSteps } from "@/pipelines/steps";
-  import { camel2title } from '@/util';
   import Editor from 'primevue/editor';
   import { i18n } from '@/i18n';
 
@@ -203,7 +201,7 @@
       <loading v-model:active="isLoading" :is-full-page="false" />
 
       <SectionTitleLineWithButton :hasButton="false" :icon="mdiChartTimelineVariant" :title="runTitle" main >
-        <BaseButton v-if="needsFeedback" :to="feedbackURL" :icon="mdiPlus" :label="$t('pages.runs.results.buttons.feedback')" color="success" />
+        <BaseButton v-if="needsFeedback" :to="feedbackURL" :icon="mdiMessageAlertOutline" :label="$t('pages.runs.results.buttons.feedback')" color="success" />
       </SectionTitleLineWithButton>
       <VueFlow v-model="elements" :class="{ dark }" class="basicflow" :node-types="nodeTypes"
         @nodeDoubleClick="onNodeDoubleClick" :default-viewport="{ zoom: 1.5 }" :min-zoom="0.2" :max-zoom="4">

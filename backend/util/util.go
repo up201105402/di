@@ -2,9 +2,64 @@ package util
 
 import (
 	"encoding/csv"
+	"fmt"
 	"log"
+	"net/http"
 	"os"
+
+	"github.com/gin-gonic/gin"
+	"github.com/go-playground/validator/v10"
 )
+
+type invalidArgument struct {
+	Field string `json:"field"`
+	Value string `json:"value"`
+	Tag   string `json:"tag"`
+	Param string `json:"param"`
+}
+
+func BindData(c *gin.Context, req interface{}) bool {
+	if c.ContentType() != "application/json" {
+		msg := fmt.Sprintf("%s only accepts Content-Type application/json", c.FullPath())
+
+		c.JSON(http.StatusUnsupportedMediaType, gin.H{
+			"error": msg,
+		})
+		return false
+	}
+
+	if err := c.ShouldBind(req); err != nil {
+		log.Printf("Error binding data: %+v\n", err)
+
+		if errs, ok := err.(validator.ValidationErrors); ok {
+			var invalidArgs []invalidArgument
+
+			for _, err := range errs {
+				invalidArgs = append(invalidArgs, invalidArgument{
+					err.Field(),
+					err.Value().(string),
+					err.Tag(),
+					err.Param(),
+				})
+			}
+
+			err := fmt.Sprintf("Bad request. Reason: Invalid request parameters. See invalidArgs")
+
+			c.JSON(http.StatusBadRequest, gin.H{
+				"error":       err,
+				"invalidArgs": invalidArgs,
+			})
+			return false
+		}
+
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"error": "Internal server error.",
+		})
+		return false
+	}
+
+	return true
+}
 
 func Filter[T any](data []T, f func(T) bool) []T {
 

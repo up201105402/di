@@ -316,6 +316,48 @@ func (service *runServiceImpl) UpdateRunStepStatus(runStepStatus *model.RunStepS
 	return nil
 }
 
+func (service *runServiceImpl) UpdateHumanFeedbackQuery(query *model.HumanFeedbackQuery) error {
+
+	err := service.RunRepository.UpdateHumanFeedbackQuery(query)
+
+	if err != nil {
+		errMessage := service.I18n.MustLocalize(&i18n.LocalizeConfig{
+			MessageID: "run.repository.update.human-feedback-query.failed",
+			TemplateData: map[string]interface{}{
+				"ID":     query.ID,
+				"Reason": err.Error(),
+			},
+			PluralCount: 1,
+		})
+
+		return errors.New(errMessage)
+	}
+
+	return nil
+}
+
+func (service *runServiceImpl) UpdateHumanFeedbackRects(rects []model.HumanFeedbackRect) error {
+
+	for _, rect := range rects {
+		err := service.RunRepository.UpdateHumanFeedbackRect(&rect)
+
+		if err != nil {
+			errMessage := service.I18n.MustLocalize(&i18n.LocalizeConfig{
+				MessageID: "run.repository.update.human-feedback-rects.failed",
+				TemplateData: map[string]interface{}{
+					"ID":     rect.HumanFeedbackQueryID,
+					"Reason": err.Error(),
+				},
+				PluralCount: 1,
+			})
+
+			return errors.New(errMessage)
+		}
+	}
+
+	return nil
+}
+
 func (service *runServiceImpl) Delete(id uint) error {
 	err := service.RunRepository.Delete(id)
 

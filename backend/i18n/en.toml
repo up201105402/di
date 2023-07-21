@@ -155,6 +155,12 @@ one = "Failed to update run with id {{.ID}}. Reason: {{.Reason}}"
 [run.repository.update.step-status.failed]
 one = "Failed to update run step status with id {{.ID}}. Reason: {{.Reason}}"
 
+[run.repository.update.human-feedback-query.failed]
+one = "Failed to update human feedback query with id {{.ID}}. Reason: {{.Reason}}"
+
+[run.repository.update.human-feedback-rects.failed]
+one = "Failed to update human feedback rectangles for query with id {{.ID}}. Reason: {{.Reason}}"
+
 [run.repository.delete.run.failed]
 one = "Failed to delete run with id {{.ID}}. Reason: {{.Reason}}"
 
@@ -168,7 +174,7 @@ one = "Failed to delete run step statuses for run with id {{.ID}}. Reason: {{.Re
 one = "Failed to execute run with id {{.ID}}. Reason: {{.Reason}}"
 
 [run.service.execute.run.success]
-one = "Run with id {{.ID}} execute with success."
+one = "Run with id {{.ID}} executed with success."
 
 [run.service.execute.step.failed]
 one = "Failed to execute step with id {{.ID}}. Reason: {{.Reason}}"

@@ -59,7 +59,7 @@ func (repo *runRepositoryImpl) FindRunStepStatusesByRun(runID uint) ([]model.Run
 func (repo *runRepositoryImpl) FindHumanFeedbackQueriesByStepID(stepID uint) ([]model.HumanFeedbackQuery, error) {
 	var humanFeedbackQueries []model.HumanFeedbackQuery
 
-	result := repo.DB.Where("step_id = ?", stepID).Find(&humanFeedbackQueries)
+	result := repo.DB.Preload("QueryStatus").Where("step_id = ?", stepID).Find(&humanFeedbackQueries)
 
 	if errors.Is(result.Error, gorm.ErrRecordNotFound) {
 		return nil, result.Error
@@ -135,6 +135,26 @@ func (repo *runRepositoryImpl) UpdateRunStepStatus(runStepStatus *model.RunStepS
 
 	if errors.Is(result.Error, gorm.ErrRecordNotFound) {
 		return repo.CreateRunStepStatus(runStepStatus)
+	}
+
+	return nil
+}
+
+func (repo *runRepositoryImpl) UpdateHumanFeedbackQuery(query *model.HumanFeedbackQuery) error {
+	result := repo.DB.Save(query)
+
+	if errors.Is(result.Error, gorm.ErrRecordNotFound) {
+		return repo.CreateHumanFeedbackQuery(query)
+	}
+
+	return nil
+}
+
+func (repo *runRepositoryImpl) UpdateHumanFeedbackRect(rect *model.HumanFeedbackRect) error {
+	result := repo.DB.Save(rect)
+
+	if errors.Is(result.Error, gorm.ErrRecordNotFound) {
+		return repo.CreateHumanFeedbackRect(rect)
 	}
 
 	return nil

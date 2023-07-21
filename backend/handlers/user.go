@@ -10,16 +10,8 @@ import (
 	"net/http"
 
 	"github.com/gin-gonic/gin"
-	"github.com/go-playground/validator/v10"
 	"github.com/nicksnyder/go-i18n/v2/i18n"
 )
-
-type invalidArgument struct {
-	Field string `json:"field"`
-	Value string `json:"value"`
-	Tag   string `json:"tag"`
-	Param string `json:"param"`
-}
 
 type tokensReq struct {
 	RefreshToken string `json:"refreshToken" binding:"required"`
@@ -30,7 +22,7 @@ func EditUser(services *service.Services, I18n *i18n.Localizer) gin.HandlerFunc 
 
 		var req model.UserReq
 
-		if ok := bindData(context, &req); !ok {
+		if ok := util.BindData(context, &req); !ok {
 			return
 		}
 
@@ -122,7 +114,7 @@ func LogIn(services *service.Services) gin.HandlerFunc {
 
 		var req model.UserReq
 
-		if ok := bindData(context, &req); !ok {
+		if ok := util.BindData(context, &req); !ok {
 			return
 		}
 
@@ -164,7 +156,7 @@ func SignUp(services *service.Services) gin.HandlerFunc {
 
 		var req model.UserReq
 
-		if ok := bindData(context, &req); !ok {
+		if ok := util.BindData(context, &req); !ok {
 			return
 		}
 
@@ -228,7 +220,7 @@ func NewAccessToken(services *service.Services) gin.HandlerFunc {
 		// bind JSON to req of type tokensRew
 		var req tokensReq
 
-		if ok := bindData(context, &req); !ok {
+		if ok := util.BindData(context, &req); !ok {
 			return
 		}
 
@@ -269,50 +261,6 @@ func NewAccessToken(services *service.Services) gin.HandlerFunc {
 			"tokens": tokens,
 		})
 	}
-}
-
-// bindData is helper function, returns false if data is not bound
-func bindData(c *gin.Context, req interface{}) bool {
-	if c.ContentType() != "application/json" {
-		msg := fmt.Sprintf("%s only accepts Content-Type application/json", c.FullPath())
-
-		c.JSON(http.StatusUnsupportedMediaType, gin.H{
-			"error": msg,
-		})
-		return false
-	}
-	// Bind incoming json to struct and check for validation errors
-	if err := c.ShouldBind(req); err != nil {
-		log.Printf("Error binding data: %+v\n", err)
-
-		if errs, ok := err.(validator.ValidationErrors); ok {
-			var invalidArgs []invalidArgument
-
-			for _, err := range errs {
-				invalidArgs = append(invalidArgs, invalidArgument{
-					err.Field(),
-					err.Value().(string),
-					err.Tag(),
-					err.Param(),
-				})
-			}
-
-			err := fmt.Sprintf("Bad request. Reason: Invalid request parameters. See invalidArgs")
-
-			c.JSON(http.StatusBadRequest, gin.H{
-				"error":       err,
-				"invalidArgs": invalidArgs,
-			})
-			return false
-		}
-
-		c.JSON(http.StatusInternalServerError, gin.H{
-			"error": "Internal server error.",
-		})
-		return false
-	}
-
-	return true
 }
 
 func getUser(context *gin.Context) (*model.User, *errors.Error) {

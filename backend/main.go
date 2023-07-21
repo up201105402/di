@@ -114,6 +114,7 @@ func setupRouter(services *service.Services, I18n *i18n.Localizer) *gin.Engine {
 
 	feedbackAPI := router.Group("/api/feedback")
 	feedbackAPI.GET("/:id", middleware.Auth(services.TokenService, I18n), handlers.FindRunFeedbackQueriesById(services, I18n))
+	feedbackAPI.POST("/:id", middleware.Auth(services.TokenService, I18n), handlers.SubmitRunFeedback(services, I18n))
 
 	return router
 }

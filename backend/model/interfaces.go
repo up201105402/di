@@ -36,6 +36,8 @@ type RunRepository interface {
 	CreateHumanFeedbackRect(humanFeedbackRect *HumanFeedbackRect) error
 	Update(run *Run) error
 	UpdateRunStepStatus(runStepStatus *RunStepStatus) error
+	UpdateHumanFeedbackQuery(query *HumanFeedbackQuery) error
+	UpdateHumanFeedbackRect(rect *HumanFeedbackRect) error
 	Delete(runID uint) error
 	DeleteRunStepStatus(runID uint) error
 	DeleteAllRunStepStatuses(runID uint) error

@@ -66,5 +66,5 @@ onMounted(drawCanvas)
 
 </script>
 <template>
-    <canvas :id="`query-${id}-canvas`" class="mx-auto" width="300" height="300"></canvas>
+    <canvas :id="`query-${id}-canvas`" class="mx-auto" width="250" height="250"></canvas>
 </template>

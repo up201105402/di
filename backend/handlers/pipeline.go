@@ -3,6 +3,7 @@ package handlers
 import (
 	"di/model"
 	"di/service"
+	"di/util"
 	"di/util/errors"
 	"fmt"
 	"log"
@@ -134,7 +135,7 @@ func UpsertPipeline(services *service.Services) gin.HandlerFunc {
 
 		var req model.PipelineReq
 
-		if ok := bindData(context, &req); !ok {
+		if ok := util.BindData(context, &req); !ok {
 			return
 		}
 
@@ -209,7 +210,7 @@ func CreatePipelineSchedule(services *service.Services, I18n *i18n.Localizer) gi
 
 		var req model.PipelineScheduleReq
 
-		if ok := bindData(context, &req); !ok {
+		if ok := util.BindData(context, &req); !ok {
 			return
 		}
 
@@ -323,7 +324,7 @@ func DeletePipeline(services *service.Services) gin.HandlerFunc {
 
 		var req model.PipelineReq
 
-		if ok := bindData(context, &req); !ok {
+		if ok := util.BindData(context, &req); !ok {
 			return
 		}
 
@@ -395,7 +396,7 @@ func DeletePipelineSchedule(services *service.Services, I18n *i18n.Localizer) gi
 
 		var req model.PipelineScheduleReq
 
-		if ok := bindData(context, &req); !ok {
+		if ok := util.BindData(context, &req); !ok {
 			return
 		}
 

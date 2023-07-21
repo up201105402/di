@@ -80,6 +80,18 @@ type HumanFeedbackQueryResponse struct {
 	ImageURL           string
 }
 
+type SingeHumanFeedbackQueryReq struct {
+	HumanFeedbackQueryID uint `json:"humanFeedbackQueryID"`
+	Rects                []struct {
+		RectID   uint `json:"rectID"`
+		Selected bool `json:"selected"`
+	} `json:"rects"`
+}
+
+type HumanFeedbackQueryReq struct {
+	SingleHumanFeedbackQueryReqs []SingeHumanFeedbackQueryReq `json:"humanFeedbackQueries"`
+}
+
 type CreateRunReq struct {
 	Execute bool `json:"execute"`
 }

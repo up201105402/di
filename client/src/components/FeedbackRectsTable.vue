@@ -1,81 +1,67 @@
 <script setup>
-    import { computed, ref } from "vue";
-    import { mdiEye, mdiTrashCan } from "@mdi/js";
-    import TableCheckboxCell from "@/components/TableCheckboxCell.vue";
-    import BaseLevel from "@/components/BaseLevel.vue";
-    import BaseButtons from "@/components/BaseButtons.vue";
-    import BaseButton from "@/components/BaseButton.vue";
-    import { formatDate } from '@/util';
+import { computed, ref } from "vue";    
+import BaseLevel from "@/components/BaseLevel.vue";
+import BaseButtons from "@/components/BaseButtons.vue";
+import BaseButton from "@/components/BaseButton.vue";
+import { formatDate } from '@/util';
 
-    const props = defineProps({
-        items: Array,
-        checkedRows: {
-            type: Array,
-            default: []
-        },
-        queryID: Number,
-        checkable: Boolean,
-    });
+const props = defineProps({
+    items: Array,
+    checkedRows: {
+        type: Array,
+        default: []
+    },
+    queryID: Number,
+    checkable: Boolean,
+});
 
-    // EMITS
+// EMITS
+const emit = defineEmits(["checked"]);
 
-    const emit = defineEmits(["deleteButtonClicked", "checked"]);
+const count = ref(0);
 
-    const deleteButtonClicked = (id) => {
-        emit("deleteButtonClicked", id);
+// ITEMS PROCESSING
+// ITEMS PROCESSING
+
+// ITEMS PROCESSING
+
+const perPage = ref(5);
+const currentPage = ref(0);
+
+const itemsPaginated = computed(() => {
+    return props.items ? props.items.slice(
+        perPage.value * currentPage.value,
+        perPage.value * (currentPage.value + 1)
+    ) : [];
+});
+
+const numPages = computed(() => Math.ceil(props.items?.length / perPage.value));
+
+const currentPageHuman = computed(() => currentPage.value + 1);
+
+const pagesList = computed(() => {
+    const pagesList = [];
+
+    for (let i = 0; i < numPages.value; i++) {
+        pagesList.push(i);
     }
 
-    // ITEMS PROCESSING
+    return pagesList;
+});
 
-    const perPage = ref(5);
-    const currentPage = ref(0);
+const checked = (item) => {
+    emit('checked', props.queryID, item);
+};
 
-    const itemsPaginated = computed(() => {
-        return props.items && props.checkedRows ? props.items.slice(
-            perPage.value * currentPage.value,
-            perPage.value * (currentPage.value + 1)
-        ) : [];
-    });
-
-    const numPages = computed(() => Math.ceil(props.items?.length / perPage.value));
-
-    const currentPageHuman = computed(() => currentPage.value + 1);
-
-    const pagesList = computed(() => {
-        const pagesList = [];
-
-        for (let i = 0; i < numPages.value; i++) {
-            pagesList.push(i);
-        }
-
-        return pagesList;
-    });
-
-    const remove = (arr, cb) => {
-        const newArr = [];
-
-        arr.forEach((item) => {
-            if (!cb(item)) {
-                newArr.push(item);
-            }
-        });
-
-        return newArr;
-    };
-
-    const checked = (isChecked, item) => {
-        emit('checked', props.queryID, item);
-    };
-
-    const isRowChecked = (itemID) => {
-        return props.checkedRows.find(row => row.ID == itemID) != null;
-    }
+const isRowChecked = (itemID) => {
+    return props.checkedRows.find(row => row.ID == itemID) != null;
+}
 
 </script>
 
 <template>
     <div v-if="checkedRows.length" class="p-3 bg-gray-100/50 dark:bg-slate-800">
-        <span v-for="checkedRow in checkedRows" :key="checkedRow.id"
+        <span v-for="checkedRow in checkedRows" :key="checkedRow.ID"
             class="inline-block px-2 py-1 rounded-sm mr-2 text-sm bg-gray-100 dark:bg-slate-700">
             {{ checkedRow.ID }}
         </span>
@@ -94,7 +80,13 @@
         </thead>
         <tbody>
             <tr v-for="item in itemsPaginated" :key="item.ID">
-                <TableCheckboxCell v-if="checkable" @checked="checked($event, item)" :isChecked="isRowChecked(item.ID)" />
+                <td class="lg:w-1 whitespace-nowrap">
+                    <label class="checkbox">
+                        <input :checked="isRowChecked(item.ID)" type="checkbox" @click="(e) => checked(item)" />
+                        <span class="check" />
+                    </label>
+                </td>
+                <!-- <TableCheckboxCell v-if="checkable" @checked="checked($event, item)" :isChecked="isRowChecked(item.ID)" /> -->
                 <td :data-label="$t('pages.runs.feedback.table.headers.id')">
                     {{ item.ID }}
                 </td>
@@ -119,7 +111,7 @@
                 <BaseButton v-for="page in pagesList" :key="page" :active="page === currentPage" :label="page + 1"
                     :color="page === currentPage ? 'lightDark' : 'whiteDark'" small @click="currentPage = page" />
             </BaseButtons>
-            <small>{{ $t('tables.page', {page: currentPageHuman, count: numPages}) }}</small>
+            <small>{{ $t('tables.page', { page: currentPageHuman, count: numPages }) }}</small>
         </BaseLevel>
     </div>
 </template>
