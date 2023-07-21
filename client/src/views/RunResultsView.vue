@@ -11,13 +11,16 @@
   import { useRoute } from 'vue-router';
   import {
     mdiChartTimelineVariant,
-    mdiFileDocumentOutline
+    mdiFileDocumentOutline,
+    mdiPlus
   } from "@mdi/js";
   import SectionMain from "@/components/SectionMain.vue";
   import LayoutAuthenticated from "@/layouts/LayoutAuthenticated.vue";
   import SectionTitleLineWithButton from "@/components/SectionTitleLineWithButton.vue";
   import CardBoxModal from '@/components/CardBoxModal.vue';
   import UpsertStepDialog from '@/components/UpsertStepDialog.vue';
+  import BaseButtons from '@/components/BaseButton.vue';
+  import BaseButton from '@/components/BaseButton.vue';
   import Toast from 'primevue/toast';
   import { useToast } from 'primevue/usetoast';
   import Loading from "vue-loading-overlay";
@@ -31,6 +34,8 @@
   const elements = ref([]);
   const log = ref('');
   const runTitle = ref('');
+  const needsFeedback = ref(false);
+  const feedbackURL = ref('');
   const toast = useToast();
   const { t } = i18n.global;
 
@@ -97,6 +102,8 @@
     });
     runTitle.value = fetchResponse.value?.data ? t('pages.runs.results.header', { pipelineName: fetchResponse.value.data.run.Pipeline.name, runID: fetchResponse.value.data.run.ID }) : t('global.untitled');
     log.value = fetchResponse.value?.data ? formatValue(fetchResponse.value.data.log) : "";
+    needsFeedback.value = fetchResponse.value?.data ? fetchResponse.value.data.run.RunStatusID == 5 : false
+    feedbackURL.value = fetchResponse.value?.data ? `/feedback/${fetchResponse.value.data.run.ID}` : '';
   })
 
   const isLoading = computed(() => isFetching.value);
@@ -195,7 +202,9 @@
     <SectionMain>
       <loading v-model:active="isLoading" :is-full-page="false" />
 
-      <SectionTitleLineWithButton :hasButton="false" :icon="mdiChartTimelineVariant" :title="runTitle" main />
+      <SectionTitleLineWithButton :hasButton="false" :icon="mdiChartTimelineVariant" :title="runTitle" main >
+        <BaseButton v-if="needsFeedback" :to="feedbackURL" :icon="mdiPlus" :label="$t('pages.runs.results.buttons.feedback')" color="success" />
+      </SectionTitleLineWithButton>
       <VueFlow v-model="elements" :class="{ dark }" class="basicflow" :node-types="nodeTypes"
         @nodeDoubleClick="onNodeDoubleClick" :default-viewport="{ zoom: 1.5 }" :min-zoom="0.2" :max-zoom="4">
         <Background :pattern-color="dark ? '#FFFFFB' : '#aaa'" gap="8" />

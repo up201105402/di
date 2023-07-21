@@ -64,7 +64,7 @@ func (step *ScikitTestingDataset) GetRunID() uint {
 	return step.RunID
 }
 
-func (step ScikitTestingDataset) Execute(logFile *os.File, I18n *i18n.Localizer) ([]model.HumanFeedbackQuery, error) {
+func (step ScikitTestingDataset) Execute(logFile *os.File, I18n *i18n.Localizer) ([]model.HumanFeedbackQueryPayload, error) {
 
 	runLogger := log.New(logFile, "", log.Ldate|log.Ltime|log.Lmicroseconds|log.Llongfile)
 

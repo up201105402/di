@@ -3,6 +3,7 @@ package handlers
 import (
 	"di/model"
 	"di/service"
+	"di/util"
 	"di/util/errors"
 	"fmt"
 	"log"
@@ -348,6 +349,172 @@ func FindRunResulstById(services *service.Services, I18n *i18n.Localizer) gin.Ha
 			"run":             run,
 			"runStepStatuses": runStepStatuses,
 			"log":             string(logFile),
+		})
+	}
+}
+
+func FindRunFeedbackQueriesById(services *service.Services, I18n *i18n.Localizer) gin.HandlerFunc {
+	return func(context *gin.Context) {
+
+		id := context.Param("id")
+
+		runID, parseError := strconv.ParseUint(id, 10, 64)
+
+		if parseError != nil {
+			errMessage := I18n.MustLocalize(&i18n.LocalizeConfig{
+				MessageID: "sys.parsing.string.uint",
+				TemplateData: map[string]interface{}{
+					"Reason": parseError.Error(),
+				},
+				PluralCount: 1,
+			})
+			log.Printf(errMessage)
+			err := errors.NewInternal(errMessage)
+			context.JSON(err.Status(), gin.H{
+				"error": err.Message,
+			})
+			return
+		}
+
+		run, serviceError := services.RunService.Get(uint(runID))
+
+		if serviceError != nil {
+			log.Printf(serviceError.Error())
+			err := errors.NewInternal(serviceError.Error())
+			context.JSON(err.Status(), gin.H{
+				"error": err.Message,
+			})
+			return
+		}
+
+		if run.RunStatusID != 5 {
+			errMessage := I18n.MustLocalize(&i18n.LocalizeConfig{
+				MessageID: "run.handler.feedback.status.error",
+				TemplateData: map[string]interface{}{
+					"Reason": parseError.Error(),
+				},
+				PluralCount: 1,
+			})
+			log.Printf(errMessage)
+			err := errors.NewInternal(errMessage)
+			context.JSON(err.Status(), gin.H{
+				"error": err.Message,
+			})
+			return
+		}
+
+		runStepStatuses, getError := services.RunService.FindRunStepStatusesByRun(run.ID)
+
+		if getError != nil {
+			log.Printf(getError.Error())
+			err := errors.NewInternal(getError.Error())
+			context.JSON(err.Status(), gin.H{
+				"error": err.Message,
+			})
+			return
+		}
+
+		runStepStatuses = util.Filter(runStepStatuses, func(runStateStatus model.RunStepStatus) bool {
+			return runStateStatus.RunStatusID == 5
+		})
+
+		if len(runStepStatuses) == 0 {
+			errMessage := I18n.MustLocalize(&i18n.LocalizeConfig{
+				MessageID: "run.handler.feedback.status.error",
+				TemplateData: map[string]interface{}{
+					"Reason": parseError.Error(),
+				},
+				PluralCount: 1,
+			})
+			log.Printf(errMessage)
+			err := errors.NewInternal(errMessage)
+			context.JSON(err.Status(), gin.H{
+				"error": err.Message,
+			})
+			return
+		}
+
+		humanFeedbackQueries, err := services.RunService.FindHumanFeedbackQueriesByStepID(uint(runStepStatuses[0].StepID))
+
+		if err != nil {
+			errMessage := I18n.MustLocalize(&i18n.LocalizeConfig{
+				MessageID: "run.handler.feedback.find.fail",
+				TemplateData: map[string]interface{}{
+					"ID":     runStepStatuses[0].StepID,
+					"Reason": err.Error(),
+				},
+				PluralCount: 1,
+			})
+			log.Printf(errMessage)
+			err := errors.NewInternal(errMessage)
+			context.JSON(err.Status(), gin.H{
+				"error": err.Message,
+			})
+			return
+		}
+
+		var completeFeedbackResponse []model.HumanFeedbackQueryResponse
+
+		for _, humanFeedbackQuery := range humanFeedbackQueries {
+			feedbackRects, err := services.RunService.FindHumanFeedbackRectsByHumanFeedbackQueryID(humanFeedbackQuery.ID)
+
+			if err != nil {
+				errMessage := I18n.MustLocalize(&i18n.LocalizeConfig{
+					MessageID: "run.handler.feedback.find.fail",
+					TemplateData: map[string]interface{}{
+						"ID":     runStepStatuses[0].StepID,
+						"Reason": err.Error(),
+					},
+					PluralCount: 1,
+				})
+				log.Printf(errMessage)
+				err := errors.NewInternal(errMessage)
+				context.JSON(err.Status(), gin.H{
+					"error": err.Message,
+				})
+				return
+			}
+
+			pipelinesWorkDir := os.Getenv("PIPELINES_WORK_DIR")
+			currentPipelineWorkDir := pipelinesWorkDir + "/" + fmt.Sprint(run.PipelineID) + "/" + fmt.Sprint(run.ID) + "/"
+			epochDir := currentPipelineWorkDir + "epochs/" + fmt.Sprint(humanFeedbackQuery.Epoch) + "/"
+
+			imagePath := epochDir + "query_" + fmt.Sprint(humanFeedbackQuery.QueryID) + "_image.png"
+			_, err = os.Stat(imagePath)
+
+			if err != nil {
+				errMessage := I18n.MustLocalize(&i18n.LocalizeConfig{
+					MessageID: "run.handler.feedback.find.fail",
+					TemplateData: map[string]interface{}{
+						"QueryID": humanFeedbackQuery.QueryID,
+						"Epoch":   humanFeedbackQuery.Epoch,
+						"StepID":  runStepStatuses[0].StepID,
+						"Reason":  err.Error(),
+					},
+					PluralCount: 1,
+				})
+				log.Printf(errMessage)
+				err := errors.NewInternal(errMessage)
+				context.JSON(err.Status(), gin.H{
+					"error": err.Message,
+				})
+				return
+			}
+
+			imageURL := "/work/" + fmt.Sprint(run.PipelineID) + "/" + fmt.Sprint(run.ID) + "/epochs/" + fmt.Sprint(humanFeedbackQuery.Epoch) + "/"
+			imageURL = imageURL + "query_" + fmt.Sprint(humanFeedbackQuery.QueryID) + "_image.png"
+
+			completeFeedbackResponse = append(completeFeedbackResponse,
+				model.HumanFeedbackQueryResponse{
+					RunStepStatus:      runStepStatuses[0],
+					HumanFeedbackQuery: humanFeedbackQuery,
+					HumanFeedbackRects: feedbackRects,
+					ImageURL:           imageURL,
+				})
+		}
+
+		context.JSON(http.StatusOK, gin.H{
+			"queries": completeFeedbackResponse,
 		})
 	}
 }

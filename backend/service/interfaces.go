@@ -49,9 +49,11 @@ type RunService interface {
 	Get(id uint) (*model.Run, error)
 	GetByPipeline(pipelineId uint) ([]model.Run, error)
 	FindRunStepStatusesByRun(runID uint) ([]model.RunStepStatus, error)
+	FindHumanFeedbackQueriesByStepID(runStepStatusID uint) ([]model.HumanFeedbackQuery, error)
+	FindHumanFeedbackRectsByHumanFeedbackQueryID(humanFeedbackQueryID uint) ([]model.HumanFeedbackRect, error)
 	Create(pipeline model.Pipeline) (model.Run, error)
-	CreateRunStepStatus(runID uint, stepID int, runStatusID uint, errorMessage string) error
-	CreateHumanFeedbackQuery(epoch uint, runID uint, stepID int, rectCoordinates string) error
+	CreateRunStepStatus(runID uint, stepID int, stepName string, runStatusID uint, errorMessage string) error
+	CreateHumanFeedbackQuery(epoch uint, runID uint, stepID int, queryID uint, rects [][]uint) error
 	Execute(runID uint) error
 	Update(run *model.Run) error
 	UpdateRunStepStatus(run *model.RunStepStatus) error
@@ -60,7 +62,7 @@ type RunService interface {
 	NewRunPipelineTask(pipelineID uint, runID uint, graph string, stepIndex uint) (*asynq.Task, error)
 	HandleRunPipelineTask(ctx context.Context, t *asynq.Task) error
 	HandleScheduledRunPipelineTask(ctx context.Context, t *asynq.Task) error
-	UpdateRunStatus(runID uint, statusID uint, errorMessage string) error
+	UpdateRunStatus(runID uint, statusID uint, stepWaitingFeedback int, errorMessage string) error
 }
 
 type RunStepStatusService interface {

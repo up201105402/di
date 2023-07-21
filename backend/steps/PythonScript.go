@@ -69,7 +69,7 @@ func (step *PythonScript) GetRunID() uint {
 	return step.RunID
 }
 
-func (step PythonScript) Execute(logFile *os.File, I18n *i18n.Localizer) ([]model.HumanFeedbackQuery, error) {
+func (step PythonScript) Execute(logFile *os.File, I18n *i18n.Localizer) ([]model.HumanFeedbackQueryPayload, error) {
 
 	runLogger := log.New(logFile, "", log.Ldate|log.Ltime|log.Lmicroseconds|log.Llongfile)
 

@@ -122,7 +122,7 @@ export const messages = {
                 header: "Pipelines",
                 table: {
                     headers: {
-                        name: 'Name', 
+                        name: 'Name',
                         modified: 'Modified',
                         created: 'Created',
                     },
@@ -168,13 +168,13 @@ export const messages = {
                             dataset: {
                                 label: 'Dataset',
                                 options: {
-                                    scikitBreastCancer: 'Breast Cancer Dataset', 
-                                    scikitDiabetes: 'Diabetes Dataset', 
-                                    scikitDigits: 'Digits Dataset', 
-                                    scikitIris: 'Iris Dataset', 
-                                    scikitLinerrud: 'Linnerud Dataset', 
-                                    scikitWine: 'Wine Dataset', 
-                                    scikitLoadFile: 'Load Daset From File', 
+                                    scikitBreastCancer: 'Breast Cancer Dataset',
+                                    scikitDiabetes: 'Diabetes Dataset',
+                                    scikitDigits: 'Digits Dataset',
+                                    scikitIris: 'Iris Dataset',
+                                    scikitLinerrud: 'Linnerud Dataset',
+                                    scikitWine: 'Wine Dataset',
+                                    scikitLoadFile: 'Load Daset From File',
                                 }
                             },
                         },
@@ -212,7 +212,7 @@ export const messages = {
                         add: 'Add Schedule',
                         table: {
                             headers: {
-                                id: 'ID', 
+                                id: 'ID',
                                 at: 'At',
                                 cronExpression: 'Cron Expression',
                             },
@@ -283,6 +283,9 @@ export const messages = {
                 },
                 results: {
                     header: '{pipelineName} - Run {runID}',
+                    buttons: {
+                        feedback: 'Give Feedback',
+                    },
                     dialog: {
                         edit: {
                             header: 'Edit {name} Step',
@@ -290,6 +293,18 @@ export const messages = {
                     },
                     log: {
                         header: 'Log',
+                    }
+                },
+                feedback: {
+                    header: 'Feedback for Run {runID} - Step "{stepName}"',
+                    table: {
+                        headers: {
+                            id: 'ID',
+                            x1: 'X1',
+                            y1: 'Y1',
+                            x2: 'X2',
+                            y2: 'Y2',
+                        }
                     }
                 },
                 table: {

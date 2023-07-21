@@ -131,6 +131,12 @@ one = "Failed to get runs for pipeline with id {{.ID}}. Reason: {{.Reason}}"
 [run.repository.find.step-status.run.failed]
 one = "Failed to get run step statuses for run with id {{.ID}}. Reason: {{.Reason}}"
 
+[run.repository.find.human-feedback-query.step.failed]
+one = "Failed to get human feedback queries for run step with id {{.ID}}. Reason: {{.Reason}}"
+
+[run.repository.find.human-feedback-rects.feedback-query.failed]
+one = "Failed to get human feedback query rectangles for humand feedback query with id {{.ID}}. Reason: {{.Reason}}"
+
 [run.repository.create.run.failed]
 one = "Failed to create run. Reason: {{.Reason}}"
 
@@ -139,6 +145,9 @@ one = "Failed to create run step status. Reason: {{.Reason}}"
 
 [run.repository.create.human-feedback-query.failed]
 one = "Failed to create human feedback query. Reason: {{.Reason}}"
+
+[run.repository.create.human-feedback-rect.failed]
+one = "Failed to create human feedback rectangle. Reason: {{.Reason}}"
 
 [run.repository.update.run.failed]
 one = "Failed to update run with id {{.ID}}. Reason: {{.Reason}}"
@@ -166,6 +175,15 @@ one = "Failed to execute step with id {{.ID}}. Reason: {{.Reason}}"
 
 [run.service.execute.step.success]
 one = "Step with id {{.ID}} executed with success."
+
+[run.handler.feedback.status.error]
+one = "The Run with id {{.ID}} is not Waiting for Feedback."
+
+[run.handler.feedback.find.fail]
+one = "Failed to get human feedback queries for step with {{.ID}}. Reason {{.Reason}}"
+
+[run.handler.feedback.image.fail]
+one = "Could not locate image for query {{.QueryID}}, epoch {{.Epoch}}, step id {{.StepID}}. Reason {{.Reason}}"
 
 #
 # Pipeline Steps

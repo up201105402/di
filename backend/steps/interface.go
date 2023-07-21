@@ -10,7 +10,7 @@ import (
 type Step interface {
 	GetID() int
 	GetName() string
-	Execute(logFile *os.File, I18n *i18n.Localizer) ([]model.HumanFeedbackQuery, error)
+	Execute(logFile *os.File, I18n *i18n.Localizer) ([]model.HumanFeedbackQueryPayload, error)
 	SetData(stepDescription model.NodeDescription) error
 	SetPipelineID(pipelineID uint) error
 	SetRunID(runID uint) error

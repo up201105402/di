@@ -11,7 +11,6 @@ import (
 	"path/filepath"
 	"regexp"
 	"strconv"
-	"strings"
 
 	"github.com/nicksnyder/go-i18n/v2/i18n"
 	"gopkg.in/guregu/null.v4"
@@ -89,7 +88,7 @@ func (step *HumanFeedbackNN) GetRunID() uint {
 	return step.RunID
 }
 
-func (step HumanFeedbackNN) Execute(logFile *os.File, I18n *i18n.Localizer) ([]model.HumanFeedbackQuery, error) {
+func (step HumanFeedbackNN) Execute(logFile *os.File, I18n *i18n.Localizer) ([]model.HumanFeedbackQueryPayload, error) {
 
 	runLogger := log.New(logFile, "", log.Ldate|log.Ltime|log.Lmicroseconds|log.Llongfile)
 
@@ -145,24 +144,55 @@ func (step HumanFeedbackNN) Execute(logFile *os.File, I18n *i18n.Localizer) ([]m
 	// 	return cmdErr
 	// }
 
-	var rects [][]string
+	var feedback []model.HumanFeedbackQueryPayload
 	var stoppedEpoch uint
 
 	for epoch := step.Epochs.Int64; epoch >= 0; epoch-- {
-		err := filepath.Walk(currentPipelineWorkDir+"epochs/"+string(epoch)+"/", func(path string, info os.FileInfo, err error) error {
+		err := filepath.Walk(currentPipelineWorkDir+"epochs/"+fmt.Sprintf("%d", epoch)+"/", func(path string, info os.FileInfo, err error) error {
 			if err != nil {
-				fmt.Println(err)
 				return err
 			}
 
 			matched, err := regexp.Match(`query_\d+_rects.csv`, []byte(info.Name()))
 			if matched {
 				stoppedEpoch = uint(epoch)
-				csv, exists := util.ReadCsvFile(path + info.Name())
+
+				rgx := regexp.MustCompile(`query_(\d+?)_rects\.csv`)
+				extractedGroups := rgx.FindStringSubmatch(info.Name())
+				queryID, err := strconv.ParseUint(extractedGroups[1], 10, 64)
+				if err != nil {
+					return err
+				}
+
+				csv, exists := util.ReadCsvFile(path)
 				if exists {
+					var rects [][]uint
+
 					for _, row := range csv {
-						rects = append(rects, row)
+						var rect []uint
+
+						for _, cell := range row {
+							coor, err := strconv.ParseUint(cell, 10, 64)
+
+							if err != nil {
+								return err
+							}
+
+							rect = append(rect, uint(coor))
+						}
+
+						if len(rect) == 4 {
+							rects = append(rects, rect)
+						}
 					}
+
+					feedback = append(feedback, model.HumanFeedbackQueryPayload{
+						Epoch:   uint(stoppedEpoch),
+						StepID:  step.ID,
+						RunID:   step.RunID,
+						QueryID: uint(queryID),
+						Rects:   rects,
+					})
 				}
 			}
 
@@ -174,17 +204,6 @@ func (step HumanFeedbackNN) Execute(logFile *os.File, I18n *i18n.Localizer) ([]m
 		} else {
 			break
 		}
-	}
-
-	var feedback []model.HumanFeedbackQuery
-
-	for _, rect := range rects {
-		feedback = append(feedback, model.HumanFeedbackQuery{
-			Epoch:           uint(stoppedEpoch),
-			StepID:          step.ID,
-			RunID:           step.RunID,
-			RectCoordinates: strings.Join(rect, ","),
-		})
 	}
 
 	return feedback, nil

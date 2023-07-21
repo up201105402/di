@@ -95,6 +95,44 @@ func (service *runServiceImpl) FindRunStepStatusesByRun(runID uint) ([]model.Run
 	return runStepStatuses, err
 }
 
+func (service *runServiceImpl) FindHumanFeedbackQueriesByStepID(stepID uint) ([]model.HumanFeedbackQuery, error) {
+	runStepStatuses, err := service.RunRepository.FindHumanFeedbackQueriesByStepID(stepID)
+
+	if err != nil {
+		errMessage := service.I18n.MustLocalize(&i18n.LocalizeConfig{
+			MessageID: "run.repository.find.human-feedback-query.step.failed",
+			TemplateData: map[string]interface{}{
+				"ID":     stepID,
+				"Reason": err.Error(),
+			},
+			PluralCount: 1,
+		})
+
+		return runStepStatuses, errors.New(errMessage)
+	}
+
+	return runStepStatuses, err
+}
+
+func (service *runServiceImpl) FindHumanFeedbackRectsByHumanFeedbackQueryID(humanFeedbackQueryID uint) ([]model.HumanFeedbackRect, error) {
+	feedbackRects, err := service.RunRepository.FindHumanFeedbackRectsByHumanFeedbackQueryID(humanFeedbackQueryID)
+
+	if err != nil {
+		errMessage := service.I18n.MustLocalize(&i18n.LocalizeConfig{
+			MessageID: "run.repository.find.human-feedback-rects.feedback-query.failed",
+			TemplateData: map[string]interface{}{
+				"ID":     humanFeedbackQueryID,
+				"Reason": err.Error(),
+			},
+			PluralCount: 1,
+		})
+
+		return feedbackRects, errors.New(errMessage)
+	}
+
+	return feedbackRects, err
+}
+
 func (service *runServiceImpl) Create(pipeline model.Pipeline) (model.Run, error) {
 	newRun := &model.Run{PipelineID: pipeline.ID, RunStatusID: 1, Definition: pipeline.Definition}
 	if err := service.RunRepository.Create(newRun); err != nil {
@@ -112,7 +150,7 @@ func (service *runServiceImpl) Create(pipeline model.Pipeline) (model.Run, error
 	return *newRun, nil
 }
 
-func (service *runServiceImpl) CreateRunStepStatus(runID uint, stepID int, runStatusID uint, errorMessage string) error {
+func (service *runServiceImpl) CreateRunStepStatus(runID uint, stepID int, stepName string, runStatusID uint, errorMessage string) error {
 	newRunStepStatus := &model.RunStepStatus{RunID: runID, StepID: stepID, RunStatusID: runStatusID, LastRun: time.Now()}
 	if err := service.RunRepository.CreateRunStepStatus(newRunStepStatus); err != nil {
 		errMessage := service.I18n.MustLocalize(&i18n.LocalizeConfig{
@@ -129,13 +167,15 @@ func (service *runServiceImpl) CreateRunStepStatus(runID uint, stepID int, runSt
 	return nil
 }
 
-func (service *runServiceImpl) CreateHumanFeedbackQuery(epoch uint, runID uint, stepID int, rectCoordinates string) error {
+func (service *runServiceImpl) CreateHumanFeedbackQuery(epoch uint, runID uint, stepID int, queryID uint, rects [][]uint) error {
 	newHumandFeedbackQuery := &model.HumanFeedbackQuery{
-		Epoch:           epoch,
-		StepID:          stepID,
-		RunID:           runID,
-		RectCoordinates: rectCoordinates,
+		Epoch:         epoch,
+		StepID:        stepID,
+		QueryID:       queryID,
+		RunID:         runID,
+		QueryStatusID: 1, // unresolved
 	}
+
 	if err := service.RunRepository.CreateHumanFeedbackQuery(newHumandFeedbackQuery); err != nil {
 		errMessage := service.I18n.MustLocalize(&i18n.LocalizeConfig{
 			MessageID: "run.repository.create.human-feedback-query.failed",
@@ -146,6 +186,29 @@ func (service *runServiceImpl) CreateHumanFeedbackQuery(epoch uint, runID uint, 
 		})
 
 		return errors.New(errMessage)
+	}
+
+	for _, rect := range rects {
+		humanFeedbackRect := &model.HumanFeedbackRect{
+			X1:                   rect[0],
+			Y1:                   rect[1],
+			X2:                   rect[2],
+			Y2:                   rect[3],
+			HumanFeedbackQueryID: newHumandFeedbackQuery.ID,
+			Selected:             false,
+		}
+
+		if err := service.RunRepository.CreateHumanFeedbackRect(humanFeedbackRect); err != nil {
+			errMessage := service.I18n.MustLocalize(&i18n.LocalizeConfig{
+				MessageID: "run.repository.create.human-feedback-rect.failed",
+				TemplateData: map[string]interface{}{
+					"Reason": err.Error(),
+				},
+				PluralCount: 1,
+			})
+
+			return errors.New(errMessage)
+		}
 	}
 
 	return nil
@@ -168,7 +231,7 @@ func (service *runServiceImpl) Execute(runID uint) error {
 		return errors.New(errMessage)
 	}
 
-	if err := service.UpdateRunStatus(runID, 2, ""); err != nil {
+	if err := service.UpdateRunStatus(runID, 2, 0, ""); err != nil {
 		return err
 	}
 
@@ -374,7 +437,7 @@ func executeRunPipelineTask(runPipelinePayload RunPipelinePayload, service *runS
 
 		log.Println(errMessage)
 
-		if err := service.UpdateRunStatus(runPipelinePayload.RunID, 3, errMessage); err != nil {
+		if err := service.UpdateRunStatus(runPipelinePayload.RunID, 3, 0, errMessage); err != nil {
 			log.Println(err.Error())
 		}
 
@@ -394,7 +457,7 @@ func executeRunPipelineTask(runPipelinePayload RunPipelinePayload, service *runS
 
 		log.Println(errMessage)
 
-		if err := service.UpdateRunStatus(runPipelinePayload.RunID, 3, errMessage); err != nil {
+		if err := service.UpdateRunStatus(runPipelinePayload.RunID, 3, 0, errMessage); err != nil {
 			log.Println(err.Error())
 		}
 
@@ -416,7 +479,7 @@ func executeRunPipelineTask(runPipelinePayload RunPipelinePayload, service *runS
 
 		log.Println(errMessage)
 
-		if err := service.UpdateRunStatus(runPipelinePayload.RunID, 3, errMessage); err != nil {
+		if err := service.UpdateRunStatus(runPipelinePayload.RunID, 3, 0, errMessage); err != nil {
 			log.Println(err.Error())
 		}
 
@@ -435,7 +498,7 @@ func executeRunPipelineTask(runPipelinePayload RunPipelinePayload, service *runS
 
 		log.Println(errMessage)
 
-		if err := service.UpdateRunStatus(runPipelinePayload.RunID, 3, errMessage); err != nil {
+		if err := service.UpdateRunStatus(runPipelinePayload.RunID, 3, 0, errMessage); err != nil {
 			log.Println(err.Error())
 		}
 
@@ -454,7 +517,7 @@ func executeRunPipelineTask(runPipelinePayload RunPipelinePayload, service *runS
 
 		log.Println(errMessage)
 
-		if err := service.UpdateRunStatus(runPipelinePayload.RunID, 3, errMessage); err != nil {
+		if err := service.UpdateRunStatus(runPipelinePayload.RunID, 3, 0, errMessage); err != nil {
 			log.Println(err.Error())
 		}
 
@@ -473,7 +536,7 @@ func executeRunPipelineTask(runPipelinePayload RunPipelinePayload, service *runS
 
 		log.Println(errMessage)
 
-		if err := service.UpdateRunStatus(runPipelinePayload.RunID, 3, errMessage); err != nil {
+		if err := service.UpdateRunStatus(runPipelinePayload.RunID, 3, 0, errMessage); err != nil {
 			log.Println(err.Error())
 		}
 
@@ -491,7 +554,7 @@ func executeRunPipelineTask(runPipelinePayload RunPipelinePayload, service *runS
 			PluralCount: 1,
 		})
 
-		service.UpdateRunStatus(runPipelinePayload.RunID, 3, errMessage)
+		service.UpdateRunStatus(runPipelinePayload.RunID, 3, 0, errMessage)
 		log.Println(errors.New(errMessage))
 		return asynq.SkipRetry
 	}
@@ -509,7 +572,7 @@ func executeRunPipelineTask(runPipelinePayload RunPipelinePayload, service *runS
 		})
 
 		log.Print(errMessage)
-		service.UpdateRunStatus(runPipelinePayload.RunID, 3, errMessage)
+		service.UpdateRunStatus(runPipelinePayload.RunID, 3, 0, errMessage)
 		return asynq.SkipRetry
 	}
 
@@ -521,6 +584,8 @@ func executeRunPipelineTask(runPipelinePayload RunPipelinePayload, service *runS
 
 	hasError := false
 	var stepErr error
+	hasFeedback := false
+	stepWaitingFeedback := 0
 
 	graph.BFS(pipelineGraph, firstStepID, func(id int) bool {
 		step, _ := pipelineGraph.Vertex(id)
@@ -529,7 +594,7 @@ func executeRunPipelineTask(runPipelinePayload RunPipelinePayload, service *runS
 		log.Println(msg)
 		runLogger.Println(msg)
 
-		runStepStatus := &model.RunStepStatus{RunID: runPipelinePayload.RunID, StepID: id, RunStatusID: 2, LastRun: time.Now()}
+		runStepStatus := &model.RunStepStatus{RunID: runPipelinePayload.RunID, StepID: id, Name: step.GetName(), RunStatusID: 2, LastRun: time.Now()}
 		err := service.RunRepository.CreateRunStepStatus(runStepStatus)
 
 		if err != nil {
@@ -546,7 +611,7 @@ func executeRunPipelineTask(runPipelinePayload RunPipelinePayload, service *runS
 			return true
 		}
 
-		if feedbackQueries, err := step.Execute(logFile, service.I18n); err != nil {
+		if feedbackPayload, err := step.Execute(logFile, service.I18n); err != nil {
 
 			stepErr = err
 			hasError = true
@@ -570,8 +635,9 @@ func executeRunPipelineTask(runPipelinePayload RunPipelinePayload, service *runS
 
 			return true
 		} else {
-			for _, feedback := range feedbackQueries {
-				err = service.CreateHumanFeedbackQuery(feedback.Epoch, feedback.RunID, feedback.StepID, feedback.RectCoordinates)
+			for _, feedback := range feedbackPayload {
+				err = service.CreateHumanFeedbackQuery(feedback.Epoch, feedback.RunID, feedback.StepID, feedback.QueryID, feedback.Rects)
+				hasFeedback = true
 			}
 
 			if err != nil {
@@ -605,7 +671,13 @@ func executeRunPipelineTask(runPipelinePayload RunPipelinePayload, service *runS
 			}
 		}
 
-		if err := service.updateStepRunStatus(runStepStatus, 4, ""); err != nil {
+		if hasFeedback {
+			err = service.updateStepRunStatus(runStepStatus, 5, "") // waiting feedback
+		} else {
+			err = service.updateStepRunStatus(runStepStatus, 4, "") // success
+		}
+
+		if err != nil {
 			runLogger.Println(err.Error())
 			log.Println(err.Error())
 			stepErr = err
@@ -613,11 +685,16 @@ func executeRunPipelineTask(runPipelinePayload RunPipelinePayload, service *runS
 			return true
 		}
 
+		if hasFeedback {
+			stepWaitingFeedback = step.GetID()
+			return true
+		}
+
 		return false
 	})
 
 	if hasError {
-		if err := service.UpdateRunStatus(runPipelinePayload.RunID, 3, msg); err != nil {
+		if err := service.UpdateRunStatus(runPipelinePayload.RunID, 3, 0, msg); err != nil {
 			log.Println(err.Error())
 			runLogger.Println(err.Error())
 		}
@@ -634,7 +711,11 @@ func executeRunPipelineTask(runPipelinePayload RunPipelinePayload, service *runS
 		log.Println(errMessage)
 		runLogger.Println(errMessage)
 	} else {
-		if err := service.UpdateRunStatus(runPipelinePayload.RunID, 4, ""); err != nil {
+		runStatusID := 4
+		if hasFeedback {
+			runStatusID = 5
+		}
+		if err := service.UpdateRunStatus(runPipelinePayload.RunID, uint(runStatusID), stepWaitingFeedback, ""); err != nil {
 			log.Println(err.Error())
 			runLogger.Println(err.Error())
 		}
@@ -725,12 +806,13 @@ func (service *runServiceImpl) HandleScheduledRunPipelineTask(ctx context.Contex
 	return executeRunPipelineTask(*runPipelinePayload, service)
 }
 
-func (service *runServiceImpl) UpdateRunStatus(runID uint, statusID uint, errorMessage string) error {
+func (service *runServiceImpl) UpdateRunStatus(runID uint, statusID uint, stepWaitingFeedback int, errorMessage string) error {
 	run, _ := service.RunRepository.FindByID(runID)
 	runStatus, _ := service.RunRepository.GetRunStatusByID(statusID)
 	run.RunStatusID = statusID
 	run.RunStatus = *runStatus
 	run.ErrorMessage = errorMessage
+	run.StepWaitingFeedback = stepWaitingFeedback
 	run.LastRun = time.Now()
 
 	if err := service.RunRepository.Update(run); err != nil {

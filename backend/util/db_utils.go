@@ -67,7 +67,6 @@ func ConnectToDB() (*gorm.DB, error) {
 
 func CreateOrUpdateSchema(db *gorm.DB) error {
 
-	// add models here
 	if err := db.AutoMigrate(&model.User{}); err != nil {
 		log.Fatalln(err)
 		return err
@@ -93,12 +92,32 @@ func CreateOrUpdateSchema(db *gorm.DB) error {
 		return err
 	}
 
+	if err := db.AutoMigrate(&model.QueryStatus{}); err != nil {
+		log.Fatalln(err)
+		return err
+	}
+
+	if err := createDefaultQueryStatuses(db); err != nil {
+		log.Fatalln(err)
+		return err
+	}
+
 	if err := db.AutoMigrate(&model.Run{}); err != nil {
 		log.Fatalln(err)
 		return err
 	}
 
 	if err := db.AutoMigrate(&model.RunStepStatus{}); err != nil {
+		log.Fatalln(err)
+		return err
+	}
+
+	if err := db.AutoMigrate(&model.HumanFeedbackQuery{}); err != nil {
+		log.Fatalln(err)
+		return err
+	}
+
+	if err := db.AutoMigrate(&model.HumanFeedbackRect{}); err != nil {
 		log.Fatalln(err)
 		return err
 	}
@@ -112,9 +131,40 @@ func createDefaultRunStatuses(db *gorm.DB) error {
 		{Name: "Executing", IsFinal: false},
 		{Name: "Error", IsFinal: true},
 		{Name: "Success", IsFinal: true},
+		{Name: "Waiting Feedback", IsFinal: false},
 	}
 
 	for index, status := range defaultRunStatuses {
+		str := reflect.ValueOf(status).Elem()
+
+		if str.Kind() == reflect.Struct {
+			pipelineIDField := str.FieldByName("ID")
+			if pipelineIDField.IsValid() {
+				if pipelineIDField.CanSet() {
+					if pipelineIDField.Kind() == reflect.Uint {
+						pipelineIDField.SetUint(uint64(index + 1))
+					}
+				}
+			}
+		}
+
+		if result := db.FirstOrCreate(status, status); result.Error != nil {
+			log.Fatalln(result.Error)
+			return result.Error
+		}
+	}
+
+	return nil
+}
+
+func createDefaultQueryStatuses(db *gorm.DB) error {
+	defaultQueryStatuses := []*model.QueryStatus{
+		{Name: "Unresolved", IsFinal: false},
+		{Name: "Submitted", IsFinal: false},
+		{Name: "Resolved", IsFinal: true},
+	}
+
+	for index, status := range defaultQueryStatuses {
 		str := reflect.ValueOf(status).Elem()
 
 		if str.Kind() == reflect.Struct {

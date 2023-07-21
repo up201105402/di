@@ -28,9 +28,12 @@ type RunRepository interface {
 	FindByID(runID uint) (*Run, error)
 	FindByPipeline(pipelineID uint) ([]Run, error)
 	FindRunStepStatusesByRun(runID uint) ([]RunStepStatus, error)
+	FindHumanFeedbackQueriesByStepID(stepID uint) ([]HumanFeedbackQuery, error)
+	FindHumanFeedbackRectsByHumanFeedbackQueryID(humanFeedbackQueryID uint) ([]HumanFeedbackRect, error)
 	Create(run *Run) error
 	CreateRunStepStatus(runStepStatus *RunStepStatus) error
 	CreateHumanFeedbackQuery(humanFeedbackQuery *HumanFeedbackQuery) error
+	CreateHumanFeedbackRect(humanFeedbackRect *HumanFeedbackRect) error
 	Update(run *Run) error
 	UpdateRunStepStatus(runStepStatus *RunStepStatus) error
 	Delete(runID uint) error
