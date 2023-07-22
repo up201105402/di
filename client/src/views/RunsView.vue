@@ -20,7 +20,6 @@
   const toast = useToast();
 
   // FETCH PIPELINES
-
   const { isLoading: isFetching, state: fetchResponse, isReady: isFetchFinished, execute: fetchPipelines } = useAsyncState(
     () => {
       return doRequest({

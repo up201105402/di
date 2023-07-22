@@ -836,6 +836,7 @@ func (service *runServiceImpl) traverseAndExecuteSteps(runID uint, pipelineGraph
 		log.Println(msg)
 		runLogger.Println(msg)
 
+		var feedbackQueries []model.HumanFeedbackQuery
 		var feebackRects [][]model.HumanFeedbackRect
 
 		run, _ := service.Get(uint(runID))
@@ -872,7 +873,7 @@ func (service *runServiceImpl) traverseAndExecuteSteps(runID uint, pipelineGraph
 
 			runStepStatus = &runStepStatuses[0]
 
-			humanFeedbackQueries, err := service.FindHumanFeedbackQueriesByStepID(uint(runStepStatus.StepID))
+			feedbackQueries, err := service.FindHumanFeedbackQueriesByStepID(uint(runStepStatus.StepID))
 
 			if err != nil {
 				errMessage := service.I18n.MustLocalize(&i18n.LocalizeConfig{
@@ -895,7 +896,7 @@ func (service *runServiceImpl) traverseAndExecuteSteps(runID uint, pipelineGraph
 				return true
 			}
 
-			for _, humanFeedbackQuery := range humanFeedbackQueries {
+			for _, humanFeedbackQuery := range feedbackQueries {
 				rects, err := service.FindHumanFeedbackRectsByHumanFeedbackQueryID(humanFeedbackQuery.ID)
 
 				if err != nil {
@@ -986,6 +987,32 @@ func (service *runServiceImpl) traverseAndExecuteSteps(runID uint, pipelineGraph
 		}
 
 		var err error
+
+		if step.GetIsStaggered() {
+			queryStatus, err := service.FindHumanFeedbackQueryStatusByID(3)
+
+			if err != nil {
+				runLogger.Println(err.Error())
+				log.Println(err.Error())
+				stepErr = err
+				hasError = true
+				return true
+			}
+
+			for _, feedbackQuery := range feedbackQueries {
+				feedbackQuery.QueryStatus = *queryStatus
+				feedbackQuery.QueryStatusID = queryStatus.ID
+				err = service.UpdateHumanFeedbackQuery(&feedbackQuery)
+			}
+
+			if err != nil {
+				runLogger.Println(err.Error())
+				log.Println(err.Error())
+				stepErr = err
+				hasError = true
+				return true
+			}
+		}
 
 		if hasFeedback {
 			err = service.updateStepRunStatus(runStepStatus, 5, "") // waiting feedback

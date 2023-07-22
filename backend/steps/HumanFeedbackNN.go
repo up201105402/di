@@ -3,6 +3,7 @@ package steps
 import (
 	"di/model"
 	"di/util"
+	"encoding/csv"
 	"errors"
 	"fmt"
 	"log"
@@ -136,8 +137,43 @@ func (step HumanFeedbackNN) Execute(logFile *os.File, feedbackRects [][]model.Hu
 		return nil, err
 	}
 
-	if len(feedbackRects) > 0 {
+	var epochNumber null.Int
 
+	for _, rects := range feedbackRects {
+		if len(rects) > 0 {
+			epochNumber = null.NewInt(int64(rects[0].HumanFeedbackQuery.Epoch), true)
+			queryNumber := rects[0].HumanFeedbackQuery.QueryID
+			epochDir := currentPipelineWorkDir + "epochs/" + fmt.Sprint(epochNumber) + "/"
+			fileName := epochDir + "query_" + fmt.Sprint(queryNumber) + "_rects_selected.csv"
+			rectsSelectedFile, err := os.Create(fileName)
+
+			if err != nil {
+				errMessage := I18n.MustLocalize(&i18n.LocalizeConfig{
+					MessageID: "os.cmd.create.file.failed",
+					TemplateData: map[string]interface{}{
+						"Path":   fileName,
+						"Reason": err.Error(),
+					},
+					PluralCount: 1,
+				})
+
+				runLogger.Println(errMessage)
+				return nil, errors.New(errMessage)
+			}
+
+			csvWriter := csv.NewWriter(rectsSelectedFile)
+
+			for _, rect := range rects {
+				csvWriter.Write([]string{fmt.Sprint(rect.X1), fmt.Sprint(rect.Y1), fmt.Sprint(rect.X2), fmt.Sprint(rect.Y2)})
+			}
+
+			rectsSelectedFile.Close()
+		}
+	}
+
+	if epochNumber.Valid {
+		args = append(args, "-re")
+		args = append(args, fmt.Sprintf("%d", epochNumber.Int64))
 	}
 
 	cmd := exec.Command("python3", args...)

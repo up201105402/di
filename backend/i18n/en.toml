@@ -29,7 +29,7 @@ one = "Authorization header with format `{token}` is missing"
 # OS interaction
 #
 [os.cmd.create.file.failed]
-one = "Error removing file {{.Path}}. Reason: {{.Reason}}"
+one = "Error creating file {{.Path}}. Reason: {{.Reason}}"
 
 [os.cmd.read.file.failed]
 one = "Error reading file {{.Path}}. Reason: {{.Reason}}"

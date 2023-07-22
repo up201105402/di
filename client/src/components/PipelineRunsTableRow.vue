@@ -35,7 +35,6 @@ const props = defineProps({
 });
 
 // FETCH RUNS
-
 const {
     isLoading: isFetchingSubrows,
     state: fetchSubrowsResponse,
@@ -61,7 +60,6 @@ const {
 );
 
 // CREATE RUN
-
 const {
     isLoading: isCreatingSubrow,
     state: createSubrowResponse,
@@ -181,8 +179,7 @@ const onReloadClicked = () => {
 
     <tr :key="parentRow.ID">
         <td class="border-b-0 lg:w-6 before:hidden">
-            <BaseIcon :path="isRowOpen ? mdiChevronDown : mdiChevronRight"
-                @click.prevent="(e) => expandOrCollapseRow(e, parentRow.ID)" />
+            <BaseIcon :path="isRowOpen ? mdiChevronDown : mdiChevronRight" @click.prevent="(e) => expandOrCollapseRow(e, parentRow.ID)" />
         </td>
         <td :data-label="$t('pages.runs.pipelineRuns.table.headers.name')">
             {{ parentRow.name }}
