@@ -88,7 +88,11 @@ func (step *HumanFeedbackNN) GetRunID() uint {
 	return step.RunID
 }
 
-func (step HumanFeedbackNN) Execute(logFile *os.File, I18n *i18n.Localizer) ([]model.HumanFeedbackQueryPayload, error) {
+func (step *HumanFeedbackNN) GetIsStaggered() bool {
+	return true
+}
+
+func (step HumanFeedbackNN) Execute(logFile *os.File, feedbackRects [][]model.HumanFeedbackRect, I18n *i18n.Localizer) ([]model.HumanFeedbackQueryPayload, error) {
 
 	runLogger := log.New(logFile, "", log.Ldate|log.Ltime|log.Lmicroseconds|log.Llongfile)
 
@@ -132,18 +136,85 @@ func (step HumanFeedbackNN) Execute(logFile *os.File, I18n *i18n.Localizer) ([]m
 		return nil, err
 	}
 
+	if len(feedbackRects) > 0 {
+
+	}
+
 	cmd := exec.Command("python3", args...)
 	cmd.Dir = currentPipelineWorkDir
 	// var stdout, stderr bytes.Buffer
 	cmd.Stdout = logFile
 	cmd.Stderr = logFile
 
-	// cmdErr := cmd.Run()
+	cmdErr := cmd.Run()
 
-	// if cmdErr != nil {
-	// 	return cmdErr
-	// }
+	if cmdErr != nil {
+		return nil, cmdErr
+	}
 
+	return step.getCreatedFeedbackQueries(currentPipelineWorkDir)
+}
+
+func (step HumanFeedbackNN) appendArgs(args []string, I18n *i18n.Localizer, runLogger *log.Logger) ([]string, error) {
+
+	if step.Data_dir.Valid {
+		args = append(args, "--data_dir")
+		args = append(args, step.Data_dir.String)
+	}
+	if step.Models_dir.Valid {
+		args = append(args, "--models_dir")
+		args = append(args, step.Models_dir.String)
+	}
+	if step.Epochs.Valid {
+		args = append(args, "--epochs")
+		args = append(args, fmt.Sprintf("%d", step.Epochs.Int64))
+	}
+	if step.Tr_fraction.Valid {
+		args = append(args, "--tr_fraction")
+		args = append(args, step.Tr_fraction.String)
+	}
+	if step.Val_fraction.Valid {
+		args = append(args, "--val_fraction")
+		args = append(args, step.Val_fraction.String)
+	}
+	if step.Train_desc.Valid {
+		args = append(args, "--train_desc")
+		args = append(args, step.Train_desc.String)
+	}
+	if step.Sampling.Valid {
+		args = append(args, "--sampling")
+		args = append(args, step.Sampling.String)
+	}
+	if step.Entropy_thresh.Valid {
+		args = append(args, "--entropy_thresh")
+		args = append(args, step.Entropy_thresh.String)
+	}
+	if step.Nr_queries.Valid {
+		args = append(args, "--nr_queries")
+		args = append(args, fmt.Sprintf("%d", step.Nr_queries.Int64))
+	}
+	if step.IsOversampled.Valid {
+		args = append(args, "--isOversampled")
+		if step.IsOversampled.Bool {
+			args = append(args, "True")
+		} else {
+			args = append(args, "False")
+		}
+
+	}
+	if step.Start_epoch.Valid {
+		args = append(args, "--start_epoch")
+		args = append(args, fmt.Sprintf("%d", step.Start_epoch.Int64))
+	}
+	if step.Dataset.Valid {
+		args = append(args, "--dataset")
+		args = append(args, step.Dataset.String)
+	}
+
+	return args, nil
+}
+
+func (step HumanFeedbackNN) getCreatedFeedbackQueries(currentPipelineWorkDir string) ([]model.HumanFeedbackQueryPayload, error) {
 	var feedback []model.HumanFeedbackQueryPayload
 	var stoppedEpoch uint
 
@@ -207,63 +278,4 @@ func (step HumanFeedbackNN) Execute(logFile *os.File, I18n *i18n.Localizer) ([]m
 	}
 
 	return feedback, nil
-}
-
-func (step HumanFeedbackNN) appendArgs(args []string, I18n *i18n.Localizer, runLogger *log.Logger) ([]string, error) {
-
-	if step.Data_dir.Valid {
-		args = append(args, "--data_dir")
-		args = append(args, step.Data_dir.String)
-	}
-	if step.Models_dir.Valid {
-		args = append(args, "--models_dir")
-		args = append(args, step.Models_dir.String)
-	}
-	if step.Epochs.Valid {
-		args = append(args, "--epochs")
-		args = append(args, fmt.Sprintf("%d", step.Epochs.Int64))
-	}
-	if step.Tr_fraction.Valid {
-		args = append(args, "--tr_fraction")
-		args = append(args, step.Tr_fraction.String)
-	}
-	if step.Val_fraction.Valid {
-		args = append(args, "--val_fraction")
-		args = append(args, step.Val_fraction.String)
-	}
-	if step.Train_desc.Valid {
-		args = append(args, "--train_desc")
-		args = append(args, step.Train_desc.String)
-	}
-	if step.Sampling.Valid {
-		args = append(args, "--sampling")
-		args = append(args, step.Sampling.String)
-	}
-	if step.Entropy_thresh.Valid {
-		args = append(args, "--entropy_thresh")
-		args = append(args, step.Entropy_thresh.String)
-	}
-	if step.Nr_queries.Valid {
-		args = append(args, "--nr_queries")
-		args = append(args, fmt.Sprintf("%d", step.Nr_queries.Int64))
-	}
-	if step.IsOversampled.Valid {
-		args = append(args, "--isOversampled")
-		if step.IsOversampled.Bool {
-			args = append(args, "True")
-		} else {
-			args = append(args, "False")
-		}
-
-	}
-	if step.Start_epoch.Valid {
-		args = append(args, "--start_epoch")
-		args = append(args, fmt.Sprintf("%d", step.Start_epoch.Int64))
-	}
-	if step.Dataset.Valid {
-		args = append(args, "--dataset")
-		args = append(args, step.Dataset.String)
-	}
-
-	return args, nil
 }

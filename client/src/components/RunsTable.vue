@@ -3,14 +3,15 @@ import { storeToRefs } from "pinia";
 import { useAsyncState } from "@vueuse/core";
 import { doRequest } from "@/util";
 import { useAuthStore } from "@/stores/auth";
-import { mdiEye, mdiPlayOutline, mdiRunFast } from "@mdi/js";
+import { mdiEye, mdiPlayOutline } from "@mdi/js";
 import BaseButtons from "@/components/BaseButtons.vue";
 import BaseButton from "@/components/BaseButton.vue";
 import BaseLevel from "@/components/BaseLevel.vue";
 import CardBoxModal from '@/components/CardBoxModal.vue';
+import Tag from 'primevue/tag';
 import { useToast } from 'primevue/usetoast';
 import { ref, computed, watch } from "vue";
-import { formatDate } from '@/util';
+import { formatDate, getStatusTagSeverity } from '@/util';
 import Loading from "vue-loading-overlay";
 
 const { accessToken } = storeToRefs(useAuthStore());
@@ -201,7 +202,7 @@ const isLoading = computed(() => isExecutingSubrow.value);
                     {{ row.ID }}
                 </td>
                 <td class="border-b-0 lg:w-6 before:hidden">
-                    {{ row.RunStatus.Name }}
+                    <Tag :severity="getStatusTagSeverity(row.RunStatus.ID)" :value="row.RunStatus.Name" />
                 </td>
                 <td data-label="Created" class="lg:w-1 whitespace-nowrap">
                     <small class="text-gray-500 dark:text-slate-400" :title="formatDate(row.CreatedAt)">{{
@@ -233,4 +234,5 @@ const isLoading = computed(() => isExecutingSubrow.value);
     <CardBoxModal v-model="isRunModalActive" @confirm="onExecuteRunConfirmed" :targetId="runIDtoExecute"
         :title="$t('pages.runs.table.dialog.execute.header', { id: runIDtoExecute })" button="success" has-cancel>
         <div>{{ $t('pages.runs.table.dialog.execute.body') }}</div>
-</CardBoxModal></template>
+    </CardBoxModal>
+</template>

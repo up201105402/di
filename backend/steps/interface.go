@@ -10,13 +10,14 @@ import (
 type Step interface {
 	GetID() int
 	GetName() string
-	Execute(logFile *os.File, I18n *i18n.Localizer) ([]model.HumanFeedbackQueryPayload, error)
+	Execute(logFile *os.File, feedbackRects [][]model.HumanFeedbackRect, I18n *i18n.Localizer) ([]model.HumanFeedbackQueryPayload, error)
 	SetData(stepDescription model.NodeDescription) error
 	SetPipelineID(pipelineID uint) error
 	SetRunID(runID uint) error
 	GetPipelineID() uint
 	GetRunID() uint
 	GetIsFirstStep() bool
+	GetIsStaggered() bool
 }
 
 type Edge interface {

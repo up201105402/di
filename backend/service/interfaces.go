@@ -51,17 +51,20 @@ type RunService interface {
 	FindRunStepStatusesByRun(runID uint) ([]model.RunStepStatus, error)
 	FindHumanFeedbackQueriesByStepID(runStepStatusID uint) ([]model.HumanFeedbackQuery, error)
 	FindHumanFeedbackRectsByHumanFeedbackQueryID(humanFeedbackQueryID uint) ([]model.HumanFeedbackRect, error)
+	FindHumanFeedbackQueryStatusByID(queryStatusID uint) (*model.QueryStatus, error)
 	Create(pipeline model.Pipeline) (model.Run, error)
 	CreateRunStepStatus(runID uint, stepID int, stepName string, runStatusID uint, errorMessage string) error
 	CreateHumanFeedbackQuery(epoch uint, runID uint, stepID int, queryID uint, rects [][]uint) error
 	Execute(runID uint) error
+	Resume(runID uint) error
 	Update(run *model.Run) error
 	UpdateRunStepStatus(run *model.RunStepStatus) error
 	UpdateHumanFeedbackQuery(query *model.HumanFeedbackQuery) error
 	UpdateHumanFeedbackRects(rects []model.HumanFeedbackRect) error
 	Delete(id uint) error
 	DeleteRunStepStatus(id uint) error
-	NewRunPipelineTask(pipelineID uint, runID uint, graph string, stepIndex uint) (*asynq.Task, error)
+	NewRunPipelineTask(pipelineID uint, runID uint, graph string) (*asynq.Task, error)
+	NewResumeRunPipelineTask(pipelineID uint, runID uint, graph string, stepID int) (*asynq.Task, error)
 	HandleRunPipelineTask(ctx context.Context, t *asynq.Task) error
 	HandleScheduledRunPipelineTask(ctx context.Context, t *asynq.Task) error
 	UpdateRunStatus(runID uint, statusID uint, stepWaitingFeedback int, errorMessage string) error

@@ -64,7 +64,11 @@ func (step *ScikitTrainingDataset) GetRunID() uint {
 	return step.RunID
 }
 
-func (step ScikitTrainingDataset) Execute(logFile *os.File, I18n *i18n.Localizer) ([]model.HumanFeedbackQueryPayload, error) {
+func (step *ScikitTrainingDataset) GetIsStaggered() bool {
+	return false
+}
+
+func (step ScikitTrainingDataset) Execute(logFile *os.File, feedbackRects [][]model.HumanFeedbackRect, I18n *i18n.Localizer) ([]model.HumanFeedbackQueryPayload, error) {
 
 	runLogger := log.New(logFile, "", log.Ldate|log.Ltime|log.Lmicroseconds|log.Llongfile)
 

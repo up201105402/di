@@ -34,6 +34,9 @@ one = "Error removing file {{.Path}}. Reason: {{.Reason}}"
 [os.cmd.read.file.failed]
 one = "Error reading file {{.Path}}. Reason: {{.Reason}}"
 
+[os.cmd.read.dir.failed]
+one = "Error reading directory {{.Path}}. Reason: {{.Reason}}"
+
 [os.cmd.rm.file.failed]
 one = "Error removing file {{.Path}}. Reason: {{.Reason}}"
 other = "Error removing files from {{.Path}}. Reason: {{.Reason}}"
@@ -134,6 +137,9 @@ one = "Failed to get run step statuses for run with id {{.ID}}. Reason: {{.Reaso
 [run.repository.find.human-feedback-query.step.failed]
 one = "Failed to get human feedback queries for run step with id {{.ID}}. Reason: {{.Reason}}"
 
+[run.repository.find.query-status.failed]
+one = "Failed to get human feedback query status with id {{.ID}}. Reason: {{.Reason}}"
+
 [run.repository.find.human-feedback-rects.feedback-query.failed]
 one = "Failed to get human feedback query rectangles for humand feedback query with id {{.ID}}. Reason: {{.Reason}}"
 
@@ -173,6 +179,9 @@ one = "Failed to delete run step statuses for run with id {{.ID}}. Reason: {{.Re
 [run.service.execute.run.failed]
 one = "Failed to execute run with id {{.ID}}. Reason: {{.Reason}}"
 
+[run.service.execute.demarshal.error]
+one = "Unable to unmarshal run {{.ID}} definition. Reason {{.Reason}}"
+
 [run.service.execute.run.success]
 one = "Run with id {{.ID}} executed with success."
 
@@ -184,6 +193,12 @@ one = "Step with id {{.ID}} executed with success."
 
 [run.handler.feedback.status.error]
 one = "The Run with id {{.ID}} is not Waiting for Feedback."
+
+[run.service.resume.status.error]
+one = "The Run with id {{.ID}} is not Waiting for Feedback."
+
+[run.service.resume.steps.status.error]
+one = "The Run with id {{.ID}} has no steps Waiting for Feedback."
 
 [run.handler.feedback.find.fail]
 one = "Failed to get human feedback queries for step with {{.ID}}. Reason {{.Reason}}"

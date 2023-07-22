@@ -133,7 +133,7 @@ const onQueryRectChecked = (queryID, rectsSelected) => {
 
     if (queryIndex > -1) {
         queries.value[queryIndex].HumanFeedbackRects.forEach((rect, rectIndex) => {
-            const selectedRectIndex = rectsSelected.findIndex(selectedRect => selectedRect == rect.ID)
+            const selectedRectIndex = rectsSelected.findIndex(selectedRect => selectedRect.ID == rect.ID)
 
             if (selectedRectIndex > -1) {
                 queries.value[queryIndex].HumanFeedbackRects[rectIndex].Selected = true

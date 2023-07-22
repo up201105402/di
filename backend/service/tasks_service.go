@@ -7,6 +7,7 @@ import (
 	"github.com/dominikbraun/graph"
 	"github.com/hibiken/asynq"
 	"github.com/nicksnyder/go-i18n/v2/i18n"
+	"gopkg.in/guregu/null.v4"
 )
 
 const (
@@ -24,7 +25,7 @@ type RunPipelinePayload struct {
 	PipelineID      uint
 	RunID           uint
 	GraphDefinition string
-	StepIndex       uint
+	StepID          null.Int
 }
 
 type ScheduledRunPipelinePayload struct {

@@ -391,7 +391,7 @@ func FindRunFeedbackQueriesById(services *service.Services, I18n *i18n.Localizer
 			errMessage := I18n.MustLocalize(&i18n.LocalizeConfig{
 				MessageID: "run.handler.feedback.status.error",
 				TemplateData: map[string]interface{}{
-					"Reason": parseError.Error(),
+					"ID": run.ID,
 				},
 				PluralCount: 1,
 			})
@@ -422,7 +422,7 @@ func FindRunFeedbackQueriesById(services *service.Services, I18n *i18n.Localizer
 			errMessage := I18n.MustLocalize(&i18n.LocalizeConfig{
 				MessageID: "run.handler.feedback.status.error",
 				TemplateData: map[string]interface{}{
-					"Reason": parseError.Error(),
+					"ID": run.ID,
 				},
 				PluralCount: 1,
 			})
@@ -557,7 +557,7 @@ func SubmitRunFeedback(services *service.Services, I18n *i18n.Localizer) gin.Han
 			errMessage := I18n.MustLocalize(&i18n.LocalizeConfig{
 				MessageID: "run.handler.feedback.status.error",
 				TemplateData: map[string]interface{}{
-					"Reason": parseError.Error(),
+					"ID": run.ID,
 				},
 				PluralCount: 1,
 			})
@@ -588,7 +588,7 @@ func SubmitRunFeedback(services *service.Services, I18n *i18n.Localizer) gin.Han
 			errMessage := I18n.MustLocalize(&i18n.LocalizeConfig{
 				MessageID: "run.handler.feedback.status.error",
 				TemplateData: map[string]interface{}{
-					"Reason": parseError.Error(),
+					"ID": run.ID,
 				},
 				PluralCount: 1,
 			})
@@ -625,7 +625,7 @@ func SubmitRunFeedback(services *service.Services, I18n *i18n.Localizer) gin.Han
 			return
 		}
 
-		for _, humanFeedbackQuery := range humanFeedbackQueries {
+		for feedbackQueryIndex, humanFeedbackQuery := range humanFeedbackQueries {
 			feedbackRects, err := services.RunService.FindHumanFeedbackRectsByHumanFeedbackQueryID(humanFeedbackQuery.ID)
 
 			if err != nil {
@@ -647,12 +647,25 @@ func SubmitRunFeedback(services *service.Services, I18n *i18n.Localizer) gin.Han
 
 			for _, humanFeedbackQueryReq := range req.SingleHumanFeedbackQueryReqs {
 				if humanFeedbackQueryReq.HumanFeedbackQueryID == humanFeedbackQuery.ID {
-					humanFeedbackQuery.QueryStatusID = 2
+					queryStatus, err := services.RunService.FindHumanFeedbackQueryStatusByID(2)
+
+					if err != nil {
+						log.Printf(err.Error())
+						err := errors.NewInternal(err.Error())
+						context.JSON(err.Status(), gin.H{
+							"error": err.Message,
+						})
+						return
+					}
+
+					humanFeedbackQueries[feedbackQueryIndex].QueryStatus = *queryStatus
+					humanFeedbackQueries[feedbackQueryIndex].QueryStatusID = 2
 
 					for _, feedbackRectReq := range humanFeedbackQueryReq.Rects {
-						for _, feedbackRect := range feedbackRects {
+						for feedbackRectIndex, feedbackRect := range feedbackRects {
 							if feedbackRect.ID == feedbackRectReq.RectID {
-								feedbackRect.Selected = feedbackRectReq.Selected
+								feedbackRects[feedbackRectIndex].Selected = feedbackRectReq.Selected
+								log.Print(feedbackRects[feedbackRectIndex].Selected)
 							}
 						}
 					}
@@ -670,9 +683,7 @@ func SubmitRunFeedback(services *service.Services, I18n *i18n.Localizer) gin.Han
 				return
 			}
 
-			humanFeedbackQuery.QueryStatusID = 2
-
-			err = services.RunService.UpdateHumanFeedbackQuery(&humanFeedbackQuery)
+			err = services.RunService.UpdateHumanFeedbackQuery(&humanFeedbackQueries[feedbackQueryIndex])
 
 			if err != nil {
 				log.Printf(err.Error())

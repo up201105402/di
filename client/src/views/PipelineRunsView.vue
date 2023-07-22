@@ -26,7 +26,7 @@ const toast = useToast();
 
 const isCreateModalActive = ref(false);
 
-const pipelineID = route.params.id;
+const pipelineID = parseInt(route.params.id);
 
 // FETCH RUNS
 
@@ -133,7 +133,7 @@ const onReloadClicked = () => {
     <LayoutAuthenticated>
         <SectionMain>
             <loading v-model:active="isLoading" :is-full-page="false" />
-            <SectionTitleLineWithButton :hasButton="false" :icon="mdiRunFast" :title="$t('pages.runs.header', { id: pipelineID})" main>
+            <SectionTitleLineWithButton :hasButton="false" :icon="mdiRunFast" :title="$t('pages.runs.pipelineRuns.header', { id: pipelineID })" main>
                 <BaseButtons>
                     <BaseButton :icon="mdiReload" color="success" @click="onReloadClicked" />
                     <BaseButton :icon="mdiPlus" color="success" @click="onNewRunClicked" />

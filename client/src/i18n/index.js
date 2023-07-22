@@ -267,10 +267,10 @@ export const messages = {
             },
             runs: {
                 name: "Runs",
-                header: "Pipeline {id} Runs",
+                header: "Runs",
                 pipelineRuns: {
                     name: "Runs",
-                    header: "Runs",
+                    header: "Pipeline {id} Runs",
                     table: {
                         headers: {
                             name: "Name",

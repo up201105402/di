@@ -80,6 +80,18 @@ func (repo *runRepositoryImpl) FindHumanFeedbackRectsByHumanFeedbackQueryID(huma
 	return humanFeedbackRects, nil
 }
 
+func (repo *runRepositoryImpl) FindHumanFeedbackQueryStatusByID(queryStatusID uint) (*model.QueryStatus, error) {
+	var queryStatus model.QueryStatus
+
+	result := repo.DB.Where("id = ?", queryStatusID).Find(&queryStatus)
+
+	if errors.Is(result.Error, gorm.ErrRecordNotFound) {
+		return nil, result.Error
+	}
+
+	return &queryStatus, nil
+}
+
 func (repo *runRepositoryImpl) Create(run *model.Run) error {
 	result := repo.DB.Create(run)
 

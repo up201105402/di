@@ -6,13 +6,13 @@
   import { MiniMap } from '@vue-flow/minimap';
   import { ref, computed, watch } from "vue";
   import { useAsyncState } from "@vueuse/core";
-  import { doRequest, deepFilterMenuBarSteps } from "@/util";
+  import { doRequest, deepFilterMenuBarSteps, getStatusTagSeverity } from "@/util";
   import { useAuthStore } from "@/stores/auth";
   import { useRoute } from 'vue-router';
   import {
-    mdiChartTimelineVariant,
     mdiFileDocumentOutline,
-    mdiMessageAlertOutline
+    mdiMessageAlertOutline,
+    mdiRunFast
   } from "@mdi/js";
   import SectionMain from "@/components/SectionMain.vue";
   import LayoutAuthenticated from "@/layouts/LayoutAuthenticated.vue";
@@ -25,6 +25,7 @@
   import Loading from "vue-loading-overlay";
   import { nodeTypes, menubarSteps } from "@/pipelines/steps";
   import Editor from 'primevue/editor';
+  import Tag from 'primevue/tag';
   import { i18n } from '@/i18n';
 
   const { accessToken, requireAuthRoute } = storeToRefs(useAuthStore());
@@ -33,6 +34,7 @@
   const log = ref('');
   const runTitle = ref('');
   const needsFeedback = ref(false);
+  const runStatus = ref('');
   const feedbackURL = ref('');
   const toast = useToast();
   const { t } = i18n.global;
@@ -42,7 +44,6 @@
   }
 
   // FETCH RUN
-
   const { isLoading: isFetching, state: fetchResponse, isReady: isFetchFinished, execute: fetchRun } = useAsyncState(
     () => {
       return doRequest({
@@ -102,6 +103,7 @@
     log.value = fetchResponse.value?.data ? formatValue(fetchResponse.value.data.log) : "";
     needsFeedback.value = fetchResponse.value?.data ? fetchResponse.value.data.run.RunStatusID == 5 : false
     feedbackURL.value = fetchResponse.value?.data ? `/feedback/${fetchResponse.value.data.run.ID}` : '';
+    runStatus.value = fetchResponse.value?.data ? fetchResponse.value.data.run.RunStatus : false
   })
 
   const isLoading = computed(() => isFetching.value);
@@ -200,7 +202,8 @@
     <SectionMain>
       <loading v-model:active="isLoading" :is-full-page="false" />
 
-      <SectionTitleLineWithButton :hasButton="false" :icon="mdiChartTimelineVariant" :title="runTitle" main >
+      <SectionTitleLineWithButton :hasButton="false" :icon="mdiRunFast" :title="runTitle" main >
+        <Tag :severity="getStatusTagSeverity(runStatus.ID)" :value="runStatus.Name" />
         <BaseButton v-if="needsFeedback" :to="feedbackURL" :icon="mdiMessageAlertOutline" :label="$t('pages.runs.results.buttons.feedback')" color="success" />
       </SectionTitleLineWithButton>
       <VueFlow v-model="elements" :class="{ dark }" class="basicflow" :node-types="nodeTypes"

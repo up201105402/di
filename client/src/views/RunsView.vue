@@ -61,7 +61,7 @@
   <LayoutAuthenticated>
     <SectionMain>
       <loading v-model:active="isLoading" :is-full-page="false" />
-      <SectionTitleLineWithButton :hasButton="false" :icon="mdiRunFast" :title="'Runs'" main />
+      <SectionTitleLineWithButton :hasButton="false" :icon="mdiRunFast" :title="t('pages.runs.header')" main />
       <PipelinesRunsTable :items="pipelines" checkable />
     </SectionMain>
     <Toast />

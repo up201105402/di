@@ -128,3 +128,20 @@ export const deepFilterMenuBarSteps = (subject, key, value) => {
 export const i18nFromStepName = (stepName) => {
   return t('pages.pipelines.edit.dialog.' + stepName + '.label');
 }
+
+export const getStatusTagSeverity = (statusID) => {
+  switch (statusID) {
+      case 1:
+          return "info";
+      case 2: 
+          return "info";
+      case 3: 
+          return "danger";
+      case 4:
+          return "success";
+      case 5:
+          return "warning";
+  }
+  
+  return "info";
+}
