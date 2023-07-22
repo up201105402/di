@@ -122,6 +122,7 @@ export const messages = {
                 header: "Pipelines",
                 table: {
                     headers: {
+                        id: 'ID',
                         name: 'Name',
                         modified: 'Modified',
                         created: 'Created',
@@ -293,6 +294,7 @@ export const messages = {
                     },
                     log: {
                         header: 'Log',
+                        button: 'Full log',
                     }
                 },
                 feedback: {
@@ -318,8 +320,15 @@ export const messages = {
                         execute: {
                             header: 'Execute run {id}?',
                             body: 'This will erase all previous data associated with the run!',
-                        }
-                    }
+                        },
+                        resume: {
+                            header: 'Resume run {id}?',
+                            body: 'This will pick up the run\'s execution on the step that was waiting for feedback.',
+                        },
+                    },
+                    buttons: {
+                        feedback: 'Give Feedback',
+                    },
                 },
                 dialog: {
                     create: {

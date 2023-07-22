@@ -39,12 +39,12 @@
 </template>
 
 <style>
-  .ql-editor {
+  .formkit-step-schema .ql-editor {
     counter-reset: line;
     padding-left: 0;
   }
 
-  .ql-editor p:before {
+  .formkit-step-schema .ql-editor p:before {
     counter-increment: line;
     content: counter(line);
     display: inline-block;

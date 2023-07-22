@@ -30,12 +30,6 @@ export const stepConfigGroupChildren = [
         validation: 'required|dirPath',
     },
     {
-        $formkit: 'text',
-        name: 'epochs_dir',
-        label: t('pages.pipelines.edit.dialog.stepConfig.epochs_dir'),
-        validation: 'required|dirPath',
-    },
-    {
         $formkit: 'number',
         name: 'epochs',
         label: t('pages.pipelines.edit.dialog.stepConfig.epochs'),

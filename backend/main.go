@@ -78,7 +78,14 @@ func setupRouter(services *service.Services, I18n *i18n.Localizer) *gin.Engine {
 		panic("PIPELINES_WORK_DIR is not defined")
 	}
 
+	logsDir, exists := os.LookupEnv("RUN_LOGS_DIR")
+
+	if !exists {
+		panic("RUN_LOGS_DIR is not defined")
+	}
+
 	router.StaticFS("/work", http.Dir(workDir))
+	router.StaticFS("/logs", http.Dir(logsDir))
 
 	router.LoadHTMLFiles("../client/index.html")
 
@@ -108,9 +115,11 @@ func setupRouter(services *service.Services, I18n *i18n.Localizer) *gin.Engine {
 	runAPI.GET("/:id", middleware.Auth(services.TokenService, I18n), handlers.FindRunsByPipeline(services, I18n))
 	runAPI.POST("/:id", middleware.Auth(services.TokenService, I18n), handlers.CreateRun(services, I18n))
 	runAPI.POST("/execute/:runID", middleware.Auth(services.TokenService, I18n), handlers.ExecuteRun(services, I18n))
+	runAPI.POST("/resume/:runID", middleware.Auth(services.TokenService, I18n), handlers.ResumeRun(services, I18n))
 
 	runResultsAPI := router.Group("/api/runresults")
 	runResultsAPI.GET("/:id", middleware.Auth(services.TokenService, I18n), handlers.FindRunResulstById(services, I18n))
+	runResultsAPI.GET("/:id/log", middleware.Auth(services.TokenService, I18n), handlers.GetLogTail(services, I18n))
 
 	feedbackAPI := router.Group("/api/feedback")
 	feedbackAPI.GET("/:id", middleware.Auth(services.TokenService, I18n), handlers.FindRunFeedbackQueriesById(services, I18n))

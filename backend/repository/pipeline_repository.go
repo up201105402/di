@@ -59,7 +59,7 @@ func (repo *pipelineRepositoryImpl) FindByOwner(ownerId uint) ([]model.Pipeline,
 
 	var pipelines []model.Pipeline
 
-	result := repo.DB.Preload("User").Where("user_id = ?", ownerId).Order("id").Find(&pipelines)
+	result := repo.DB.Preload("User").Where("user_id = ?", ownerId).Order("id desc").Find(&pipelines)
 
 	if errors.Is(result.Error, gorm.ErrRecordNotFound) {
 		return nil, result.Error

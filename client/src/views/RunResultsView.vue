@@ -5,7 +5,7 @@
   import { Controls } from '@vue-flow/controls';
   import { MiniMap } from '@vue-flow/minimap';
   import { ref, computed, watch } from "vue";
-  import { useAsyncState } from "@vueuse/core";
+  import { useAsyncState, useTimeoutPoll } from "@vueuse/core";
   import { doRequest, deepFilterMenuBarSteps, getStatusTagSeverity } from "@/util";
   import { useAuthStore } from "@/stores/auth";
   import { useRoute } from 'vue-router';
@@ -28,10 +28,11 @@
   import Tag from 'primevue/tag';
   import { i18n } from '@/i18n';
 
-  const { accessToken, requireAuthRoute } = storeToRefs(useAuthStore());
+  const { accessToken } = storeToRefs(useAuthStore());
   const route = useRoute();
   const elements = ref([]);
   const log = ref('');
+  const logFileURL = ref('');
   const runTitle = ref('');
   const needsFeedback = ref(false);
   const runStatus = ref('');
@@ -44,7 +45,7 @@
   }
 
   // FETCH RUN
-  const { isLoading: isFetching, state: fetchResponse, isReady: isFetchFinished, execute: fetchRun } = useAsyncState(
+  const { isLoading: isFetchingResults, state: fetchResultsResponse, isReady: isFetchResultsFinished, execute: fetchRunResults } = useAsyncState(
     () => {
       return doRequest({
         url: `/api/runresults/${route.params.id}`,
@@ -61,9 +62,29 @@
     },
   );
 
-  const selectedStep = ref();
+  // FETCH LOG
+  const { isLoading: isFetchingLog, state: fetchLogResponse, isReady: isFetchLogFinished, execute: fetchRunLog } = useAsyncState(
+    () => {
+      return doRequest({
+        url: `/api/runresults/${route.params.id}/log`,
+        method: 'GET',
+        headers: {
+          Authorization: `${accessToken.value}`
+        },
+      })
+    },
+    {},
+    {
+      delay: 500,
+      resetOnExecute: false,
+    },
+  );
 
-  watch(fetchResponse, (value) => {
+  // POLL LOG
+  const { isActive: isLogPollActive, pause: pauseLogPoll, resume: resumeLogPoll } = useTimeoutPoll(fetchRunLog, 5000)
+
+
+  watch(fetchResultsResponse, (value) => {
     if (value.error) {
       let header = t('global.errors.generic.header');
       let detail = value.error.message;
@@ -89,24 +110,45 @@
     return '<p>' + value.replaceAll('<br>', '').replaceAll("\n", "</p><p>").replaceAll("\r", "</p><p>") + "</p>"
   }
 
-  watch(isFetchFinished, () => {
-    elements.value = fetchResponse.value?.data ? parseRunDefinition(fetchResponse.value.data.run) : [];
+  watch(isFetchResultsFinished, () => {
+    elements.value = fetchResultsResponse.value?.data ? parseRunDefinition(fetchResultsResponse.value.data.run) : [];
     elements.value.forEach(element => {
       element.data.readonly = true;
-      fetchResponse.value.data.runStepStatuses.forEach(stepStatus => {
+      fetchResultsResponse.value.data.runStepStatuses.forEach(stepStatus => {
         if (element.data.id == stepStatus.StepID) {
           element.data.status = stepStatus.RunStatusID
         }
       })
     });
-    runTitle.value = fetchResponse.value?.data ? t('pages.runs.results.header', { pipelineName: fetchResponse.value.data.run.Pipeline.name, runID: fetchResponse.value.data.run.ID }) : t('global.untitled');
-    log.value = fetchResponse.value?.data ? formatValue(fetchResponse.value.data.log) : "";
-    needsFeedback.value = fetchResponse.value?.data ? fetchResponse.value.data.run.RunStatusID == 5 : false
-    feedbackURL.value = fetchResponse.value?.data ? `/feedback/${fetchResponse.value.data.run.ID}` : '';
-    runStatus.value = fetchResponse.value?.data ? fetchResponse.value.data.run.RunStatus : false
+    runTitle.value = fetchResultsResponse.value?.data ? t('pages.runs.results.header', { pipelineName: fetchResultsResponse.value.data.run.Pipeline.name, runID: fetchResultsResponse.value.data.run.ID }) : t('global.untitled');
+    log.value = fetchResultsResponse.value?.data ? formatValue(fetchResultsResponse.value.data.log) : "";
+    logFileURL.value = fetchResultsResponse.value?.data ? fetchResultsResponse.value.data.logFileURL : "";
+    needsFeedback.value = fetchResultsResponse.value?.data ? fetchResultsResponse.value.data.run.RunStatusID == 5 : false;
+    feedbackURL.value = fetchResultsResponse.value?.data ? `/feedback/${fetchResultsResponse.value.data.run.ID}` : '';
+    runStatus.value = fetchResultsResponse.value?.data ? fetchResultsResponse.value.data.run.RunStatus : false;
+    resumeLogPoll();
   })
 
-  const isLoading = computed(() => isFetching.value);
+  watch(fetchLogResponse, (value) => {
+    if (value.error) {
+      let header = t('global.errors.generic.header');
+      let detail = value.error.message;
+
+      if (value.status == 401) {
+        header = t('global.errors.authorization.header');
+        detail = t('global.errors.authorization.detail');
+      }
+
+      toast.add({ severity: 'error', summary: header, detail: detail, life: 3000 });
+    }
+  })
+
+  watch(isFetchLogFinished, () => {
+    log.value = fetchResultsResponse.value?.data ? formatValue(fetchResultsResponse.value.data.log) : "";
+    logFileURL.value = fetchResultsResponse.value?.data ? fetchResultsResponse.value.data.logFileURL : "";
+  })
+
+  const isLoading = computed(() => isFetchingResults.value);
 
   const isStepDialogActive = ref(false);
   const formSchema = ref({});
@@ -204,7 +246,7 @@
 
       <SectionTitleLineWithButton :hasButton="false" :icon="mdiRunFast" :title="runTitle" main >
         <Tag :severity="getStatusTagSeverity(runStatus.ID)" :value="runStatus.Name" />
-        <BaseButton v-if="needsFeedback" :to="feedbackURL" :icon="mdiMessageAlertOutline" :label="$t('pages.runs.results.buttons.feedback')" color="success" />
+        <BaseButton v-if="needsFeedback" :to="feedbackURL" :icon="mdiMessageAlertOutline" :label="$t('pages.runs.results.buttons.feedback')" color="warning" />
       </SectionTitleLineWithButton>
       <VueFlow v-model="elements" :class="{ dark }" class="basicflow" :node-types="nodeTypes"
         @nodeDoubleClick="onNodeDoubleClick" :default-viewport="{ zoom: 1.5 }" :min-zoom="0.2" :max-zoom="4">
@@ -257,8 +299,9 @@
         <UpsertStepDialog :key="'createStepDialog_' + count" :formSchema="formSchema" :nodeId="editStepNodeId"
           :nodeData="stepData" @onCancel="onCancel" />
       </CardBoxModal>
-      <SectionTitleLineWithButton :hasButton="false" :icon="mdiFileDocumentOutline"
-        :title="$t('pages.runs.results.log.header')" />
+      <SectionTitleLineWithButton :hasButton="false" :icon="mdiFileDocumentOutline" :title="$t('pages.runs.results.log.header')" >
+        <BaseButton v-if="logFileURL != ''" color="success" :href="logFileURL" :label="$t('pages.runs.results.log.button')" />
+      </SectionTitleLineWithButton>
       <Editor id="run-results-log" v-model="log" editorStyle="height: 320px" :modules="quillModules" readonly />
     </SectionMain>
     <Toast />
@@ -273,4 +316,20 @@
   #run-results-log div.p-editor-container div.ql-editor p {
     max-width: 100%;
   }
+
+  .ql-editor {
+    counter-reset: unset;
+    padding-left: 0;
+  }
+
+  .ql-editor p:before {
+    counter-increment: unset;
+    content: unset;
+    display: inline-block;
+    border-right: 1px solid #ddd;
+    padding: 0 .5em;
+    margin-right: .5em;
+    color: #888
+  }
+
 </style>

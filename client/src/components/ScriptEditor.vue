@@ -2,7 +2,7 @@
     import { ref, computed, onMounted } from 'vue';
     import Editor from 'primevue/editor';
 
-    const props = defineProps(['modelValue'])
+    const props = defineProps(['modelValue', 'class'])
     const emit = defineEmits(['modelValueUpdate']) // this is need instead of update:modelValue because FormKit does not seem to support v-model
 
     const quillModules = {
@@ -25,7 +25,7 @@
 <template>
     <div>
         <label class="formkit-label" for="script-editor">Script</label>
-        <Editor id="formkit-label" v-model="text" @text-change="onTextChange" @update:modelValue="onModelValueUpdate" editorStyle="height: 320px; margin-bottom:10px" :modules="quillModules" />
+        <Editor id="formkit-label" :pt="{ content: { class: props.class } }" v-model="text" @text-change="onTextChange" @update:modelValue="onModelValueUpdate" editorStyle="height: 320px; margin-bottom:10px" :modules="quillModules" />
     </div>
 </template>
 

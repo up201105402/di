@@ -40,7 +40,10 @@ const stepConfigGroupChildren = (pipelineID) => {
             name: 'script',
             label: t('pages.pipelines.edit.dialog.stepConfig.scriptEditor'),
             bind: '$editorBindingProps',
-            if: '$scriptType == "inline"'
+            if: '$scriptType == "inline"',
+            props: {
+                class: 'formkit-step-schema',
+            }
         },
         {
             $el: 'label',

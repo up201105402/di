@@ -131,7 +131,7 @@ func (step HumanFeedbackNN) Execute(logFile *os.File, feedbackRects [][]model.Hu
 
 	var args []string
 	args = append(args, hitlDir+"train.py")
-	args, err := step.appendArgs(args, I18n, runLogger)
+	args, err := step.appendArgs(args, currentPipelineWorkDir, I18n, runLogger)
 
 	if err != nil {
 		return nil, err
@@ -143,7 +143,7 @@ func (step HumanFeedbackNN) Execute(logFile *os.File, feedbackRects [][]model.Hu
 		if len(rects) > 0 {
 			epochNumber = null.NewInt(int64(rects[0].HumanFeedbackQuery.Epoch), true)
 			queryNumber := rects[0].HumanFeedbackQuery.QueryID
-			epochDir := currentPipelineWorkDir + "epochs/" + fmt.Sprint(epochNumber) + "/"
+			epochDir := currentPipelineWorkDir + "epochs/" + fmt.Sprint(epochNumber.Int64) + "/"
 			fileName := epochDir + "query_" + fmt.Sprint(queryNumber) + "_rects_selected.csv"
 			rectsSelectedFile, err := os.Create(fileName)
 
@@ -163,16 +163,52 @@ func (step HumanFeedbackNN) Execute(logFile *os.File, feedbackRects [][]model.Hu
 
 			csvWriter := csv.NewWriter(rectsSelectedFile)
 
+			rects = util.Filter(rects, func(rect model.HumanFeedbackRect) bool {
+				return rect.Selected == true
+			})
+
+			var rectLines [][]string
+
 			for _, rect := range rects {
-				csvWriter.Write([]string{fmt.Sprint(rect.X1), fmt.Sprint(rect.Y1), fmt.Sprint(rect.X2), fmt.Sprint(rect.Y2)})
+				rectLines = append(rectLines, []string{fmt.Sprint(rect.X1), fmt.Sprint(rect.Y1), fmt.Sprint(rect.X2), fmt.Sprint(rect.Y2)})
 			}
 
-			rectsSelectedFile.Close()
+			err = csvWriter.WriteAll(rectLines)
+
+			if err != nil {
+				errMessage := I18n.MustLocalize(&i18n.LocalizeConfig{
+					MessageID: "os.cmd.create.file.failed",
+					TemplateData: map[string]interface{}{
+						"Path":   fileName,
+						"Reason": err.Error(),
+					},
+					PluralCount: 1,
+				})
+
+				runLogger.Println(errMessage)
+				return nil, errors.New(errMessage)
+			}
+
+			err = rectsSelectedFile.Close()
+
+			if err != nil {
+				errMessage := I18n.MustLocalize(&i18n.LocalizeConfig{
+					MessageID: "os.cmd.create.file.failed",
+					TemplateData: map[string]interface{}{
+						"Path":   fileName,
+						"Reason": err.Error(),
+					},
+					PluralCount: 1,
+				})
+
+				runLogger.Println(errMessage)
+				return nil, errors.New(errMessage)
+			}
 		}
 	}
 
 	if epochNumber.Valid {
-		args = append(args, "-re")
+		args = append(args, "--resume_epoch")
 		args = append(args, fmt.Sprintf("%d", epochNumber.Int64))
 	}
 
@@ -188,18 +224,26 @@ func (step HumanFeedbackNN) Execute(logFile *os.File, feedbackRects [][]model.Hu
 		return nil, cmdErr
 	}
 
-	return step.getCreatedFeedbackQueries(currentPipelineWorkDir)
+	return step.getCreatedFeedbackQueries(epochNumber, currentPipelineWorkDir)
 }
 
-func (step HumanFeedbackNN) appendArgs(args []string, I18n *i18n.Localizer, runLogger *log.Logger) ([]string, error) {
+func (step HumanFeedbackNN) appendArgs(args []string, currentPipelineWorkDir string, I18n *i18n.Localizer, runLogger *log.Logger) ([]string, error) {
 
 	if step.Data_dir.Valid {
 		args = append(args, "--data_dir")
-		args = append(args, step.Data_dir.String)
+		if filepath.IsAbs(step.Data_dir.String) {
+			args = append(args, step.Data_dir.String)
+		} else {
+			args = append(args, currentPipelineWorkDir+"/"+step.Data_dir.String)
+		}
 	}
 	if step.Models_dir.Valid {
 		args = append(args, "--models_dir")
-		args = append(args, step.Models_dir.String)
+		if filepath.IsAbs(step.Models_dir.String) {
+			args = append(args, step.Models_dir.String)
+		} else {
+			args = append(args, currentPipelineWorkDir+"/"+step.Models_dir.String)
+		}
 	}
 	if step.Epochs.Valid {
 		args = append(args, "--epochs")
@@ -236,7 +280,6 @@ func (step HumanFeedbackNN) appendArgs(args []string, I18n *i18n.Localizer, runL
 		} else {
 			args = append(args, "False")
 		}
-
 	}
 	if step.Start_epoch.Valid {
 		args = append(args, "--start_epoch")
@@ -247,14 +290,21 @@ func (step HumanFeedbackNN) appendArgs(args []string, I18n *i18n.Localizer, runL
 		args = append(args, step.Dataset.String)
 	}
 
+	args = append(args, "--epochs_dir")
+	args = append(args, currentPipelineWorkDir+"epochs/")
+
 	return args, nil
 }
 
-func (step HumanFeedbackNN) getCreatedFeedbackQueries(currentPipelineWorkDir string) ([]model.HumanFeedbackQueryPayload, error) {
+func (step HumanFeedbackNN) getCreatedFeedbackQueries(oldResumeEpoch null.Int, currentPipelineWorkDir string) ([]model.HumanFeedbackQueryPayload, error) {
 	var feedback []model.HumanFeedbackQueryPayload
 	var stoppedEpoch uint
 
 	for epoch := step.Epochs.Int64; epoch >= 0; epoch-- {
+		if oldResumeEpoch.Valid && oldResumeEpoch.Int64 == epoch {
+			break
+		}
+
 		err := filepath.Walk(currentPipelineWorkDir+"epochs/"+fmt.Sprintf("%d", epoch)+"/", func(path string, info os.FileInfo, err error) error {
 			if err != nil {
 				return err

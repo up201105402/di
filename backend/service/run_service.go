@@ -96,8 +96,8 @@ func (service *runServiceImpl) FindRunStepStatusesByRun(runID uint) ([]model.Run
 	return runStepStatuses, err
 }
 
-func (service *runServiceImpl) FindHumanFeedbackQueriesByStepID(stepID uint) ([]model.HumanFeedbackQuery, error) {
-	runStepStatuses, err := service.RunRepository.FindHumanFeedbackQueriesByStepID(stepID)
+func (service *runServiceImpl) FindHumanFeedbackQueriesByStepID(runID uint, stepID uint) ([]model.HumanFeedbackQuery, error) {
+	runStepStatuses, err := service.RunRepository.FindHumanFeedbackQueriesByStepID(runID, stepID)
 
 	if err != nil {
 		errMessage := service.I18n.MustLocalize(&i18n.LocalizeConfig{
@@ -318,6 +318,10 @@ func (service *runServiceImpl) Resume(runID uint) error {
 		return errors.New(errMessage)
 	}
 
+	if err := service.UpdateRunStatus(runID, 2, 0, ""); err != nil {
+		return err
+	}
+
 	runStepStatuses, getError := service.FindRunStepStatusesByRun(run.ID)
 
 	if getError != nil {
@@ -341,7 +345,7 @@ func (service *runServiceImpl) Resume(runID uint) error {
 		return errors.New(errMessage)
 	}
 
-	humanFeedbackQueries, err := service.FindHumanFeedbackQueriesByStepID(uint(runStepStatuses[0].StepID))
+	humanFeedbackQueries, err := service.FindHumanFeedbackQueriesByStepID(runID, uint(runStepStatuses[0].StepID))
 
 	if err != nil {
 		errMessage := service.I18n.MustLocalize(&i18n.LocalizeConfig{
@@ -779,7 +783,7 @@ func (service *runServiceImpl) resumeRunPipelineTask(runPipelinePayload RunPipel
 		return asynq.SkipRetry
 	}
 
-	logFile, err := os.Open(currentRunLogDir + logFileName)
+	logFile, err := os.OpenFile(currentRunLogDir+logFileName, os.O_APPEND|os.O_WRONLY|os.O_CREATE, 0600)
 
 	if err != nil {
 		errMessage := service.I18n.MustLocalize(&i18n.LocalizeConfig{
@@ -842,8 +846,9 @@ func (service *runServiceImpl) traverseAndExecuteSteps(runID uint, pipelineGraph
 		run, _ := service.Get(uint(runID))
 
 		var runStepStatus *model.RunStepStatus
+		hasStepStatus := false
 
-		if step.GetIsStaggered() && run.RunStatusID == 5 {
+		if step.GetIsStaggered() {
 			runStepStatuses, getError := service.FindRunStepStatusesByRun(run.ID)
 
 			if getError != nil {
@@ -857,56 +862,55 @@ func (service *runServiceImpl) traverseAndExecuteSteps(runID uint, pipelineGraph
 				return runStateStatus.RunStatusID == 5 && runStateStatus.StepID == startAtStepID
 			})
 
-			if len(runStepStatuses) == 0 {
-				errMessage := service.I18n.MustLocalize(&i18n.LocalizeConfig{
-					MessageID: "run.service.resume.steps.status.error",
-					TemplateData: map[string]interface{}{
-						"ID": run.ID,
-					},
-					PluralCount: 1,
-				})
-				log.Printf(errMessage)
-				hasError = true
-				stepErr = errors.New(errMessage)
-				return true
+			if len(runStepStatuses) > 0 {
+				hasStepStatus = true
+				runStepStatus = &runStepStatuses[0]
 			}
+		}
 
-			runStepStatus = &runStepStatuses[0]
+		if hasStepStatus { // we're resuming a run
 
-			feedbackQueries, err := service.FindHumanFeedbackQueriesByStepID(uint(runStepStatus.StepID))
-
-			if err != nil {
-				errMessage := service.I18n.MustLocalize(&i18n.LocalizeConfig{
-					MessageID: "run.handler.feedback.find.fail",
-					TemplateData: map[string]interface{}{
-						"ID":     runStepStatuses[0].StepID,
-						"Reason": err.Error(),
-					},
-					PluralCount: 1,
-				})
-				log.Printf(errMessage)
-				hasError = true
-				stepErr = errors.New(errMessage)
-
-				if err := service.updateStepRunStatus(runStepStatus, 3, err.Error()); err != nil {
+			if runStepStatus.RunStatusID == 5 {
+				if err := service.updateStepRunStatus(runStepStatus, 2, ""); err != nil {
 					log.Println(err.Error())
 					runLogger.Println(err.Error())
 				}
 
-				return true
-			}
-
-			for _, humanFeedbackQuery := range feedbackQueries {
-				rects, err := service.FindHumanFeedbackRectsByHumanFeedbackQueryID(humanFeedbackQuery.ID)
+				feedbackQueries, err := service.FindHumanFeedbackQueriesByStepID(runID, uint(runStepStatus.StepID))
 
 				if err != nil {
-					log.Printf(err.Error())
+					errMessage := service.I18n.MustLocalize(&i18n.LocalizeConfig{
+						MessageID: "run.handler.feedback.find.fail",
+						TemplateData: map[string]interface{}{
+							"ID":     runStepStatus.StepID,
+							"Reason": err.Error(),
+						},
+						PluralCount: 1,
+					})
+					log.Printf(errMessage)
 					hasError = true
-					stepErr = errors.New(err.Error())
+					stepErr = errors.New(errMessage)
+
+					if err := service.updateStepRunStatus(runStepStatus, 3, err.Error()); err != nil {
+						log.Println(err.Error())
+						runLogger.Println(err.Error())
+					}
+
 					return true
 				}
 
-				feebackRects = append(feebackRects, rects)
+				for _, humanFeedbackQuery := range feedbackQueries {
+					rects, err := service.FindHumanFeedbackRectsByHumanFeedbackQueryID(humanFeedbackQuery.ID)
+
+					if err != nil {
+						log.Printf(err.Error())
+						hasError = true
+						stepErr = errors.New(err.Error())
+						return true
+					}
+
+					feebackRects = append(feebackRects, rects)
+				}
 			}
 		} else {
 			runStepStatus := &model.RunStepStatus{RunID: runID, StepID: id, Name: step.GetName(), RunStatusID: 2, LastRun: time.Now()}

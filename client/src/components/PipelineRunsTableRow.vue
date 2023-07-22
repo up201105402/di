@@ -14,9 +14,11 @@ import BaseIcon from "@/components/BaseIcon.vue";
 import { useToast } from 'primevue/usetoast';
 import Loading from "vue-loading-overlay";
 import { formatDate } from '@/util';
+import { i18n } from '@/i18n';
 
 const { accessToken } = storeToRefs(useAuthStore());
 const toast = useToast();
+const { t } = i18n.global;
 
 const props = defineProps({
     parentRow: {

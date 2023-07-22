@@ -1,6 +1,7 @@
 package handlers
 
 import (
+	"bytes"
 	"di/model"
 	"di/service"
 	"di/util"
@@ -9,6 +10,7 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"os/exec"
 	"strconv"
 
 	"github.com/gin-gonic/gin"
@@ -178,6 +180,72 @@ func CreateRun(services *service.Services, I18n *i18n.Localizer) gin.HandlerFunc
 	}
 }
 
+func ResumeRun(services *service.Services, I18n *i18n.Localizer) gin.HandlerFunc {
+	return func(context *gin.Context) {
+
+		id := context.Param("runID")
+
+		runID, parseError := strconv.ParseUint(id, 10, 64)
+
+		if parseError != nil {
+			errMessage := I18n.MustLocalize(&i18n.LocalizeConfig{
+				MessageID: "sys.parsing.string.uint",
+				TemplateData: map[string]interface{}{
+					"Reason": parseError.Error(),
+				},
+				PluralCount: 1,
+			})
+			log.Printf(errMessage)
+			err := errors.NewInternal(errMessage)
+			context.JSON(err.Status(), gin.H{
+				"error": err.Message,
+			})
+			return
+		}
+
+		user, err := getUser(context)
+		if err != nil {
+			context.JSON(err.Status(), gin.H{
+				"error": err.Error(),
+			})
+		}
+
+		run, serviceError := services.RunService.Get(uint(runID))
+
+		if serviceError != nil {
+			log.Printf(serviceError.Error())
+			err := errors.NewInternal(serviceError.Error())
+			context.JSON(err.Status(), gin.H{
+				"error": err.Message,
+			})
+			return
+		}
+
+		if run.Pipeline.User.ID != user.ID {
+			errorMessage := fmt.Sprint("Failed to execute pipeline %d with user: %v\n", run.Pipeline.ID, user.Username)
+			log.Printf(errorMessage)
+			err := errors.NewInternal(errorMessage)
+			context.JSON(err.Status(), gin.H{
+				"error": err.Message,
+			})
+			return
+		}
+
+		serviceError = services.RunService.Resume(run.ID)
+
+		if serviceError != nil {
+			log.Printf(serviceError.Error())
+			err := errors.NewInternal(serviceError.Error())
+			context.JSON(err.Status(), gin.H{
+				"error": err.Message,
+			})
+			return
+		}
+
+		context.JSON(http.StatusOK, gin.H{})
+	}
+}
+
 func ExecuteRun(services *service.Services, I18n *i18n.Localizer) gin.HandlerFunc {
 	return func(context *gin.Context) {
 
@@ -241,6 +309,106 @@ func ExecuteRun(services *service.Services, I18n *i18n.Localizer) gin.HandlerFun
 		}
 
 		context.JSON(http.StatusOK, gin.H{})
+	}
+}
+
+func GetLogTail(services *service.Services, I18n *i18n.Localizer) gin.HandlerFunc {
+	return func(context *gin.Context) {
+
+		id := context.Param("id")
+
+		runID, parseError := strconv.ParseUint(id, 10, 64)
+
+		if parseError != nil {
+			errMessage := I18n.MustLocalize(&i18n.LocalizeConfig{
+				MessageID: "sys.parsing.string.uint",
+				TemplateData: map[string]interface{}{
+					"Reason": parseError.Error(),
+				},
+				PluralCount: 1,
+			})
+			log.Printf(errMessage)
+			err := errors.NewInternal(errMessage)
+			context.JSON(err.Status(), gin.H{
+				"error": err.Message,
+			})
+			return
+		}
+
+		run, serviceError := services.RunService.Get(uint(runID))
+
+		if serviceError != nil {
+			log.Printf(serviceError.Error())
+			err := errors.NewInternal(serviceError.Error())
+			context.JSON(err.Status(), gin.H{
+				"error": err.Message,
+			})
+			return
+		}
+
+		runLogsDir, exists := os.LookupEnv("RUN_LOGS_DIR")
+
+		if !exists {
+			errMessage := I18n.MustLocalize(&i18n.LocalizeConfig{
+				MessageID: "env.variable.find.failed",
+				TemplateData: map[string]interface{}{
+					"Name": "RUN_LOGS_DIR",
+				},
+				PluralCount: 1,
+			})
+			log.Printf(errMessage)
+			err := errors.NewInternal(errMessage)
+			context.JSON(err.Status(), gin.H{
+				"error": err.Message,
+			})
+			return
+		}
+
+		logFileName, exists := os.LookupEnv("RUN_LOG_FILE_NAME")
+
+		if !exists {
+			errMessage := I18n.MustLocalize(&i18n.LocalizeConfig{
+				MessageID: "env.variable.find.failed",
+				TemplateData: map[string]interface{}{
+					"Name": "RUN_LOG_FILE_NAME",
+				},
+				PluralCount: 1,
+			})
+			log.Printf(errMessage)
+			err := errors.NewInternal(errMessage)
+			context.JSON(err.Status(), gin.H{
+				"error": err.Message,
+			})
+			return
+		}
+
+		runLogDir := runLogsDir + "/pipelines/" + fmt.Sprint(run.PipelineID) + "/" + fmt.Sprint(run.ID) + "/"
+		var logFileTailStdout bytes.Buffer
+		cmd := exec.Command("tail", "-25", runLogDir+logFileName)
+		cmd.Stdout = &logFileTailStdout
+		err := cmd.Run()
+
+		if err != nil {
+			errMessage := I18n.MustLocalize(&i18n.LocalizeConfig{
+				MessageID: "os.cmd.read.file.failed",
+				TemplateData: map[string]interface{}{
+					"Path":   runLogDir + logFileName,
+					"Reason": err.Error(),
+				},
+				PluralCount: 1,
+			})
+			log.Printf(errMessage)
+			err := errors.NewInternal(errMessage)
+			context.JSON(err.Status(), gin.H{
+				"error": err.Message,
+			})
+			return
+		}
+
+		context.JSON(http.StatusOK, gin.H{
+			"log":        logFileTailStdout.String(),
+			"logFileURL": "/logs/pipelines/" + fmt.Sprint(run.PipelineID) + "/" + fmt.Sprint(run.ID) + "/" + logFileName,
+		})
 	}
 }
 
@@ -326,7 +494,10 @@ func FindRunResulstById(services *service.Services, I18n *i18n.Localizer) gin.Ha
 		}
 
 		runLogDir := runLogsDir + "/pipelines/" + fmt.Sprint(run.PipelineID) + "/" + fmt.Sprint(run.ID) + "/"
-		logFile, err := os.ReadFile(runLogDir + logFileName)
+		var logFileTailStdout bytes.Buffer
+		cmd := exec.Command("tail", "-25", runLogDir+logFileName)
+		cmd.Stdout = &logFileTailStdout
+		err := cmd.Run()
 
 		if err != nil {
 			errMessage := I18n.MustLocalize(&i18n.LocalizeConfig{
@@ -348,7 +519,8 @@ func FindRunResulstById(services *service.Services, I18n *i18n.Localizer) gin.Ha
 		context.JSON(http.StatusOK, gin.H{
 			"run":             run,
 			"runStepStatuses": runStepStatuses,
-			"log":             string(logFile),
+			"log":             logFileTailStdout.String(),
+			"logFileURL":      "/logs/pipelines/" + fmt.Sprint(run.PipelineID) + "/" + fmt.Sprint(run.ID) + "/" + logFileName,
 		})
 	}
 }
@@ -434,7 +606,7 @@ func FindRunFeedbackQueriesById(services *service.Services, I18n *i18n.Localizer
 			return
 		}
 
-		humanFeedbackQueries, err := services.RunService.FindHumanFeedbackQueriesByStepID(uint(runStepStatuses[0].StepID))
+		humanFeedbackQueries, err := services.RunService.FindHumanFeedbackQueriesByStepID(run.ID, uint(runStepStatuses[0].StepID))
 
 		if err != nil {
 			errMessage := I18n.MustLocalize(&i18n.LocalizeConfig{
@@ -600,7 +772,7 @@ func SubmitRunFeedback(services *service.Services, I18n *i18n.Localizer) gin.Han
 			return
 		}
 
-		humanFeedbackQueries, err := services.RunService.FindHumanFeedbackQueriesByStepID(uint(runStepStatuses[0].StepID))
+		humanFeedbackQueries, err := services.RunService.FindHumanFeedbackQueriesByStepID(run.ID, uint(runStepStatuses[0].StepID))
 
 		if err != nil {
 			errMessage := I18n.MustLocalize(&i18n.LocalizeConfig{

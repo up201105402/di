@@ -1,7 +1,6 @@
 <script setup>
 import { computed, ref } from "vue";
 import { mdiEye, mdiTrashCan } from "@mdi/js";
-import TableCheckboxCell from "@/components/TableCheckboxCell.vue";
 import BaseLevel from "@/components/BaseLevel.vue";
 import BaseButtons from "@/components/BaseButtons.vue";
 import BaseButton from "@/components/BaseButton.vue";
@@ -9,7 +8,6 @@ import { formatDate } from '@/util';
 
 const props = defineProps({
     items: Array,
-    checkable: Boolean,
 });
 
 // EMITS
@@ -75,17 +73,10 @@ const checked = (isChecked, pipeline) => {
 </script>
 
 <template>
-    <div v-if="checkedRows.length" class="p-3 bg-gray-100/50 dark:bg-slate-800">
-        <span v-for="checkedRow in checkedRows" :key="checkedRow.id"
-            class="inline-block px-2 py-1 rounded-sm mr-2 text-sm bg-gray-100 dark:bg-slate-700">
-            {{ checkedRow.name }}
-        </span>
-    </div>
-
     <table>
         <thead>
             <tr>
-                <th v-if="checkable" />
+                <th>{{ $t('pages.pipelines.table.headers.id') }}</th>
                 <th>{{ $t('pages.pipelines.table.headers.name') }}</th>
                 <th>{{ $t('pages.pipelines.table.headers.modified') }}</th>
                 <th>{{ $t('pages.pipelines.table.headers.created') }}</th>
@@ -94,7 +85,9 @@ const checked = (isChecked, pipeline) => {
         </thead>
         <tbody>
             <tr v-for="pipeline in itemsPaginated" :key="pipeline.id">
-                <TableCheckboxCell v-if="checkable" @checked="checked($event, pipeline)" />
+                <td :data-label="$t('pages.pipelines.table.headers.name')">
+                    {{ pipeline.ID }}
+                </td>
                 <td :data-label="$t('pages.pipelines.table.headers.name')">
                     {{ pipeline.name }}
                 </td>

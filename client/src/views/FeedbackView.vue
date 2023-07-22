@@ -100,14 +100,14 @@ watch(updateResponse, (value) => {
     }
 
     if (value.status === 200) {
-        router.push(`/runresults/${route.params.id}`);
+        router.back();
     }
 })
 
 const isLoading = computed(() => isFetching.value || isUpdating.value);
 
 const onFeedbackCancel = () => {
-    router.push(`/runresults/${route.params.id}`);
+    router.back();
 }
 
 const onFeedbackSave = () => {

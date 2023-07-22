@@ -176,7 +176,7 @@ const isLoading = computed(() => isFetching.value || isCreating.value || isDelet
         <BaseButton :icon="mdiPlus" color="success" @click="onNewPipelineClicked" />
       </SectionTitleLineWithButton>
 
-      <PipelinesTable :items="pipelines" @deleteButtonClicked="onDeletePipelineClicked" checkable />
+      <PipelinesTable :items="pipelines" @deleteButtonClicked="onDeletePipelineClicked" />
     </SectionMain>
 
     <CardBoxModal v-model="isCreateModalActive" @confirm="createPipeline(200, createPipelineForm.name)"

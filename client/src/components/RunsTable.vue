@@ -3,7 +3,7 @@ import { storeToRefs } from "pinia";
 import { useAsyncState } from "@vueuse/core";
 import { doRequest } from "@/util";
 import { useAuthStore } from "@/stores/auth";
-import { mdiEye, mdiPlayOutline } from "@mdi/js";
+import { mdiEye, mdiMessageAlertOutline, mdiPlayOutline, mdiAnimationPlayOutline } from "@mdi/js";
 import BaseButtons from "@/components/BaseButtons.vue";
 import BaseButton from "@/components/BaseButton.vue";
 import BaseLevel from "@/components/BaseLevel.vue";
@@ -29,10 +29,11 @@ const props = defineProps({
 });
 
 const isRunModalActive = ref(false);
+const isResumeModalActive = ref(false);
 const runIDtoExecute = ref(null);
+const runIDtoResume = ref(null);
 
 // EXECUTE RUN
-
 const {
     isLoading: isExecutingSubrow,
     state: executeSubrowResponse,
@@ -56,6 +57,32 @@ const {
         immediate: false,
     },
 );
+
+// RESUME RUN
+const {
+    isLoading: isResumingSubrow,
+    state: resumeSubrowResponse,
+    isReady: resumeSubrowFinished,
+    error: resumeError,
+    execute: resumeSubrow
+} = useAsyncState(
+    (subRowID) => {
+        return doRequest({
+            url: `/api/run/resume/${subRowID}`,
+            method: 'POST',
+            headers: {
+                Authorization: `${accessToken.value}`,
+            },
+        });
+    },
+    {},
+    {
+        delay: 500,
+        resetOnExecute: false,
+        immediate: false,
+    },
+);
+
 
 // FETCH RUNS
 const {
@@ -98,6 +125,22 @@ watch(executeSubrowResponse, (value) => {
     }
 })
 
+watch(resumeSubrowResponse, (value) => {
+    if (value.error) {
+        let header = t('global.errors.generic.header');
+        let detail = value.error.message;
+
+        if (value.status == 401) {
+            header = t('global.errors.authorization.header');
+            detail = t('global.errors.authorization.detail');
+        }
+
+        toast.add({ severity: 'error', summary: header, detail: detail, life: 3000 });
+    } else {
+        fetchRuns();
+    }
+})
+
 watch(fetchRunsResponse, (value) => {
     if (value.error) {
         let header = t('global.errors.generic.header');
@@ -114,13 +157,22 @@ watch(fetchRunsResponse, (value) => {
     }
 })
 
-const onSubRowButtonClicked = (e, subRowID) => {
+const onSubRowExecuteButtonClicked = (e, subRowID) => {
     isRunModalActive.value = true;
     runIDtoExecute.value = subRowID;
 }
 
+const onSubRowResumeButtonClicked = (e, subRowID) => {
+    isResumeModalActive.value = true;
+    runIDtoResume.value = subRowID;
+}
+
 const onExecuteRunConfirmed = (targetID) => {
     executeSubrow(null, targetID);
+}
+
+const onResumeRunConfirmed = (targetID) => {
+    resumeSubrow(null, targetID);
 }
 
 const isRunButtonDisabled = (run) => {
@@ -157,16 +209,6 @@ watch(currentPage, (newValue, oldValue) => {
     ) : [];
 })
 
-// const paginatedRows = computed(() => {
-//     return fetchedRows.value.length ? fetchedRows.value.slice(
-//         perPage.value * currentPage.value,
-//         perPage.value * (currentPage.value + 1)
-//     ) : props.rows.slice(
-//         perPage.value * currentPage.value,
-//         perPage.value * (currentPage.value + 1)
-//     );
-// });
-
 const numPages = computed(() => Math.ceil(fetchedRows.value.length ? fetchedRows.value.length / perPage.value : props.rows.length / perPage.value));
 
 const currentPageHuman = computed(() => currentPage.value + 1);
@@ -181,7 +223,7 @@ const pagesList = computed(() => {
     return pagesList;
 });
 
-const isLoading = computed(() => isExecutingSubrow.value);
+const isLoading = computed(() => isExecutingSubrow.value || isResumingSubrow.value || isFetchingRuns.value);
 
 </script>
 
@@ -194,6 +236,7 @@ const isLoading = computed(() => isExecutingSubrow.value);
                 <th>{{ $t('pages.runs.table.headers.status') }}</th>
                 <th>{{ $t('pages.runs.table.headers.created') }}</th>
                 <th>{{ $t('pages.runs.table.headers.lastRun') }}</th>
+                <th />
             </tr>
         </thead>
         <tbody>
@@ -204,19 +247,20 @@ const isLoading = computed(() => isExecutingSubrow.value);
                 <td class="border-b-0 lg:w-6 before:hidden">
                     <Tag :severity="getStatusTagSeverity(row.RunStatus.ID)" :value="row.RunStatus.Name" />
                 </td>
-                <td data-label="Created" class="lg:w-1 whitespace-nowrap">
+                <td :data-label="$t('pages.runs.table.headers.created')" class="lg:w-1 whitespace-nowrap">
                     <small class="text-gray-500 dark:text-slate-400" :title="formatDate(row.CreatedAt)">{{
                         formatDate(row.CreatedAt) }}</small>
                 </td>
-                <td data-label="Created" class="lg:w-1 whitespace-nowrap">
+                <td :data-label="$t('pages.runs.table.headers.lastRun')" class="lg:w-1 whitespace-nowrap">
                     <small class="text-gray-500 dark:text-slate-400" :title="formatDate(row.LastRun)">{{
                         formatDate(row.LastRun) }}</small>
                 </td>
                 <td class="before:hidden lg:w-1 whitespace-nowrap">
                     <BaseButtons type="justify-start lg:justify-end" no-wrap>
                         <BaseButton color="success" :icon="mdiEye" small :to="`/runresults/${row.ID}`" />
-                        <BaseButton color="success" :icon="mdiPlayOutline" small :disabled="isRunButtonDisabled(row)"
-                            @click.prevent="(e) => onSubRowButtonClicked(e, row.ID)" />
+                        <BaseButton color="success" :icon="mdiPlayOutline" small :disabled="isRunButtonDisabled(row)" @click.prevent="(e) => onSubRowExecuteButtonClicked(e, row.ID)" />
+                        <BaseButton v-if="row.RunStatus.ID == 5" :disabled="isRunButtonDisabled(row)" :to="`/feedback/${row.ID}`" :icon="mdiMessageAlertOutline" color="warning" />
+                        <BaseButton v-if="row.RunStatus.ID == 5" color="warning" :icon="mdiAnimationPlayOutline" small :disabled="isRunButtonDisabled(row)" @click.prevent="(e) => onSubRowResumeButtonClicked(e, row.ID)" />
                     </BaseButtons>
                 </td>
             </tr>
@@ -234,5 +278,9 @@ const isLoading = computed(() => isExecutingSubrow.value);
     <CardBoxModal v-model="isRunModalActive" @confirm="onExecuteRunConfirmed" :targetId="runIDtoExecute"
         :title="$t('pages.runs.table.dialog.execute.header', { id: runIDtoExecute })" button="success" has-cancel>
         <div>{{ $t('pages.runs.table.dialog.execute.body') }}</div>
+    </CardBoxModal>
+    <CardBoxModal v-model="isResumeModalActive" @confirm="onResumeRunConfirmed" :targetId="runIDtoResume"
+        :title="$t('pages.runs.table.dialog.resume.header', { id: runIDtoResume })" button="success" has-cancel>
+        <div>{{ $t('pages.runs.table.dialog.resume.body') }}</div>
     </CardBoxModal>
 </template>
