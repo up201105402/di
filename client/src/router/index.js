@@ -6,6 +6,7 @@ import PipelineRuns from "@/views/PipelineRunsView.vue";
 import PipelineEditor from "@/views/PipelineEditorView.vue";
 import RunResults from "@/views/RunResultsView.vue";
 import Feedback from "@/views/FeedbackView.vue";
+import SingleFeedback from "@/views/SingleQueryFeedbackView.vue";
 
 const routes = [
   // {
@@ -77,6 +78,15 @@ const routes = [
     path: "/feedback/:id",
     name: "feedback",
     component: Feedback,
+    private: true,
+  },
+  {
+    meta: {
+      title: "Single Query Human Feedback",
+    },
+    path: "/feedback/:id/query/:queryId",
+    name: "singleFeedback",
+    component: SingleFeedback,
     private: true,
   },
   {

@@ -1,10 +1,12 @@
 <script setup>
     import { Handle, Position } from '@vue-flow/core';
     import { NodeToolbar } from '@vue-flow/node-toolbar';
-    import { mdiCloseCircle, mdiAlertCircle, mdiCancel, mdiCheckCircleOutline, mdiDotsCircle } from "@mdi/js";
+    import { mdiCloseCircle } from "@mdi/js";
     import { computed } from 'vue';
     import BaseIcon from "@/components/BaseIcon.vue";
     import $ from 'jquery';
+    import Tag from 'primevue/tag';
+    import { getStatusTagSeverity } from '@/util';
 
     const props = defineProps({
         id: {
@@ -45,18 +47,6 @@
         filter: 'invert(100%)',
     }))
 
-    const getIcon = () => {
-        if (props.data.status == 1) {
-            return mdiCancel;
-        } else if (props.data.status == 2) {
-            return mdiDotsCircle;
-        } else if (props.data.status == 3) {
-            return mdiAlertCircle;
-        } else if (props.data.status == 4) {
-            return mdiCheckCircleOutline;
-        }
-    }
-    
 </script>
 
 <template>
@@ -69,11 +59,11 @@
 
     <div class="node-type">
         <span class="node-id">{{ parseInt(props.id) + 1 }}</span>
-        <span class="node-type-label">Checkout Repo</span>
+        <span class="node-type-label">{{ $t('pages.pipelines.steps.' + props.data.type) }}</span>
     </div>
     <div>
         <span>{{ props.label }}</span>
-        <span v-if="props.data.status"><BaseIcon :path="getIcon()" /></span>
+        <span class="node-status-tag" v-if="props.data.status"><Tag :severity="getStatusTagSeverity(props.data.status.id)" :value="props.data.status.Name" /></span>
         <Handle v-if="props.data.nameAndType.isFirstStep === false" :id="props.id + '_input'" type="source"
             :position="Position.Left" :style="sourceHandleStyle" />
         <Handle :id="props.id + '_output'" type="target" :position="Position.Right" :style="outputHandleStyle" />

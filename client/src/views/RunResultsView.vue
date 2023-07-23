@@ -20,6 +20,7 @@
   import CardBoxModal from '@/components/CardBoxModal.vue';
   import UpsertStepDialog from '@/components/UpsertStepDialog.vue';
   import BaseButton from '@/components/BaseButton.vue';
+  import HumanFeedbackQueriesTable from '@/components/HumanFeedbackQueriesTable.vue';
   import Toast from 'primevue/toast';
   import { useToast } from 'primevue/usetoast';
   import Loading from "vue-loading-overlay";
@@ -36,6 +37,8 @@
   const runTitle = ref('');
   const needsFeedback = ref(false);
   const runStatus = ref('');
+  const runID = ref(-1);
+  const humanFeedbackQueries = ref([]);
   const feedbackURL = ref('');
   const toast = useToast();
   const { t } = i18n.global;
@@ -87,7 +90,7 @@
   watch(fetchResultsResponse, (value) => {
     if (value.error) {
       let header = t('global.errors.generic.header');
-      let detail = value.error.message;
+      let detail = value.error;
 
       if (value.status == 401) {
         header = t('global.errors.authorization.header');
@@ -116,7 +119,7 @@
       element.data.readonly = true;
       fetchResultsResponse.value.data.runStepStatuses.forEach(stepStatus => {
         if (element.data.id == stepStatus.StepID) {
-          element.data.status = stepStatus.RunStatusID
+          element.data.status = stepStatus.RunStatus
         }
       })
     });
@@ -126,13 +129,15 @@
     needsFeedback.value = fetchResultsResponse.value?.data ? fetchResultsResponse.value.data.run.RunStatusID == 5 : false;
     feedbackURL.value = fetchResultsResponse.value?.data ? `/feedback/${fetchResultsResponse.value.data.run.ID}` : '';
     runStatus.value = fetchResultsResponse.value?.data ? fetchResultsResponse.value.data.run.RunStatus : false;
+    runID.value = fetchResultsResponse.value?.data ? fetchResultsResponse.value.data.run.ID : null;
+    humanFeedbackQueries.value = fetchResultsResponse.value?.data ? fetchResultsResponse.value.data.humanFeedbackQueries : false;
     resumeLogPoll();
   })
 
   watch(fetchLogResponse, (value) => {
     if (value.error) {
       let header = t('global.errors.generic.header');
-      let detail = value.error.message;
+      let detail = value.error;
 
       if (value.status == 401) {
         header = t('global.errors.authorization.header');
@@ -144,8 +149,8 @@
   })
 
   watch(isFetchLogFinished, () => {
-    log.value = fetchResultsResponse.value?.data ? formatValue(fetchResultsResponse.value.data.log) : "";
-    logFileURL.value = fetchResultsResponse.value?.data ? fetchResultsResponse.value.data.logFileURL : "";
+    log.value = fetchLogResponse.value?.data ? formatValue(fetchLogResponse.value.data.log) : "";
+    logFileURL.value = fetchLogResponse.value?.data ? fetchLogResponse.value.data.logFileURL : "";
   })
 
   const isLoading = computed(() => isFetchingResults.value);
@@ -303,6 +308,8 @@
         <BaseButton v-if="logFileURL != ''" color="success" :href="logFileURL" :label="$t('pages.runs.results.log.button')" />
       </SectionTitleLineWithButton>
       <Editor id="run-results-log" v-model="log" editorStyle="height: 320px" :modules="quillModules" readonly />
+      <SectionTitleLineWithButton v-if="humanFeedbackQueries.length" :hasButton="false" :icon="mdiFileDocumentOutline" :title="$t('pages.runs.results.humanFeedbackQueries.header')" />
+      <HumanFeedbackQueriesTable v-if="humanFeedbackQueries.length" :runID="runID" :rows="humanFeedbackQueries" />
     </SectionMain>
     <Toast />
   </LayoutAuthenticated>

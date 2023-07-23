@@ -49,6 +49,8 @@ type RunService interface {
 	Get(id uint) (*model.Run, error)
 	GetByPipeline(pipelineId uint) ([]model.Run, error)
 	FindRunStepStatusesByRun(runID uint) ([]model.RunStepStatus, error)
+	FindHumanFeedbackQueriesByRunID(runID uint) ([]model.HumanFeedbackQuery, error)
+	FindHumanFeedbackQueryByID(queryID uint) (*model.HumanFeedbackQuery, error)
 	FindHumanFeedbackQueriesByStepID(runID uint, runStepStatusID uint) ([]model.HumanFeedbackQuery, error)
 	FindHumanFeedbackRectsByHumanFeedbackQueryID(humanFeedbackQueryID uint) ([]model.HumanFeedbackRect, error)
 	FindHumanFeedbackQueryStatusByID(queryStatusID uint) (*model.QueryStatus, error)

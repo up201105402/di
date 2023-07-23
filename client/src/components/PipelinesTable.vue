@@ -1,6 +1,6 @@
 <script setup>
 import { computed, ref } from "vue";
-import { mdiEye, mdiTrashCan } from "@mdi/js";
+import { mdiPencilOutline, mdiTrashCan } from "@mdi/js";
 import BaseLevel from "@/components/BaseLevel.vue";
 import BaseButtons from "@/components/BaseButtons.vue";
 import BaseButton from "@/components/BaseButton.vue";
@@ -99,7 +99,7 @@ const checked = (isChecked, pipeline) => {
                 </td>
                 <td class="before:hidden lg:w-1 whitespace-nowrap">
                     <BaseButtons type="justify-start lg:justify-end" no-wrap>
-                        <BaseButton color="info" :icon="mdiEye" small :to="'/pipelines/edit/' + pipeline.ID" />
+                        <BaseButton color="info" :icon="mdiPencilOutline" small :to="'/pipelines/edit/' + pipeline.ID" />
                         <BaseButton color="danger" :icon="mdiTrashCan" small :target-id="pipeline.ID" @clicked="deleteButtonClicked" />
                     </BaseButtons>
                 </td>

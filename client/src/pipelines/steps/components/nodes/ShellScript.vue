@@ -1,11 +1,11 @@
 <script setup>
-    import { Handle, Position, NodeIdInjection } from '@vue-flow/core';
+    import { Handle, Position } from '@vue-flow/core';
     import { NodeToolbar } from '@vue-flow/node-toolbar';
     import { computed } from 'vue';
     import BaseIcon from "@/components/BaseIcon.vue";
     import { mdiCloseCircle, mdiAlertCircle, mdiCancel, mdiCheckCircleOutline, mdiDotsCircle, mdiPowershell  } from "@mdi/js";
-    import { camel2title } from '@/util';
     import $ from 'jquery';
+    import { getStatusTagSeverity } from '@/util';
 
     const props = defineProps({
         data: {
@@ -70,11 +70,11 @@
     <div class="node-type">
         <span class="node-id">{{ parseInt(props.data.id) + 1 }}</span>
         <BaseIcon class="scikit-logo" style="display: inline" src="/assets/Python-logo.png" :path="mdiPowershell " />
-        <span class="node-type-label">{{ camel2title(props.data.type) }}</span>
+        <span class="node-type-label">{{ $t('pages.pipelines.steps.' + props.data.type) }}</span>
     </div>
     <div class="node-config" >
         <span>{{ props.label }}</span>
-        <span v-if="props.data.status"><BaseIcon :path="getIcon()" /></span>
+        <span class="node-status-tag" v-if="props.data.status"><Tag :severity="getStatusTagSeverity(props.data.status.id)" :value="props.data.status.Name" /></span>
         <Handle v-if="props.data.nameAndType.isFirstStep === false" id="a" type="source" :position="Position.Left" :style="sourceHandleStyle" />
         <Handle id="b" type="target" :position="Position.Right" :style="sourceHandleStyle" />
     </div>

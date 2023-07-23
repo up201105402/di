@@ -11,6 +11,7 @@ import ScriptEditor from '@/components/ScriptEditor.vue';
 import FormFilePicker from '@/components/FormFilePicker.vue';
 import PythonScriptNode from '@/pipelines/steps/components/nodes/PythonScript.vue';
 import ShellScriptNode from '@/pipelines/steps/components/nodes/ShellScript.vue';
+import HITLNode from '@/pipelines/steps/components/nodes/HITL.vue';
 import BaseButton from '@/components/BaseButton.vue';
 import BaseCancelAndSubmitButtons from '@/components/BaseCancelAndSubmitButtons.vue';
 import { i18n } from '@/i18n';
@@ -24,6 +25,7 @@ export const nodeTypes = {
   checkoutRepo: markRaw(General),
   shellScript: markRaw(ShellScriptNode),
   pythonScript: markRaw(PythonScriptNode),
+  humanFeedbackNN: markRaw(HITLNode),
 };
 
 Object.keys(scikitUnsupervisedModels).forEach(key => {

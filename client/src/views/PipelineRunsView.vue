@@ -85,7 +85,7 @@ const {
 watch(fetchRunsResponse, (value) => {
     if (value.error) {
         let header = t('global.errors.generic.header');
-        let detail = value.error.message;
+        let detail = value.error;
 
         if (value.status == 401) {
             header = t('global.errors.authorization.header');
@@ -99,7 +99,7 @@ watch(fetchRunsResponse, (value) => {
 watch(createRunResponse, (value) => {
     if (value.error) {
         let header = t('global.errors.generic.header');
-        let detail = value.error.message;
+        let detail = value.error;
 
         if (value.status == 401) {
             header = t('global.errors.authorization.header');

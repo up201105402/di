@@ -13,9 +13,11 @@ import { useToast } from 'primevue/usetoast';
 import { ref, computed, watch } from "vue";
 import { formatDate, getStatusTagSeverity } from '@/util';
 import Loading from "vue-loading-overlay";
+import { i18n } from '@/i18n';
 
 const { accessToken } = storeToRefs(useAuthStore());
 const toast = useToast();
+const { t } = i18n.global;
 
 const props = defineProps({
     rows: {
@@ -112,7 +114,7 @@ const {
 watch(executeSubrowResponse, (value) => {
     if (value.error) {
         let header = t('global.errors.generic.header');
-        let detail = value.error.message;
+        let detail = value.error;
 
         if (value.status == 401) {
             header = t('global.errors.authorization.header');
@@ -128,7 +130,7 @@ watch(executeSubrowResponse, (value) => {
 watch(resumeSubrowResponse, (value) => {
     if (value.error) {
         let header = t('global.errors.generic.header');
-        let detail = value.error.message;
+        let detail = value.error;
 
         if (value.status == 401) {
             header = t('global.errors.authorization.header');
@@ -144,7 +146,7 @@ watch(resumeSubrowResponse, (value) => {
 watch(fetchRunsResponse, (value) => {
     if (value.error) {
         let header = t('global.errors.generic.header');
-        let detail = value.error.message;
+        let detail = value.error;
 
         if (value.status == 401) {
             header = t('global.errors.authorization.header');
@@ -248,12 +250,10 @@ const isLoading = computed(() => isExecutingSubrow.value || isResumingSubrow.val
                     <Tag :severity="getStatusTagSeverity(row.RunStatus.ID)" :value="row.RunStatus.Name" />
                 </td>
                 <td :data-label="$t('pages.runs.table.headers.created')" class="lg:w-1 whitespace-nowrap">
-                    <small class="text-gray-500 dark:text-slate-400" :title="formatDate(row.CreatedAt)">{{
-                        formatDate(row.CreatedAt) }}</small>
+                    <small class="text-gray-500 dark:text-slate-400" :title="formatDate(row.CreatedAt)">{{ formatDate(row.CreatedAt) }}</small>
                 </td>
                 <td :data-label="$t('pages.runs.table.headers.lastRun')" class="lg:w-1 whitespace-nowrap">
-                    <small class="text-gray-500 dark:text-slate-400" :title="formatDate(row.LastRun)">{{
-                        formatDate(row.LastRun) }}</small>
+                    <small class="text-gray-500 dark:text-slate-400" :title="formatDate(row.LastRun)">{{ formatDate(row.LastRun) }}</small>
                 </td>
                 <td class="before:hidden lg:w-1 whitespace-nowrap">
                     <BaseButtons type="justify-start lg:justify-end" no-wrap>

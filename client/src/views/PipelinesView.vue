@@ -49,7 +49,7 @@ const { isLoading: isFetching, state: fetchResponse, isReady: isFetchFinished, e
 watch(fetchResponse, (value) => {
   if (value.error) {
     let header = t('global.errors.generic.header');
-    let detail = value.error.message;
+    let detail = value.error;
 
     if (value.status == 401) {
       header = t('global.errors.authorization.header');
@@ -97,7 +97,7 @@ const { isLoading: isCreating, state: createResponse, isReady: createFinished, e
 watch(createResponse, (value) => {
   if (value.error) {
     let header = t('global.errors.generic.header');
-    let detail = value.error.message;
+    let detail = value.error;
 
     if (value.status == 401) {
       header = t('global.errors.authorization.header');
@@ -148,7 +148,7 @@ const { isLoading: isDeleting, state: deleteResponse, isReady: deleteFinished, e
 watch(deleteResponse, (value) => {
   if (value.error) {
     let header = t('global.errors.generic.header');
-    let detail = value.error.message;
+    let detail = value.error;
 
     if (value.status == 401) {
       header = t('global.errors.authorization.header');

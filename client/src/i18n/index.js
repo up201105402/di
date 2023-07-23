@@ -227,7 +227,7 @@ export const messages = {
                     scikitTrainingDataset: 'Load Training Dataset',
                     scikitTestingDataset: 'Load Testing Dataset',
                     scikitUnsupervisedModels: 'Scikit Unsupervised Models',
-                    humanFeedbackNN: 'Interpretability-Guided Human Feedback During Neural Network Training',
+                    humanFeedbackNN: 'Neural Network Training with Human Feedback',
                     leastSquares: 'Least Squares',
                     ridgeRegression: 'Ridge Regression',
                     ridgeRegressionCV: 'Ridge Regression CV',
@@ -295,7 +295,19 @@ export const messages = {
                     log: {
                         header: 'Log',
                         button: 'Full log',
-                    }
+                    },
+                    humanFeedbackQueries: {
+                        header: 'Human Feedback Queries',
+                        table: {
+                            headers: {
+                                id: "ID",
+                                status: "Status",
+                                created: "Created",
+                                updated: "Updated",
+                                stepID: "Step ID",
+                            },
+                        },
+                    },
                 },
                 feedback: {
                     header: 'Feedback for Run {runID} - Step "{stepName}"',

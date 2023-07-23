@@ -70,7 +70,7 @@ const { isLoading: isUpdating, state: updateResponse, isReady: isUpdateFinished,
 watch(fetchResponse, (value) => {
     if (value.error) {
         let header = t('global.errors.generic.header');
-        let detail = value.error.message;
+        let detail = value.error;
 
         if (value.status == 401) {
             header = t('global.errors.authorization.header');
@@ -89,7 +89,7 @@ watch(isFetchFinished, () => {
 watch(updateResponse, (value) => {
     if (value.error) {
         let header = t('global.errors.generic.header');
-        let detail = value.error.message;
+        let detail = value.error;
 
         if (value.status == 401) {
             header = t('global.errors.authorization.header');
@@ -129,7 +129,7 @@ const onFeedbackSave = () => {
 }
 
 const onQueryRectChecked = (queryID, rectsSelected) => {
-    const queryIndex = queries.value.findIndex(query => query.ID == queryID);
+    const queryIndex = queries.value.findIndex(query => query.HumanFeedbackQuery.ID == queryID);
 
     if (queryIndex > -1) {
         queries.value[queryIndex].HumanFeedbackRects.forEach((rect, rectIndex) => {

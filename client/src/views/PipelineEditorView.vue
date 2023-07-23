@@ -15,7 +15,6 @@ import LayoutAuthenticated from "@/layouts/LayoutAuthenticated.vue";
 import SectionTitleLineWithButton from "@/components/SectionTitleLineWithButton.vue";
 import BaseButtons from "@/components/BaseButtons.vue";
 import BaseButton from "@/components/BaseButton.vue";
-import CascadeSelect from 'primevue/cascadeselect';
 import Menubar from 'primevue/menubar';
 import CardBoxModal from '@/components/CardBoxModal.vue';
 import UpsertStepDialog from '@/components/UpsertStepDialog.vue';
@@ -25,7 +24,6 @@ import Loading from "vue-loading-overlay";
 import { nodeTypes, menubarSteps } from "@/pipelines/steps";
 import deepEqual from 'deep-equal';
 import $ from 'jquery';
-import { camel2title } from '@/util';
 import PipelineScheduleTable from '@/components/PipelineScheduleTable.vue';
 import TabView from 'primevue/tabview';
 import TabPanel from 'primevue/tabpanel';
@@ -195,7 +193,7 @@ const menubarItems = ref(menubarSteps)
 watch(fetchPipelineResponse, (value) => {
   if (value.error) {
     let header = t('global.errors.generic.header');
-    let detail = value.error.message;
+    let detail = value.error;
 
     if (value.status == 401) {
       header = t('global.errors.authorization.header');
@@ -209,7 +207,7 @@ watch(fetchPipelineResponse, (value) => {
 watch(fetchPipelineSchedulesResponse, (value) => {
   if (value.error) {
     let header = t('global.errors.generic.header');
-    let detail = value.error.message;
+    let detail = value.error;
 
     if (value.status == 401) {
       header = t('global.errors.authorization.header');
@@ -232,7 +230,7 @@ watch(isPipelineScheduleFetchFinished, () => {
 watch(updatePipelineResponse, (value) => {
   if (value.error) {
     let header = t('global.errors.generic.header');
-    let detail = value.error.message;
+    let detail = value.error;
 
     if (value.status == 401) {
       header = t('global.errors.authorization.header');
@@ -251,7 +249,7 @@ watch(updatePipelineResponse, (value) => {
 watch(createPipelineScheduleResponse, (value) => {
   if (value.error) {
     let header = t('global.errors.generic.header');
-    let detail = value.error.message;
+    let detail = value.error;
 
     if (value.status == 401) {
       header = t('global.errors.authorization.header');
@@ -269,7 +267,7 @@ watch(createPipelineScheduleResponse, (value) => {
 watch(deletePipelineScheduleResponse, (value) => {
   if (value.error) {
     let header = t('global.errors.generic.header');
-    let detail = value.error.message;
+    let detail = value.error;
 
     if (value.status == 401) {
       header = t('global.errors.authorization.header');
@@ -561,16 +559,6 @@ function toggleClass() {
             <BaseButton :disabled="!hasChanges" :label="$t('buttons.save')" color="success" @click="onPipelineSave" />
             <BaseButton :label="$t('buttons.cancel')" color="danger" @click="onPipelineCancel" />
           </BaseButtons>
-          <!-- <CascadeSelect style="float:right; min-width: 14rem;" v-model="selectedStep" :options="cascadeOptions"
-            optionLabel="label" optionGroupLabel="name" :optionGroupChildren="['steps', 'subSteps']"
-            placeholder="Select a Step Type">
-            <template #option="slotProps">
-              <div class="flex align-items-center">
-                <span>{{ slotProps.option.label }}</span>
-              </div>
-            </template>
-          </CascadeSelect>
-          <BaseButton :icon="mdiPlus" color="success" @click="onCreateStepClick" /> -->
         </div>
       </SectionTitleLineWithButton>
       <Menubar :model="menubarItems" style="margin-right: 10px; " />

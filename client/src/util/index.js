@@ -88,7 +88,9 @@ export const parsePipelineDefinition = (entity, toast) => {
   try {
     return JSON.parse(entity.definition)
   } catch (e) {
-    toast.add({ severity: 'error', summary: t('global.errors.parsing.header'), detail: t('global.errors.parsing.detail'), life: 3000 });
+    if (entity.definition != "") {
+      toast.add({ severity: 'error', summary: t('global.errors.parsing.header'), detail: t('global.errors.parsing.detail'), life: 3000 });
+    }
     return [];
   }
 }

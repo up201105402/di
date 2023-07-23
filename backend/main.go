@@ -102,6 +102,7 @@ func setupRouter(services *service.Services, I18n *i18n.Localizer) *gin.Engine {
 
 	pipelineAPI := router.Group("/api/pipeline")
 	pipelineAPI.GET("", middleware.Auth(services.TokenService, I18n), handlers.GetPipelines(services))
+	pipelineAPI.POST("/", middleware.Auth(services.TokenService, I18n), handlers.UpsertPipeline(services))
 	pipelineAPI.GET("/:id", middleware.Auth(services.TokenService, I18n), handlers.GetPipeline(services, I18n))
 	pipelineAPI.GET("/:id/schedule", middleware.Auth(services.TokenService, I18n), handlers.GetPipelineSchedule(services, I18n))
 	pipelineAPI.POST("/:id/schedule", middleware.Auth(services.TokenService, I18n), handlers.CreatePipelineSchedule(services, I18n))
@@ -122,7 +123,8 @@ func setupRouter(services *service.Services, I18n *i18n.Localizer) *gin.Engine {
 	runResultsAPI.GET("/:id/log", middleware.Auth(services.TokenService, I18n), handlers.GetLogTail(services, I18n))
 
 	feedbackAPI := router.Group("/api/feedback")
-	feedbackAPI.GET("/:id", middleware.Auth(services.TokenService, I18n), handlers.FindRunFeedbackQueriesById(services, I18n))
+	feedbackAPI.GET("/:id", middleware.Auth(services.TokenService, I18n), handlers.FindRunFeedbackQueriesByRunId(services, I18n))
+	feedbackAPI.GET("/:id/query/:queryId", middleware.Auth(services.TokenService, I18n), handlers.FindRunFeedbackQueryById(services, I18n))
 	feedbackAPI.POST("/:id", middleware.Auth(services.TokenService, I18n), handlers.SubmitRunFeedback(services, I18n))
 
 	return router

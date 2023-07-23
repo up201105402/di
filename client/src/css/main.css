@@ -152,3 +152,38 @@
 .p-toast-message-content {
     border: 0px;
 }
+
+.node-type {
+    text-transform: none;
+    color: blue;
+    border-bottom: 2px solid;
+}
+
+.node-id {
+    color: blue;
+    padding: 0 2px;
+    border-right: 2px solid;
+}
+
+.scikit-logo {
+    display: inline;
+}
+
+.node-type-label {
+    color: blue;
+    padding: 0 2px;
+}
+
+.node-config {
+    text-transform: none;
+}
+
+.node-description {
+    width: 100%;
+    padding: 0 5px;
+}
+
+.node-status-tag {
+    margin: 5px;
+    float: right;
+}

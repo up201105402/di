@@ -68,6 +68,30 @@ func (repo *runRepositoryImpl) FindHumanFeedbackQueriesByStepID(runID uint, step
 	return humanFeedbackQueries, nil
 }
 
+func (repo *runRepositoryImpl) FindHumanFeedbackQueriesByRunID(runID uint) ([]model.HumanFeedbackQuery, error) {
+	var humanFeedbackQueries []model.HumanFeedbackQuery
+
+	result := repo.DB.Preload("QueryStatus").Where("run_id = ?", runID).Find(&humanFeedbackQueries)
+
+	if errors.Is(result.Error, gorm.ErrRecordNotFound) {
+		return nil, result.Error
+	}
+
+	return humanFeedbackQueries, nil
+}
+
+func (repo *runRepositoryImpl) FindHumanFeedbackQueryByID(queryID uint) (*model.HumanFeedbackQuery, error) {
+	var humanFeedbackQuery model.HumanFeedbackQuery
+
+	result := repo.DB.Preload("QueryStatus").Where("id = ?", queryID).Find(&humanFeedbackQuery)
+
+	if errors.Is(result.Error, gorm.ErrRecordNotFound) {
+		return nil, result.Error
+	}
+
+	return &humanFeedbackQuery, nil
+}
+
 func (repo *runRepositoryImpl) FindHumanFeedbackRectsByHumanFeedbackQueryID(humanFeedbackQueryID uint) ([]model.HumanFeedbackRect, error) {
 	var humanFeedbackRects []model.HumanFeedbackRect
 
@@ -192,8 +216,41 @@ func (repo *runRepositoryImpl) DeleteRunStepStatus(id uint) error {
 	return nil
 }
 
-func (repo *runRepositoryImpl) DeleteAllRunStepStatuses(runId uint) error {
-	result := repo.DB.Where("run_id = ?", runId).Delete(&model.RunStepStatus{})
+func (repo *runRepositoryImpl) DeleteAllRunStepStatuses(runID uint) error {
+	result := repo.DB.Where("run_id = ?", runID).Delete(&model.RunStepStatus{})
+
+	if result.Error != nil {
+		return result.Error
+	}
+
+	return nil
+}
+
+func (repo *runRepositoryImpl) DeleteAllHumanFeedbackQueriesByRunID(runID uint) error {
+
+	runStepStatuses, err := repo.FindRunStepStatusesByRun(runID)
+
+	if err != nil {
+		return err
+	}
+
+	for _, runStepStatus := range runStepStatuses {
+		humanFeeedbackQueries, err := repo.FindHumanFeedbackQueriesByStepID(runStepStatus.RunID, uint(runStepStatus.StepID))
+
+		if err != nil {
+			return err
+		}
+
+		for _, humanFeeedbackQuery := range humanFeeedbackQueries {
+			result := repo.DB.Where("human_feedback_query_id = ?", humanFeeedbackQuery.ID).Delete(&model.HumanFeedbackRect{})
+
+			if result.Error != nil {
+				return result.Error
+			}
+		}
+	}
+
+	result := repo.DB.Where("run_id = ?", runID).Delete(&model.HumanFeedbackQuery{})
 
 	if result.Error != nil {
 		return result.Error

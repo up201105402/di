@@ -37,7 +37,7 @@
                 rectsSelected.value.push(rect);
             }
 
-            emit('checked', props.query.ID, rectsSelected.value);
+            emit('checked', props.query.HumanFeedbackQuery.ID, rectsSelected.value);
         }
     }
 
@@ -50,7 +50,7 @@
             rectsSelected.value.push(rect);
         }
 
-        emit('checked', props.query.ID, rectsSelected.value);
+        emit('checked', props.query.HumanFeedbackQuery.ID, rectsSelected.value);
     }
 
     const getTagSeverity = (status) => {
@@ -71,6 +71,7 @@
         <FeedbackCanvas :id="query.HumanFeedbackQuery.ID" :imageURL="query.ImageURL" :drawnRectangles="rectsSelected" @mouseClick="onImageClicked" />
         <div>
             <h4 class="mb-1">Query {{ query.HumanFeedbackQuery.QueryID + 1 }}/{{ queryCount }}</h4>
+            <h4 class="mb-1">Epoch {{ query.HumanFeedbackQuery.Epoch + 1 }}</h4>
             <Tag :severity="getTagSeverity(query.HumanFeedbackQuery.QueryStatus)" :value="query.HumanFeedbackQuery.QueryStatus.Name" />
         </div>
         <FeedbackRectsTable :items="query.HumanFeedbackRects" :queryID="query.HumanFeedbackQuery.QueryID" :checkedRows="rectsSelected" @checked="onRectChecked" checkable />

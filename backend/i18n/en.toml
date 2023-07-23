@@ -137,6 +137,9 @@ one = "Failed to get run step statuses for run with id {{.ID}}. Reason: {{.Reaso
 [run.repository.find.human-feedback-query.step.failed]
 one = "Failed to get human feedback queries for run step with id {{.ID}}. Reason: {{.Reason}}"
 
+[run.repository.find.human-feedback-query.run.failed]
+one = "Failed to get human feedback queries for run with id {{.ID}}. Reason: {{.Reason}}"
+
 [run.repository.find.query-status.failed]
 one = "Failed to get human feedback query status with id {{.ID}}. Reason: {{.Reason}}"
 
@@ -173,6 +176,9 @@ one = "Failed to delete run with id {{.ID}}. Reason: {{.Reason}}"
 [run.repository.delete.step-status.id.failed]
 one = "Failed to delete pipeline with id {{.ID}}. Reason: {{.Reason}}"
 
+[run.repository.delete.human-feedback-queries.run.failed]
+one = "Failed to delete human feedback queries for run with id {{.ID}}. Reason: {{.Reason}}"
+
 [run.repository.delete.step-status.all.failed]
 one = "Failed to delete run step statuses for run with id {{.ID}}. Reason: {{.Reason}}"
 
@@ -196,6 +202,9 @@ one = "The Run with id {{.ID}} is not Waiting for Feedback."
 
 [run.service.resume.status.error]
 one = "The Run with id {{.ID}} is not Waiting for Feedback."
+
+[run.service.resume.queries-not-submitted.error]
+one = "The Run with id {{.ID}} has queries not submitted yet."
 
 [run.service.resume.steps.status.error]
 one = "The Run with id {{.ID}} has no steps Waiting for Feedback."

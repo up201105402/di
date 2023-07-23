@@ -3,9 +3,10 @@
     import { NodeToolbar } from '@vue-flow/node-toolbar';
     import { computed } from 'vue';
     import BaseIcon from "@/components/BaseIcon.vue";
-    import { mdiCloseCircle, mdiAlertCircle, mdiCancel, mdiCheckCircleOutline, mdiDotsCircle } from "@mdi/js";
-    import { camel2title } from '@/util';
+    import { mdiCloseCircle } from "@mdi/js";
+    import { getStatusTagSeverity } from '@/util';
     import $ from 'jquery';
+    import Tag from 'primevue/tag';
 
     const props = defineProps({
         data: {
@@ -42,18 +43,6 @@
         filter: 'invert(100%)',
     }))
 
-    const getIcon = () => {
-        if (props.data.status == 1) {
-            return mdiCancel;
-        } else if (props.data.status == 2) {
-            return mdiDotsCircle;
-        } else if (props.data.status == 3) {
-            return mdiAlertCircle;
-        } else if (props.data.status == 4) {
-            return mdiCheckCircleOutline;
-        }
-    }
-
     const onDeleteClick = (e) => {
         $(document).trigger('onNodeDelete', { id: props.data.id });
     }
@@ -71,11 +60,11 @@
         <span class="node-id">{{ parseInt(props.data.id) + 1 }}</span>
         <img class="scikit-logo" style="display: inline" src="/assets/Python-logo.png" width="20"
             height="11">
-        <span class="node-type-label">{{ camel2title(props.data.type) }}</span>
+        <span class="node-type-label">{{ $t('pages.pipelines.steps.' + props.data.type) }}</span>
     </div>
     <div class="node-config" >
         <span>{{ props.label }}</span>
-        <span v-if="props.data.status"><BaseIcon :path="getIcon()" /></span>
+        <span class="node-status-tag" v-if="props.data.status"><Tag :severity="getStatusTagSeverity(props.data.status.id)" :value="props.data.status.Name" /></span>
         <Handle v-if="props.data.nameAndType.isFirstStep === false" id="a" type="source" :position="Position.Left" :style="sourceHandleStyle" />
         <Handle id="b" type="target" :position="Position.Right" :style="sourceHandleStyle" />
     </div>
