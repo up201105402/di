@@ -206,6 +206,7 @@ export const messages = {
                             isOversampled: 'isOversampled',
                             start_epoch: 'start_epoch',
                             dataset: 'dataset',
+                            customArguments: 'Custom Arguments',
                         }
                     },
                     scheduling: {
@@ -227,7 +228,9 @@ export const messages = {
                     scikitTrainingDataset: 'Load Training Dataset',
                     scikitTestingDataset: 'Load Testing Dataset',
                     scikitUnsupervisedModels: 'Scikit Unsupervised Models',
+                    customPyTorchModel: 'Custom Model',
                     humanFeedbackNN: 'Neural Network Training with Human Feedback',
+                    customHitl: 'Custom HITL',
                     leastSquares: 'Least Squares',
                     ridgeRegression: 'Ridge Regression',
                     ridgeRegressionCV: 'Ridge Regression CV',

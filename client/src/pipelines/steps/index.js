@@ -5,6 +5,7 @@ import ScikitUnsupervisedModels from '@/pipelines/steps/components/nodes/ScikitU
 import { checkoutRepoForm } from '@/pipelines/steps/checkoutRepo';
 import { scriptForm } from '@/pipelines/steps/script';
 import { hitlForm } from '@/pipelines/steps/hitl';
+import { customHitlForm } from '@/pipelines/steps/customHitl';
 import { scikitDatasetForm } from '@/pipelines/steps/scikit/datasets';
 import { scikitUnsupervisedModels } from '@/pipelines/steps/scikit/models';
 import ScriptEditor from '@/components/ScriptEditor.vue';
@@ -26,6 +27,7 @@ export const nodeTypes = {
   shellScript: markRaw(ShellScriptNode),
   pythonScript: markRaw(PythonScriptNode),
   humanFeedbackNN: markRaw(HITLNode),
+  customPyTorchModel: markRaw(HITLNode),
 };
 
 Object.keys(scikitUnsupervisedModels).forEach(key => {
@@ -67,6 +69,7 @@ export const menubarSteps = [
       }
     ]
   },
+  /*
   {
     type: 'scikit',
     label: t('pages.pipelines.edit.menubar.scikit'),
@@ -96,16 +99,32 @@ export const menubarSteps = [
       },
     ]
   },
+  */
   {
     type: 'hitl',
     label: t('pages.pipelines.edit.menubar.hitl'),
     items: [
       {
         group: 'hitl',
+        type: 'customPyTorchModel',
+        label: t('pages.pipelines.steps.customPyTorchModel'),
+        form: scriptForm,
+      },
+      {
+        group: 'hitl',
         type: 'humanFeedbackNN',
         label: t('pages.pipelines.steps.humanFeedbackNN'),
         form: hitlForm,
-      }
+      },
+      {
+        separator: true,
+      },
+      {
+        group: 'hitl',
+        type: 'customHitl',
+        label: t('pages.pipelines.steps.customHitl'),
+        form: customHitlForm,
+      },
     ]
   }
 ];

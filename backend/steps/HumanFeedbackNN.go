@@ -127,10 +127,9 @@ func (step HumanFeedbackNN) Execute(logFile *os.File, feedbackRects [][]model.Hu
 		return nil, errors.New(errMessage)
 	}
 
-	hitlDir = hitlDir + "/code/"
-
+	trainPY := filepath.Join(hitlDir, "train.py")
 	var args []string
-	args = append(args, hitlDir+"train.py")
+	args = append(args, trainPY)
 	args, err := step.appendArgs(args, currentPipelineWorkDir, I18n, runLogger)
 
 	if err != nil {

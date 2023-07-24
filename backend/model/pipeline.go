@@ -142,6 +142,8 @@ type StepDataConfig struct {
 	IsOversampled  null.Bool   `json:"isOversampled"`
 	Start_epoch    null.Int    `json:"start_epoch"`
 	Dataset        null.String `json:"dataset"`
+	// Custom HITL
+	CustomArguments null.String `json:"customArguments"`
 }
 
 type StepData struct {

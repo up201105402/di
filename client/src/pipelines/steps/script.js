@@ -21,13 +21,14 @@ const nameAndTypeGroupChildren = [
         placeholder: "",
         options: [
             {
+                value: 'file',
+                label: t('pages.pipelines.edit.dialog.nameAndType.scriptType.options.file'),
+            },
+            {
                 value: 'inline',
                 label: t('pages.pipelines.edit.dialog.nameAndType.scriptType.options.inline'),
             }, 
-            {
-                value: 'file',
-                label: t('pages.pipelines.edit.dialog.nameAndType.scriptType.options.file'),
-            }],
+        ],
         validation: 'required',
         onChange: "$setActiveType",
     },
@@ -82,7 +83,7 @@ export const scriptForm = function (data, onSubmit, editable = true) {
         filename: data?.stepConfig?.filename,
         onFileUpdated: (e) => getNode(activeStep.value).value.filename = e
     }
-    const scriptType = ref(data?.nameAndType?.scriptType || 'inline')
+    const scriptType = ref(data?.nameAndType?.scriptType || 'file')
 
     // watch our activeStep and store visited steps
     // to know when to show errors

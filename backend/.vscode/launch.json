@@ -42,7 +42,7 @@
                 "RUN_LOG_FILE_NAME": "run.log",
                 "SCIKIT_SNIPPETS_DIR": "/usr/src/di/backend/scikit/python",
                 "SCIKIT_VERSION": "1.2.2",
-                "HITL_DIR": "/usr/src/ig-human-feedback-nn",
+                "HITL_DIR": "/usr/src/di/hitl",
             }
         }
     ]
