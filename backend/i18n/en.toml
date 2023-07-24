@@ -123,6 +123,27 @@ one = "Failed to delete pipeline with id {{.ID}}. Reason: {{.Reason}}"
 one = "Failed to delete pipeline schedule with id {{.ID}}. Reason: {{.Reason}}"
 
 #
+# Datasets
+#
+[dataset.repository.find.dataset.id.failed]
+one = "Failed to get dataset with id {{.ID}}. Reason: {{.Reason}}"
+
+[dataset.repository.find.scripts.id.failed]
+one = "Failed to get dataset scripts with id {{.ID}}. Reason: {{.Reason}}"
+
+[dataset.repository.find.dataset.owner.failed]
+one = "Failed to get dataset with username {{.OwnerID}}. Reason: {{.Reason}}"
+
+[dataset.repository.create.dataset.failed]
+one = "Failed to create dataset. Reason: {{.Reason}}"
+
+[dataset.repository.update.dataset.failed]
+one = "Failed to update dataset with id {{.ID}}. Reason: {{.Reason}}"
+
+[dataset.repository.delete.dataset.failed]
+one = "Failed to delete dataset with id {{.ID}}. Reason: {{.Reason}}"
+
+#
 # Runs
 #
 [run.repository.find.run.id.failed]

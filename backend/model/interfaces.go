@@ -24,6 +24,18 @@ type PipelineRepository interface {
 	DeletePipelineSchedule(pipelineID uint) error
 }
 
+type DatasetRepository interface {
+	FindByID(datasetID uint) (*Dataset, error)
+	FindScriptsByDatasetID(datasetID uint) ([]DatasetScript, error)
+	FindScriptByID(scriptID uint) (*DatasetScript, error)
+	FindByOwner(ownerID uint) ([]Dataset, error)
+	Create(dataset *Dataset) error
+	CreateDatasetScript(datasetScript *DatasetScript) error
+	Update(dataset *Dataset) error
+	Delete(datasetID uint) error
+	DeleteDatasetScript(datasetScriptId uint) error
+}
+
 type RunRepository interface {
 	FindByID(runID uint) (*Run, error)
 	FindByPipeline(pipelineID uint) ([]Run, error)

@@ -45,12 +45,14 @@ func main() {
 	stepTypeService := service.NewNodeService(i18n)
 	runService := service.NewRunService(dbConnection, client, i18n, &pipelineService, &stepTypeService)
 	taskService := service.NewTaskService(i18n, &stepTypeService, &runService)
+	datasetService := service.NewDatasetService(dbConnection, client, i18n)
 
 	services := &service.Services{
 		UserService:     service.NewUserService(dbConnection, i18n),
 		PipelineService: pipelineService,
 		RunService:      runService,
 		TokenService:    service.NewTokenService(tokenServiceConfig, i18n),
+		DatasetService:  datasetService,
 	}
 
 	r := setupRouter(services, i18n)
@@ -126,6 +128,13 @@ func setupRouter(services *service.Services, I18n *i18n.Localizer) *gin.Engine {
 	feedbackAPI.GET("/:id", middleware.Auth(services.TokenService, I18n), handlers.FindRunFeedbackQueriesByRunId(services, I18n))
 	feedbackAPI.GET("/:id/query/:queryId", middleware.Auth(services.TokenService, I18n), handlers.FindRunFeedbackQueryById(services, I18n))
 	feedbackAPI.POST("/:id", middleware.Auth(services.TokenService, I18n), handlers.SubmitRunFeedback(services, I18n))
+
+	databasetAPI := router.Group("/api/dataset")
+	databasetAPI.GET("", middleware.Auth(services.TokenService, I18n), handlers.GetDatasets(services))
+	databasetAPI.GET("/:id", middleware.Auth(services.TokenService, I18n), handlers.GetDataset(services, I18n))
+	databasetAPI.POST("/:id/file", middleware.Auth(services.TokenService, I18n), handlers.UploadDatasetScript(services, I18n))
+	databasetAPI.DELETE("/:id/file/:scriptId", middleware.Auth(services.TokenService, I18n), handlers.DeleteDatasetScript(services, I18n))
+	databasetAPI.DELETE("", middleware.Auth(services.TokenService, I18n), handlers.DeleteDataset(services))
 
 	return router
 }

@@ -7,6 +7,7 @@ import PipelineEditor from "@/views/PipelineEditorView.vue";
 import RunResults from "@/views/RunResultsView.vue";
 import Feedback from "@/views/FeedbackView.vue";
 import SingleFeedback from "@/views/SingleQueryFeedbackView.vue";
+import Datasets from "@/views/DatasetsView.vue";
 
 const routes = [
   // {
@@ -87,6 +88,15 @@ const routes = [
     path: "/feedback/:id/query/:queryId",
     name: "singleFeedback",
     component: SingleFeedback,
+    private: true,
+  },
+  {
+    meta: {
+      title: "Datasets",
+    },
+    path: "/datasets",
+    name: "datasets",
+    component: Datasets,
     private: true,
   },
   {

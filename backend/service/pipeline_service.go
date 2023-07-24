@@ -258,7 +258,7 @@ func (service *pipelineServiceImpl) Update(pipeline *model.Pipeline) error {
 
 	if err != nil {
 		errMessage := service.I18n.MustLocalize(&i18n.LocalizeConfig{
-			MessageID: "pipeline.repository.create.pipeline.failed",
+			MessageID: "pipeline.repository.update.pipeline.failed",
 			TemplateData: map[string]interface{}{
 				"ID":     pipeline.ID,
 				"Reason": err.Error(),

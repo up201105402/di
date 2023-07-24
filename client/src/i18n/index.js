@@ -351,6 +351,27 @@ export const messages = {
                     }
                 },
             },
+            datasets: {
+                name: "Datasets",
+                header: "Datasets",
+                table: {
+                    headers: {
+
+                    },
+                },
+                dialog: {
+                    create: {
+                        header: "Create Dataset?",
+                        name: {
+                            label: "Name",
+                            help: "Dataset's name",
+                        },
+                    },
+                    delete: {
+                        header: "Delete Dataset?"
+                    },
+                }
+            },
             profile: {
                 name: "Profile",
                 header: "Profile",

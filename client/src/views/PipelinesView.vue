@@ -5,7 +5,6 @@ import {
   mdiChartTimelineVariant,
   mdiPlus
 } from "@mdi/js";
-import { useRouter } from 'vue-router';
 import SectionMain from "@/components/SectionMain.vue";
 import LayoutAuthenticated from "@/layouts/LayoutAuthenticated.vue";
 import SectionTitleLineWithButton from "@/components/SectionTitleLineWithButton.vue";

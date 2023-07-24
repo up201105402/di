@@ -1,6 +1,7 @@
 import {
   mdiChartTimelineVariant,
   mdiRun,
+  mdiDataMatrix,
   mdiAccount
 } from "@mdi/js";
 import { i18n } from '@/i18n';
@@ -17,6 +18,11 @@ export default [
     to: "/runs",
     icon: mdiRun,
     label: t('pages.runs.name'),
+  },
+  {
+    to: "/datasets",
+    icon: mdiDataMatrix,
+    label: t('pages.datasets.name'),
   },
   {
     to: "/profile",

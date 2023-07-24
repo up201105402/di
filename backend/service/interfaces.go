@@ -12,6 +12,7 @@ import (
 type Services struct {
 	UserService     UserService
 	PipelineService PipelineService
+	DatasetService  DatasetService
 	RunService      RunService
 	TokenService    TokenService
 }
@@ -43,6 +44,18 @@ type PipelineService interface {
 	Update(pipeline *model.Pipeline) error
 	Delete(id uint) error
 	DeletePipelineSchedule(id uint) error
+}
+
+type DatasetService interface {
+	Get(id uint) (*model.Dataset, error)
+	GetDatasetScripts(id uint) ([]model.DatasetScript, error)
+	GetDatasetScript(scriptID uint) (*model.DatasetScript, error)
+	GetByOwner(ownerId uint) ([]model.Dataset, error)
+	Create(userId uint, name string, entryPoint string) error
+	CreateDatasetScript(datasetID uint, scriptName string, filePath string) error
+	Update(dataset *model.Dataset) error
+	Delete(id uint) error
+	DeleteDatasetScript(datasetScriptId uint) error
 }
 
 type RunService interface {
