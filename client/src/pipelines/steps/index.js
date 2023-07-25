@@ -142,7 +142,7 @@ export const menubarSteps = [
     ]
   },
   {
-    type: 'trained',
+    type: 'trainedModels',
     label: t('pages.pipelines.edit.menubar.trainedModels'),
     items: [
       

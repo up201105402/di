@@ -88,7 +88,7 @@ func GetTrained(services *service.Services, I18n *i18n.Localizer) gin.HandlerFun
 		}
 
 		context.JSON(http.StatusOK, gin.H{
-			"model": model,
+			"trained": model,
 		})
 	}
 }

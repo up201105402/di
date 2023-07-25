@@ -32,6 +32,7 @@ import Calendar from 'primevue/calendar';
 import InputText from 'primevue/inputtext';
 import { datasetForm } from '@/pipelines/steps/datasets'
 import { trainerForm } from '@/pipelines/steps/trainers'
+import { trainedForm } from '@/pipelines/steps/trained'
 import { useField } from 'vee-validate';
 import cronTime from "cron-time-generator";
 import { i18n } from '@/i18n';
@@ -172,11 +173,30 @@ const { isLoading: isFetchingDatasets, state: fetchDatasetsResponse, isReady: is
   },
 );
 
-// FETCH MODELS
+// FETCH TRAINERS
 const { isLoading: isFetchingTrainers, state: fetchTrainersResponse, isReady: isFetchModelsFinished, execute: fetchTrainers } = useAsyncState(
   () => {
     return doRequest({
       url: `/api/trainer`,
+      method: 'GET',
+      headers: {
+        Authorization: `${accessToken.value}`
+      },
+    })
+  },
+  {},
+  {
+    immediate: true,
+    delay: 500,
+    resetOnExecute: false,
+  },
+);
+
+// FETCH TRAINED
+const { isLoading: isFetchingTrained, state: fetchTrainedResponse, isReady: isFetchTrainedFinished, execute: fetchTrained } = useAsyncState(
+  () => {
+    return doRequest({
+      url: `/api/trained`,
       method: 'GET',
       headers: {
         Authorization: `${accessToken.value}`
@@ -275,7 +295,32 @@ watch(fetchTrainersResponse, (value) => {
       }))
     }
   }
-})
+});
+
+watch(fetchTrainedResponse, (value) => {
+  if (value.error) {
+    let header = t('global.errors.generic.header');
+    let detail = value.error;
+
+    if (value.status == 401) {
+      header = t('global.errors.authorization.header');
+      detail = t('global.errors.authorization.detail');
+    }
+
+    toast.add({ severity: 'error', summary: header, detail: detail, life: 3000 });
+  } else {
+    const trainerGroupsIndex = menubarItems.value?.findIndex(group => group.type == 'trainers');
+    if (trainerGroupsIndex > -1) {
+      value.data?.trainers?.forEach(trainer => menubarItems.value[trainerGroupsIndex].items.push({
+        group: 'trainedModels',
+        type: 'trained',
+        label: trainer.name,
+        form: trainedForm(trainer),
+        command: onMenubarClick,
+      }))
+    }
+  }
+});
 
 menubarSteps.forEach(addItemCommand)
 const menubarItems = ref(menubarSteps)
