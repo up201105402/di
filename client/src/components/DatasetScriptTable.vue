@@ -1,6 +1,6 @@
 <script setup>
 import { computed, ref } from "vue";
-import { mdiDownload, mdiPencilOutline, mdiTrashCan } from "@mdi/js";
+import { mdiPencilOutline, mdiTrashCan } from "@mdi/js";
 import BaseLevel from "@/components/BaseLevel.vue";
 import BaseButtons from "@/components/BaseButtons.vue";
 import BaseButton from "@/components/BaseButton.vue";
@@ -12,14 +12,10 @@ const props = defineProps({
 
 // EMITS
 
-const emit = defineEmits(["deleteButtonClicked", "editButtonClicked"]);
+const emit = defineEmits(["deleteButtonClicked"]);
 
 const deleteButtonClicked = (id) => {
     emit("deleteButtonClicked", id);
-}
-
-const editButtonClicked = (id) => {
-    emit("editButtonClicked", id);
 }
 
 // ITEMS PROCESSING
@@ -51,29 +47,6 @@ const pagesList = computed(() => {
     return pagesList;
 });
 
-const remove = (arr, cb) => {
-    const newArr = [];
-
-    arr.forEach((item) => {
-        if (!cb(item)) {
-            newArr.push(item);
-        }
-    });
-
-    return newArr;
-};
-
-const checked = (isChecked, dataset) => {
-    if (isChecked) {
-        checkedRows.value.push(dataset);
-    } else {
-        checkedRows.value = remove(
-            checkedRows.value,
-            (row) => row.id === dataset.id
-        );
-    }
-};
-
 </script>
 
 <template>
@@ -82,34 +55,28 @@ const checked = (isChecked, dataset) => {
             <tr>
                 <th>{{ $t('pages.datasets.table.headers.id') }}</th>
                 <th>{{ $t('pages.datasets.table.headers.name') }}</th>
-                <th>{{ $t('pages.datasets.table.headers.path') }}</th>
                 <th>{{ $t('pages.datasets.table.headers.modified') }}</th>
                 <th>{{ $t('pages.datasets.table.headers.created') }}</th>
                 <th />
             </tr>
         </thead>
         <tbody>
-            <tr v-for="dataset in itemsPaginated" :key="dataset.id">
+            <tr v-for="datasetScript in itemsPaginated" :key="datasetScript.id">
                 <td :data-label="$t('pages.datasets.table.headers.name')">
-                    {{ dataset.ID }}
+                    {{ datasetScript.ID }}
                 </td>
                 <td :data-label="$t('pages.datasets.table.headers.name')">
-                    {{ dataset.name }}
-                </td>
-                <td :data-label="$t('pages.datasets.table.headers.path')">
-                    <span style="margin-right: 5px;">{{ dataset.path?.replace(/^.*[\\\/]/, '') }}</span>
-                    <BaseButton v-if="dataset.path" color="success" :icon="mdiDownload" small :href="dataset.path" :download="true" />
+                    {{ datasetScript.name }}
                 </td>
                 <td :data-label="$t('pages.datasets.table.headers.modified')" class="lg:w-1 whitespace-nowrap">
-                    <small class="text-gray-500 dark:text-slate-400" :title="formatDate(dataset.UpdatedAt)">{{ formatDate(dataset.UpdatedAt) }}</small>
+                    <small class="text-gray-500 dark:text-slate-400" :title="formatDate(datasetScript.UpdatedAt)">{{ formatDate(datasetScript.UpdatedAt) }}</small>
                 </td>
                 <td :data-label="$t('pages.datasets.table.headers.created')" class="lg:w-1 whitespace-nowrap">
-                    <small class="text-gray-500 dark:text-slate-400" :title="formatDate(dataset.CreatedAt)">{{ formatDate(dataset.CreatedAt) }}</small>
+                    <small class="text-gray-500 dark:text-slate-400" :title="formatDate(datasetScript.CreatedAt)">{{ formatDate(datasetScript.CreatedAt) }}</small>
                 </td>
                 <td class="before:hidden lg:w-1 whitespace-nowrap">
                     <BaseButtons type="justify-start lg:justify-end" no-wrap>
-                        <BaseButton color="info" :icon="mdiPencilOutline" small :target-id="dataset.ID" @clicked="editButtonClicked" />
-                        <BaseButton color="danger" :icon="mdiTrashCan" small :target-id="dataset.ID" @clicked="deleteButtonClicked" />
+                        <BaseButton color="danger" :icon="mdiTrashCan" small :target-id="datasetScript.ID" @clicked="deleteButtonClicked" />
                     </BaseButtons>
                 </td>
             </tr>

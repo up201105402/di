@@ -8,7 +8,7 @@ import {
 import SectionMain from "@/components/SectionMain.vue";
 import LayoutAuthenticated from "@/layouts/LayoutAuthenticated.vue";
 import SectionTitleLineWithButton from "@/components/SectionTitleLineWithButton.vue";
-import DatasetsTable from "@/components/DatasetsTable.vue";
+import TestersTable from "@/components/TestersTable.vue";
 import CardBoxModal from "@/components/CardBoxModal.vue";
 import BaseButton from "@/components/BaseButton.vue";
 import FormControl from "@/components/FormControl.vue";
@@ -28,10 +28,10 @@ const { accessToken } = storeToRefs(useAuthStore());
 const toast = useToast();
 
 // FETCH DATASETS
-const { isLoading: isFetching, state: fetchResponse, isReady: isFetchFinished, execute: fetchDatasets } = useAsyncState(
+const { isLoading: isFetching, state: fetchResponse, isReady: isFetchFinished, execute: fetchTesters } = useAsyncState(
   () => {
     return doRequest({
-      url: '/api/dataset',
+      url: '/api/tester',
       method: 'GET',
       headers: {
         Authorization: `${accessToken.value}`
@@ -63,23 +63,23 @@ watch(fetchResponse, (value) => {
 const isCreateModalActive = ref(false);
 const onNewPipelineClicked = (e) => isCreateModalActive.value = true;
 
-const createDatasetForm = reactive({
+const createTesterForm = reactive({
   name: "",
   entryPoint: "",
 });
 
-const { isLoading: isCreating, state: createResponse, isReady: createFinished, execute: createDataset } = useAsyncState(
+const { isLoading: isCreating, state: createResponse, isReady: createFinished, execute: createTester } = useAsyncState(
   (name) => {
     if (name && name != "") {
       return doRequest({
-        url: '/api/dataset',
+        url: '/api/tester',
         method: 'POST',
         headers: {
           Authorization: `${accessToken.value}`,
         },
         data: {
-          name: createDatasetForm.name,
-          entryPoint: createDatasetForm.entryPoint
+          name: createTesterForm.name,
+          entryPoint: createTesterForm.entryPoint
         },
       });
     }
@@ -106,30 +106,30 @@ watch(createResponse, (value) => {
 
     toast.add({ severity: 'error', summary: header, detail: detail, life: 3000 });
   } else {
-    fetchDatasets();
+    fetchTesters();
   }
 })
 
 // DELETE DATASET
 const isDeleteModalActive = ref(false);
-const datasetIdToDelete = ref(null);
+const testerIdToDelete = ref(null);
 
-const onDeleteDatasetClicked = (id) => {
+const onDeleteTesterClicked = (id) => {
   isDeleteModalActive.value = true;
-  datasetIdToDelete.value = id;
+  testerIdToDelete.value = id;
 }
 
-const { isLoading: isDeleting, state: deleteResponse, isReady: deleteFinished, execute: deleteDataset } = useAsyncState(
-  (datasetID) => {
-    if (datasetID) {
+const { isLoading: isDeleting, state: deleteResponse, isReady: deleteFinished, execute: deleteTester } = useAsyncState(
+  (testerID) => {
+    if (testerID) {
       return doRequest({
-        url: '/api/dataset',
+        url: '/api/tester',
         method: 'DELETE',
         headers: {
           Authorization: `${accessToken.value}`,
         },
         data: {
-          ID: datasetID
+          ID: testerID
         },
       });
     }
@@ -156,38 +156,38 @@ watch(deleteResponse, (value) => {
 
     toast.add({ severity: 'error', summary: header, detail: detail, life: 3000 });
   } else {
-    fetchDatasets();
+    fetchTesters();
   }
 })
 
 // EDIT DATASET
 const isUploadFileModalActive = ref(false);
-const datasetIdToEdit = ref(-1);
+const testerIdToEdit = ref(-1);
 const editCount = ref(0);
 
-const onEditDatasetClicked = (id) => {
+const onEditTesterClicked = (id) => {
   isUploadFileModalActive.value = true;
-  datasetIdToEdit.value = id;
+  testerIdToEdit.value = id;
   // trick to force the file picker to update its file's name
   editCount.value++;
 }
 
-const getDatasetFilename = (id) => {
-  const dataset = datasets.value.find(dataset => dataset.ID == id)
-  return dataset?.path?.replace(/^.*[\\\/]/, '')
+const getTesterFilename = (id) => {
+  const tester = testers.value.find(tester => tester.ID == id)
+  return tester?.path?.replace(/^.*[\\\/]/, '')
 }
 
-const { isLoading: isEditing, state: editResponse, isReady: editFinished, execute: editPipeline } = useAsyncState(
-  (datasetID) => {
-    if (datasetID) {
+const { isLoading: isEditing, state: editResponse, isReady: editFinished, execute: editTester } = useAsyncState(
+  (testerID) => {
+    if (testerID) {
       return doRequest({
-        url: `/api/dataset/${datasetID}/file`,
+        url: `/api/tester/${testerID}/file`,
         method: 'POST',
         headers: {
           Authorization: `${accessToken.value}`,
         },
         data: {
-          ID: datasetID
+          ID: testerID
         },
       });
     }
@@ -214,11 +214,11 @@ watch(deleteResponse, (value) => {
 
     toast.add({ severity: 'error', summary: header, detail: detail, life: 3000 });
   } else {
-    fetchDatasets();
+    fetchTesters();
   }
 })
 
-const datasets = computed(() => fetchResponse.value?.data ? fetchResponse.value.data.datasets : []);
+const testers = computed(() => fetchResponse.value?.data ? fetchResponse.value.data.testers : []);
 const isLoading = computed(() => isFetching.value || isCreating.value || isEditing.value || isDeleting.value);
 
 </script>
@@ -228,26 +228,26 @@ const isLoading = computed(() => isFetching.value || isCreating.value || isEditi
     <SectionMain>
       <loading v-model:active="isLoading" :is-full-page="false" />
 
-      <SectionTitleLineWithButton :hasButton="false" :icon="mdiDataMatrix" :title="$t('pages.datasets.header')" main>
+      <SectionTitleLineWithButton :hasButton="false" :icon="mdiDataMatrix" :title="$t('pages.testers.header')" main>
         <BaseButton :icon="mdiPlus" color="success" @click="onNewPipelineClicked" />
       </SectionTitleLineWithButton>
 
-      <DatasetsTable :items="datasets" @editButtonClicked="onEditDatasetClicked" @deleteButtonClicked="onDeleteDatasetClicked" />
+      <TestersTable :items="testers" @editButtonClicked="onEditTesterClicked" @deleteButtonClicked="onDeleteTesterClicked" />
     </SectionMain>
 
-    <CardBoxModal v-model="isCreateModalActive" @confirm="createDataset(200, createDatasetForm.name)" :title="$t('pages.datasets.dialog.create.header')" button="success" has-cancel>
-        <FormField :label="$t('pages.datasets.dialog.create.name.label')" :help="$t('pages.datasets.dialog.create.name.help')">
-            <FormControl v-model="createDatasetForm.name" name="name" autocomplete="name" placeholder="Name" :focus="isCreateModalActive" />
+    <CardBoxModal v-model="isCreateModalActive" @confirm="createTester(200, createTester.name)" :title="$t('pages.testers.dialog.create.header')" button="success" has-cancel>
+        <FormField :label="$t('pages.testers.dialog.create.name.label')" :help="$t('pages.testers.dialog.create.name.help')">
+            <FormControl v-model="createTesterForm.name" name="name" autocomplete="name" placeholder="Name" :focus="isCreateModalActive" />
         </FormField>
     </CardBoxModal>
 
-    <CardBoxModal v-model="isUploadFileModalActive" :title="$t('pages.datasets.dialog.create.header')" button="success" has-cancel @confirm="fetchDatasets()">
-      <FormFilePicker :key="'picker_' + editCount" id="script-file-upload" :filename="getDatasetFilename(datasetIdToEdit)" :url="`/api/dataset/${datasetIdToEdit}/file`" :label="t('pages.pipelines.edit.dialog.stepConfig.scriptFile.button')" />
+    <CardBoxModal v-model="isUploadFileModalActive" :title="$t('pages.testers.dialog.create.header')" button="success" has-cancel @confirm="fetchTesters()">
+      <FormFilePicker :key="'picker_' + editCount" id="script-file-upload" :filename="getTesterFilename(testerIdToEdit)" :url="`/api/tester/${testerIdToEdit}/file`" :label="t('pages.pipelines.edit.dialog.stepConfig.scriptFile.button')" />
     </CardBoxModal>
 
-    <CardBoxModal v-model="isDeleteModalActive" :title="$t('pages.datasets.dialog.delete.header')"
-      :target-id="datasetIdToDelete" @confirm="deleteDataset(200, datasetIdToDelete)" button="danger" has-cancel>
-      <p>{{ $t('pages.datasets.dialog.delete.body') }}</p>
+    <CardBoxModal v-model="isDeleteModalActive" :title="$t('pages.testers.dialog.delete.header')"
+      :target-id="testerIdToDelete" @confirm="deleteTester(200, testerIdToDelete)" button="danger" has-cancel>
+      <p>{{ $t('pages.testers.dialog.delete.body') }}</p>
     </CardBoxModal>
 
     <Toast />

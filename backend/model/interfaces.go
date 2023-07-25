@@ -36,6 +36,30 @@ type DatasetRepository interface {
 	DeleteDatasetScript(datasetScriptId uint) error
 }
 
+type TrainerRepository interface {
+	FindByID(trainerID uint) (*Trainer, error)
+	FindByOwner(ownerID uint) ([]Trainer, error)
+	Create(trainer *Trainer) error
+	Update(trainer *Trainer) error
+	Delete(trainerID uint) error
+}
+
+type TesterRepository interface {
+	FindByID(testerID uint) (*Tester, error)
+	FindByOwner(ownerID uint) ([]Tester, error)
+	Create(tester *Tester) error
+	Update(tester *Tester) error
+	Delete(testerID uint) error
+}
+
+type TrainedRepository interface {
+	FindByID(trainedID uint) (*Trained, error)
+	FindByOwner(ownerID uint) ([]Trained, error)
+	Create(trained *Trained) error
+	Update(trained *Trained) error
+	Delete(trainedID uint) error
+}
+
 type RunRepository interface {
 	FindByID(runID uint) (*Run, error)
 	FindByPipeline(pipelineID uint) ([]Run, error)

@@ -13,6 +13,9 @@ type Services struct {
 	UserService     UserService
 	PipelineService PipelineService
 	DatasetService  DatasetService
+	TrainerService  TrainerService
+	TesterService   TesterService
+	TrainedService  TrainedService
 	RunService      RunService
 	TokenService    TokenService
 }
@@ -51,11 +54,35 @@ type DatasetService interface {
 	GetDatasetScripts(id uint) ([]model.DatasetScript, error)
 	GetDatasetScript(scriptID uint) (*model.DatasetScript, error)
 	GetByOwner(ownerId uint) ([]model.Dataset, error)
-	Create(userId uint, name string, entryPoint string) error
+	Create(userId uint, name string) error
 	CreateDatasetScript(datasetID uint, scriptName string, filePath string) error
 	Update(dataset *model.Dataset) error
 	Delete(id uint) error
 	DeleteDatasetScript(datasetScriptId uint) error
+}
+
+type TrainerService interface {
+	Get(id uint) (*model.Trainer, error)
+	GetByOwner(ownerId uint) ([]model.Trainer, error)
+	Create(userId uint, name string) error
+	Update(dataset *model.Trainer) error
+	Delete(id uint) error
+}
+
+type TesterService interface {
+	Get(id uint) (*model.Tester, error)
+	GetByOwner(ownerId uint) ([]model.Tester, error)
+	Create(userId uint, name string) error
+	Update(tester *model.Tester) error
+	Delete(id uint) error
+}
+
+type TrainedService interface {
+	Get(id uint) (*model.Trained, error)
+	GetByOwner(ownerId uint) ([]model.Trained, error)
+	Create(userId uint, name string) (*model.Trained, error)
+	Update(trained *model.Trained) error
+	Delete(id uint) error
 }
 
 type RunService interface {

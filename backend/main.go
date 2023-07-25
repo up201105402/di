@@ -43,9 +43,12 @@ func main() {
 	pipelineService := service.NewPipelineService(dbConnection, client, i18n)
 	pipelineService.SyncAsyncTasks()
 	stepTypeService := service.NewNodeService(i18n)
-	runService := service.NewRunService(dbConnection, client, i18n, &pipelineService, &stepTypeService)
+	trainedService := service.NewTrainedService(dbConnection, client, i18n)
+	runService := service.NewRunService(dbConnection, client, i18n, &pipelineService, &stepTypeService, &trainedService)
 	taskService := service.NewTaskService(i18n, &stepTypeService, &runService)
 	datasetService := service.NewDatasetService(dbConnection, client, i18n)
+	trainerService := service.NewTrainerService(dbConnection, client, i18n)
+	testerService := service.NewTesterService(dbConnection, client, i18n)
 
 	services := &service.Services{
 		UserService:     service.NewUserService(dbConnection, i18n),
@@ -53,6 +56,9 @@ func main() {
 		RunService:      runService,
 		TokenService:    service.NewTokenService(tokenServiceConfig, i18n),
 		DatasetService:  datasetService,
+		TrainerService:  trainerService,
+		TesterService:   testerService,
+		TrainedService:  trainedService,
 	}
 
 	r := setupRouter(services, i18n)
@@ -86,8 +92,15 @@ func setupRouter(services *service.Services, I18n *i18n.Localizer) *gin.Engine {
 		panic("RUN_LOGS_DIR is not defined")
 	}
 
+	filesDir, exists := os.LookupEnv("FILE_UPLOAD_DIR")
+
+	if !exists {
+		panic("FILE_UPLOAD_DIR is not defined")
+	}
+
 	router.StaticFS("/work", http.Dir(workDir))
 	router.StaticFS("/logs", http.Dir(logsDir))
+	router.StaticFS("/files", http.Dir(filesDir))
 
 	router.LoadHTMLFiles("../client/index.html")
 
@@ -131,10 +144,31 @@ func setupRouter(services *service.Services, I18n *i18n.Localizer) *gin.Engine {
 
 	databasetAPI := router.Group("/api/dataset")
 	databasetAPI.GET("", middleware.Auth(services.TokenService, I18n), handlers.GetDatasets(services))
+	databasetAPI.POST("", middleware.Auth(services.TokenService, I18n), handlers.CreateDataset(services))
 	databasetAPI.GET("/:id", middleware.Auth(services.TokenService, I18n), handlers.GetDataset(services, I18n))
 	databasetAPI.POST("/:id/file", middleware.Auth(services.TokenService, I18n), handlers.UploadDatasetScript(services, I18n))
-	databasetAPI.DELETE("/:id/file/:scriptId", middleware.Auth(services.TokenService, I18n), handlers.DeleteDatasetScript(services, I18n))
-	databasetAPI.DELETE("", middleware.Auth(services.TokenService, I18n), handlers.DeleteDataset(services))
+	databasetAPI.DELETE("", middleware.Auth(services.TokenService, I18n), handlers.DeleteDataset(services, I18n))
+
+	trainerAPI := router.Group("/api/trainer")
+	trainerAPI.GET("", middleware.Auth(services.TokenService, I18n), handlers.GetTrainers(services))
+	trainerAPI.POST("", middleware.Auth(services.TokenService, I18n), handlers.CreateTrainer(services))
+	trainerAPI.GET("/:id", middleware.Auth(services.TokenService, I18n), handlers.GetTrainer(services, I18n))
+	trainerAPI.POST("/:id/file", middleware.Auth(services.TokenService, I18n), handlers.UploadTrainerScript(services, I18n))
+	trainerAPI.DELETE("", middleware.Auth(services.TokenService, I18n), handlers.DeleteTrainer(services, I18n))
+
+	testerAPI := router.Group("/api/tester")
+	testerAPI.GET("", middleware.Auth(services.TokenService, I18n), handlers.GetTesters(services))
+	testerAPI.POST("", middleware.Auth(services.TokenService, I18n), handlers.CreateTester(services))
+	testerAPI.GET("/:id", middleware.Auth(services.TokenService, I18n), handlers.GetTester(services, I18n))
+	testerAPI.POST("/:id/file", middleware.Auth(services.TokenService, I18n), handlers.UploadTesterScript(services, I18n))
+	testerAPI.DELETE("", middleware.Auth(services.TokenService, I18n), handlers.DeleteTester(services, I18n))
+
+	trainedAPI := router.Group("/api/trained")
+	trainedAPI.GET("", middleware.Auth(services.TokenService, I18n), handlers.GetTrainedModels(services))
+	trainedAPI.POST("", middleware.Auth(services.TokenService, I18n), handlers.CreateTrained(services))
+	trainedAPI.GET("/:id", middleware.Auth(services.TokenService, I18n), handlers.GetTrained(services, I18n))
+	trainedAPI.POST("/:id/file", middleware.Auth(services.TokenService, I18n), handlers.UploadTrainedScript(services, I18n))
+	trainedAPI.DELETE("", middleware.Auth(services.TokenService, I18n), handlers.DeleteTrained(services, I18n))
 
 	return router
 }

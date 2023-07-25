@@ -8,6 +8,8 @@ import RunResults from "@/views/RunResultsView.vue";
 import Feedback from "@/views/FeedbackView.vue";
 import SingleFeedback from "@/views/SingleQueryFeedbackView.vue";
 import Datasets from "@/views/DatasetsView.vue";
+import Trainers from "@/views/TrainersView.vue";
+import Trained from "@/views/TrainedView.vue";
 
 const routes = [
   // {
@@ -97,6 +99,24 @@ const routes = [
     path: "/datasets",
     name: "datasets",
     component: Datasets,
+    private: true,
+  },
+  {
+    meta: {
+      title: "Trainers",
+    },
+    path: "/trainers",
+    name: "trainers",
+    component: Trainers,
+    private: true,
+  },
+  {
+    meta: {
+      title: "Trained",
+    },
+    path: "/trained",
+    name: "trained",
+    component: Trained,
     private: true,
   },
   {

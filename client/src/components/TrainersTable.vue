@@ -63,13 +63,13 @@ const remove = (arr, cb) => {
     return newArr;
 };
 
-const checked = (isChecked, dataset) => {
+const checked = (isChecked, model) => {
     if (isChecked) {
-        checkedRows.value.push(dataset);
+        checkedRows.value.push(model);
     } else {
         checkedRows.value = remove(
             checkedRows.value,
-            (row) => row.id === dataset.id
+            (row) => row.id === model.id
         );
     }
 };
@@ -80,36 +80,36 @@ const checked = (isChecked, dataset) => {
     <table>
         <thead>
             <tr>
-                <th>{{ $t('pages.datasets.table.headers.id') }}</th>
-                <th>{{ $t('pages.datasets.table.headers.name') }}</th>
+                <th>{{ $t('pages.trainers.table.headers.id') }}</th>
+                <th>{{ $t('pages.trainers.table.headers.name') }}</th>
                 <th>{{ $t('pages.datasets.table.headers.path') }}</th>
-                <th>{{ $t('pages.datasets.table.headers.modified') }}</th>
-                <th>{{ $t('pages.datasets.table.headers.created') }}</th>
+                <th>{{ $t('pages.trainers.table.headers.modified') }}</th>
+                <th>{{ $t('pages.trainers.table.headers.created') }}</th>
                 <th />
             </tr>
         </thead>
         <tbody>
-            <tr v-for="dataset in itemsPaginated" :key="dataset.id">
-                <td :data-label="$t('pages.datasets.table.headers.name')">
-                    {{ dataset.ID }}
+            <tr v-for="model in itemsPaginated" :key="model.id">
+                <td :data-label="$t('pages.trainers.table.headers.name')">
+                    {{ model.ID }}
                 </td>
-                <td :data-label="$t('pages.datasets.table.headers.name')">
-                    {{ dataset.name }}
+                <td :data-label="$t('pages.trainers.table.headers.name')">
+                    {{ model.name }}
                 </td>
-                <td :data-label="$t('pages.datasets.table.headers.path')">
-                    <span style="margin-right: 5px;">{{ dataset.path?.replace(/^.*[\\\/]/, '') }}</span>
-                    <BaseButton v-if="dataset.path" color="success" :icon="mdiDownload" small :href="dataset.path" :download="true" />
+                <td :data-label="$t('pages.trainers.table.headers.path')">
+                    <span style="margin-right: 5px;">{{ model.path?.replace(/^.*[\\\/]/, '') }}</span>
+                    <BaseButton v-if="model.path" color="success" :icon="mdiDownload" small :href="model.path" :download="true" />
                 </td>
-                <td :data-label="$t('pages.datasets.table.headers.modified')" class="lg:w-1 whitespace-nowrap">
-                    <small class="text-gray-500 dark:text-slate-400" :title="formatDate(dataset.UpdatedAt)">{{ formatDate(dataset.UpdatedAt) }}</small>
+                <td :data-label="$t('pages.trainers.table.headers.modified')" class="lg:w-1 whitespace-nowrap">
+                    <small class="text-gray-500 dark:text-slate-400" :title="formatDate(model.UpdatedAt)">{{ formatDate(model.UpdatedAt) }}</small>
                 </td>
-                <td :data-label="$t('pages.datasets.table.headers.created')" class="lg:w-1 whitespace-nowrap">
-                    <small class="text-gray-500 dark:text-slate-400" :title="formatDate(dataset.CreatedAt)">{{ formatDate(dataset.CreatedAt) }}</small>
+                <td :data-label="$t('pages.trainers.table.headers.created')" class="lg:w-1 whitespace-nowrap">
+                    <small class="text-gray-500 dark:text-slate-400" :title="formatDate(model.CreatedAt)">{{ formatDate(model.CreatedAt) }}</small>
                 </td>
                 <td class="before:hidden lg:w-1 whitespace-nowrap">
                     <BaseButtons type="justify-start lg:justify-end" no-wrap>
-                        <BaseButton color="info" :icon="mdiPencilOutline" small :target-id="dataset.ID" @clicked="editButtonClicked" />
-                        <BaseButton color="danger" :icon="mdiTrashCan" small :target-id="dataset.ID" @clicked="deleteButtonClicked" />
+                        <BaseButton color="info" :icon="mdiPencilOutline" small :target-id="model.ID" @clicked="editButtonClicked" />
+                        <BaseButton color="danger" :icon="mdiTrashCan" small :target-id="model.ID" @clicked="deleteButtonClicked" />
                     </BaseButtons>
                 </td>
             </tr>

@@ -5,6 +5,7 @@ import (
 	"di/model"
 	"errors"
 	"fmt"
+	"io"
 	"log"
 	"os"
 	"os/exec"
@@ -109,8 +110,45 @@ func (step PythonScript) Execute(logFile *os.File, feedbackRects [][]model.Human
 		scriptFile.WriteString(processedString)
 
 	} else if step.ScriptType != "file" {
-		errMessage := "Invalid script type for shell script step!"
-		return nil, errors.New(errMessage)
+		fileUploadDir, exists := os.LookupEnv("FILE_UPLOAD_DIR")
+
+		if !exists {
+			errMessage := I18n.MustLocalize(&i18n.LocalizeConfig{
+				MessageID: "env.variable.find.failed",
+				TemplateData: map[string]interface{}{
+					"Name": "FILE_UPLOAD_DIR",
+				},
+				PluralCount: 1,
+			})
+
+			log.Printf(errMessage)
+			return nil, errors.New(errMessage)
+		}
+
+		sourceFile, err := os.Open(fileUploadDir + "pipelines/" + fmt.Sprint(step.PipelineID) + "/" + step.Filename)
+
+		if err != nil {
+			errMessage := fmt.Sprintf("Error creating script file from file script: %v", err.Error())
+			return nil, errors.New(errMessage)
+		}
+
+		defer sourceFile.Close()
+
+		pythonScriptFile, err := os.Create(currentPipelineWorkDir + filename)
+
+		if err != nil {
+			errMessage := fmt.Sprintf("Error creating script file from file script: %v", err.Error())
+			return nil, errors.New(errMessage)
+		}
+
+		defer pythonScriptFile.Close()
+
+		_, err = io.Copy(pythonScriptFile, sourceFile)
+
+		if err != nil {
+			errMessage := fmt.Sprintf("Error creating script file from file script: %v", err.Error())
+			return nil, errors.New(errMessage)
+		}
 	}
 
 	cmd := exec.Command("python3", filename)

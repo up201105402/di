@@ -79,7 +79,7 @@ func (nodeService *nodeServiceImpl) NewEdgeInstance(pipelineID uint, runID uint,
 func initStepTypeRegistry() map[string]reflect.Type {
 	var stepTypeRegistry = make(map[string]reflect.Type)
 
-	stepTypes := []interface{}{steps.CheckoutRepo{}, steps.ShellScript{}, steps.CustomPyTorchModel{}, steps.HumanFeedbackNN{}, steps.CustomHITL{}, steps.ScikitTestingDataset{}, steps.ScikitTrainingDataset{}}
+	stepTypes := []interface{}{steps.CheckoutRepo{}, steps.ShellScript{}, steps.Dataset{}, steps.Trainer{}, steps.CustomPyTorchModel{}, steps.HumanFeedbackNN{}, steps.CustomHITL{}, steps.ScikitTestingDataset{}, steps.ScikitTrainingDataset{}}
 
 	for _, v := range stepTypes {
 		splitString := strings.SplitAfter(fmt.Sprintf("%T", v), ".")

@@ -2,7 +2,7 @@ package model
 
 import "gorm.io/gorm"
 
-type Dataset struct {
+type Trainer struct {
 	gorm.Model
 	UserID uint `json:"userId"`
 	User   User
@@ -10,17 +10,9 @@ type Dataset struct {
 	Path   string `json:"path"`
 }
 
-type DatasetReq struct {
+type TrainerReq struct {
 	ID   uint   `json:"id"`
 	User string `json:"user"`
 	Name string `json:"name"`
 	Path string `json:"path"`
-}
-
-type DatasetScript struct {
-	ID        uint `json:"id"`
-	DatasetID uint `json:"datasetId"`
-	Dataset   Dataset
-	Name      string `json:"name"`
-	Path      string `json:"path"`
 }

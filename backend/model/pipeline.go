@@ -142,8 +142,21 @@ type StepDataConfig struct {
 	IsOversampled  null.Bool   `json:"isOversampled"`
 	Start_epoch    null.Int    `json:"start_epoch"`
 	Dataset        null.String `json:"dataset"`
-	// Custom HITL
+	// Custom
 	CustomArguments null.String `json:"customArguments"`
+	// Dataset
+	DatasetID   uint   `json:"datasetID"`
+	DatasetName string `json:"datasetName"`
+	DatasetPath string `json:"datasetPath"`
+	// Trainer
+	TrainerID   uint   `json:"trainerID"`
+	TrainerName string `json:"trainerName"`
+	TrainerPath string `json:"trainerPath"`
+	IsStaggered bool   `json:"isStaggered"`
+	// Trained
+	TrainedID   uint   `json:"trainedID"`
+	TrainedName string `json:"trainedName"`
+	TrainedPath string `json:"trainedPath"`
 }
 
 type StepData struct {

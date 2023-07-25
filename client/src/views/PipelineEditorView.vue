@@ -30,6 +30,8 @@ import TabPanel from 'primevue/tabpanel';
 import Dropdown from 'primevue/dropdown';
 import Calendar from 'primevue/calendar';
 import InputText from 'primevue/inputtext';
+import { datasetForm } from '@/pipelines/steps/datasets'
+import { trainerForm } from '@/pipelines/steps/trainers'
 import { useField } from 'vee-validate';
 import cronTime from "cron-time-generator";
 import { i18n } from '@/i18n';
@@ -151,6 +153,44 @@ const { isLoading: isDeletingPipelineSchedule, state: deletePipelineScheduleResp
   },
 );
 
+// FETCH DATASETS
+const { isLoading: isFetchingDatasets, state: fetchDatasetsResponse, isReady: isFetchDatasetsFinished, execute: fetchDatasets } = useAsyncState(
+  () => {
+    return doRequest({
+      url: `/api/dataset`,
+      method: 'GET',
+      headers: {
+        Authorization: `${accessToken.value}`
+      },
+    })
+  },
+  {},
+  {
+    immediate: true,
+    delay: 500,
+    resetOnExecute: false,
+  },
+);
+
+// FETCH MODELS
+const { isLoading: isFetchingTrainers, state: fetchTrainersResponse, isReady: isFetchModelsFinished, execute: fetchTrainers } = useAsyncState(
+  () => {
+    return doRequest({
+      url: `/api/trainer`,
+      method: 'GET',
+      headers: {
+        Authorization: `${accessToken.value}`
+      },
+    })
+  },
+  {},
+  {
+    immediate: true,
+    delay: 500,
+    resetOnExecute: false,
+  },
+);
+
 const selectedStep = ref();
 
 const onMenubarClick = (e) => {
@@ -186,6 +226,56 @@ const addItemCommand = (item) => {
     item.command = onMenubarClick
   }
 }
+
+watch(fetchDatasetsResponse, (value) => {
+  if (value.error) {
+    let header = t('global.errors.generic.header');
+    let detail = value.error;
+
+    if (value.status == 401) {
+      header = t('global.errors.authorization.header');
+      detail = t('global.errors.authorization.detail');
+    }
+
+    toast.add({ severity: 'error', summary: header, detail: detail, life: 3000 });
+  } else {
+    const datasetGroupsIndex = menubarItems.value?.findIndex(group => group.type == 'datasets');
+    if (datasetGroupsIndex > -1) {
+      value.data?.datasets?.forEach(dataset => menubarItems.value[datasetGroupsIndex].items.push({
+        group: 'datasets',
+        type: 'dataset',
+        label: dataset.name,
+        form: datasetForm(dataset),
+        command: onMenubarClick,
+      }))
+    }
+  }
+})
+
+watch(fetchTrainersResponse, (value) => {
+  if (value.error) {
+    let header = t('global.errors.generic.header');
+    let detail = value.error;
+
+    if (value.status == 401) {
+      header = t('global.errors.authorization.header');
+      detail = t('global.errors.authorization.detail');
+    }
+
+    toast.add({ severity: 'error', summary: header, detail: detail, life: 3000 });
+  } else {
+    const trainerGroupsIndex = menubarItems.value?.findIndex(group => group.type == 'trainers');
+    if (trainerGroupsIndex > -1) {
+      value.data?.trainers?.forEach(trainer => menubarItems.value[trainerGroupsIndex].items.push({
+        group: 'trainers',
+        type: 'trainer',
+        label: trainer.name,
+        form: trainerForm(trainer),
+        command: onMenubarClick,
+      }))
+    }
+  }
+})
 
 menubarSteps.forEach(addItemCommand)
 const menubarItems = ref(menubarSteps)
@@ -282,7 +372,7 @@ watch(deletePipelineScheduleResponse, (value) => {
   }
 })
 
-const isLoading = computed(() => isFetchingPipeline.value || isFetchingPipelineSchedules.value || isUpdatingPipeline.value || isCreatingPipelineSchedule.value);
+const isLoading = computed(() => isFetchingPipeline.value || isFetchingPipelineSchedules.value || isUpdatingPipeline.value || isCreatingPipelineSchedule.value || isFetchingDatasets.value || isFetchingTrainers.value);
 
 const hasChanges = ref(false);
 const isStepDialogActive = ref(false);
@@ -637,9 +727,8 @@ function toggleClass() {
           </TabPanel>
         </TabView>
       </CardBoxModal>
-      <CardBoxModal v-model="isDeleteScheduleDialogActive" :target-id="pipelineScheduleIdToDelete" has-cancel
-        submitLabel="Confirm" title="Delete Schedule" @confirm="onDeleteSchedule" />
+      <CardBoxModal v-model="isDeleteScheduleDialogActive" :target-id="pipelineScheduleIdToDelete" has-cancel submitLabel="Confirm" title="Delete Schedule" @confirm="onDeleteSchedule" />
     </SectionMain>
     <Toast />
   </LayoutAuthenticated>
-</template>
+</template>@/pipelines/steps/trainer

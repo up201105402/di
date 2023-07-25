@@ -17,7 +17,7 @@ import (
 	"github.com/nicksnyder/go-i18n/v2/i18n"
 )
 
-func GetDatasets(services *service.Services) gin.HandlerFunc {
+func GetTrainers(services *service.Services) gin.HandlerFunc {
 	return func(context *gin.Context) {
 
 		user, err := getUser(context)
@@ -27,7 +27,7 @@ func GetDatasets(services *service.Services) gin.HandlerFunc {
 			})
 		}
 
-		datasets, getError := services.DatasetService.GetByOwner(user.ID)
+		trainers, getError := services.TrainerService.GetByOwner(user.ID)
 
 		if getError != nil {
 			log.Printf(getError.Error())
@@ -40,25 +40,25 @@ func GetDatasets(services *service.Services) gin.HandlerFunc {
 
 		fileUploadDir := os.Getenv("FILE_UPLOAD_DIR")
 
-		for index, dataset := range datasets {
-			if dataset.Path != "" {
-				path := "/files/" + strings.Split(dataset.Path, fileUploadDir)[1]
-				datasets[index].Path = path
+		for index, trainer := range trainers {
+			if trainer.Path != "" {
+				path := "/files/" + strings.Split(trainer.Path, fileUploadDir)[1]
+				trainers[index].Path = path
 			}
 		}
 
 		context.JSON(http.StatusOK, gin.H{
-			"datasets": datasets,
+			"trainers": trainers,
 		})
 	}
 }
 
-func GetDataset(services *service.Services, I18n *i18n.Localizer) gin.HandlerFunc {
+func GetTrainer(services *service.Services, I18n *i18n.Localizer) gin.HandlerFunc {
 	return func(context *gin.Context) {
 
-		datasetID := context.Param("id")
+		trainerID := context.Param("id")
 
-		id, parseError := strconv.ParseUint(datasetID, 10, 64)
+		id, parseError := strconv.ParseUint(trainerID, 10, 64)
 
 		if parseError != nil {
 			errMessage := I18n.MustLocalize(&i18n.LocalizeConfig{
@@ -76,7 +76,7 @@ func GetDataset(services *service.Services, I18n *i18n.Localizer) gin.HandlerFun
 			return
 		}
 
-		dataset, getError := services.DatasetService.Get(uint(id))
+		trainer, getError := services.TrainerService.Get(uint(id))
 
 		if getError != nil {
 			log.Printf(getError.Error())
@@ -88,15 +88,15 @@ func GetDataset(services *service.Services, I18n *i18n.Localizer) gin.HandlerFun
 		}
 
 		context.JSON(http.StatusOK, gin.H{
-			"dataset": dataset,
+			"model": trainer,
 		})
 	}
 }
 
-func CreateDataset(services *service.Services) gin.HandlerFunc {
+func CreateTrainer(services *service.Services) gin.HandlerFunc {
 	return func(context *gin.Context) {
 
-		var req model.DatasetReq
+		var req model.TrainerReq
 
 		if ok := util.BindData(context, &req); !ok {
 			return
@@ -110,7 +110,7 @@ func CreateDataset(services *service.Services) gin.HandlerFunc {
 		}
 
 		if req.ID != 0 {
-			dataset, err := services.DatasetService.Get(req.ID)
+			trainer, err := services.TrainerService.Get(req.ID)
 
 			if err != nil {
 				err := errors.NewNotFound(err.Error())
@@ -120,8 +120,8 @@ func CreateDataset(services *service.Services) gin.HandlerFunc {
 				return
 			}
 
-			dataset.Path = req.Path
-			err = services.DatasetService.Update(dataset)
+			trainer.Path = req.Path
+			err = services.TrainerService.Update(trainer)
 
 			if err != nil {
 				log.Printf(err.Error())
@@ -132,7 +132,7 @@ func CreateDataset(services *service.Services) gin.HandlerFunc {
 				return
 			}
 		} else {
-			serviceError := services.DatasetService.Create(user.ID, req.Name)
+			serviceError := services.TrainerService.Create(user.ID, req.Name)
 
 			if serviceError != nil {
 				log.Print(serviceError.Error())
@@ -148,7 +148,7 @@ func CreateDataset(services *service.Services) gin.HandlerFunc {
 	}
 }
 
-func UploadDatasetScript(services *service.Services, I18n *i18n.Localizer) gin.HandlerFunc {
+func UploadTrainerScript(services *service.Services, I18n *i18n.Localizer) gin.HandlerFunc {
 	return func(context *gin.Context) {
 
 		// Upload the file to specific dst.
@@ -170,8 +170,8 @@ func UploadDatasetScript(services *service.Services, I18n *i18n.Localizer) gin.H
 			})
 		}
 
-		datasetId := context.Param("id")
-		datasetID, parseError := strconv.ParseUint(datasetId, 10, 64)
+		trainerId := context.Param("id")
+		trainerID, parseError := strconv.ParseUint(trainerId, 10, 64)
 
 		if parseError != nil {
 			errMessage := I18n.MustLocalize(&i18n.LocalizeConfig{
@@ -189,7 +189,7 @@ func UploadDatasetScript(services *service.Services, I18n *i18n.Localizer) gin.H
 			return
 		}
 
-		dataset, getError := services.DatasetService.Get(uint(datasetID))
+		trainer, getError := services.TrainerService.Get(uint(trainerID))
 
 		if getError != nil {
 			log.Printf(getError.Error())
@@ -200,12 +200,12 @@ func UploadDatasetScript(services *service.Services, I18n *i18n.Localizer) gin.H
 			return
 		}
 
-		datasetUploadDir := fileUploadDir + "datasets/" + datasetId + "/"
-		if err := os.MkdirAll(datasetUploadDir, os.ModePerm); err != nil {
+		trainerUploadDir := fileUploadDir + "trainers/" + trainerId + "/"
+		if err := os.MkdirAll(trainerUploadDir, os.ModePerm); err != nil {
 			errMessage := I18n.MustLocalize(&i18n.LocalizeConfig{
 				MessageID: "os.cmd.mkdir.dir.failed",
 				TemplateData: map[string]interface{}{
-					"Path":   datasetUploadDir,
+					"Path":   trainerUploadDir,
 					"Reason": err.Error(),
 				},
 				PluralCount: 1,
@@ -222,7 +222,7 @@ func UploadDatasetScript(services *service.Services, I18n *i18n.Localizer) gin.H
 		file, _ := context.FormFile("file")
 		log.Println(file.Filename)
 
-		filePath := filepath.Join(datasetUploadDir, file.Filename)
+		filePath := filepath.Join(trainerUploadDir, file.Filename)
 		err := context.SaveUploadedFile(file, filePath)
 
 		if err != nil {
@@ -233,8 +233,8 @@ func UploadDatasetScript(services *service.Services, I18n *i18n.Localizer) gin.H
 			})
 		}
 
-		dataset.Path = filePath
-		err = services.DatasetService.Update(dataset)
+		trainer.Path = filePath
+		err = services.TrainerService.Update(trainer)
 
 		if err != nil {
 			log.Printf(err.Error())
@@ -250,10 +250,10 @@ func UploadDatasetScript(services *service.Services, I18n *i18n.Localizer) gin.H
 	}
 }
 
-func UpdateDataset(services *service.Services) gin.HandlerFunc {
+func UpdateTrainer(services *service.Services) gin.HandlerFunc {
 	return func(context *gin.Context) {
 
-		var req model.DatasetReq
+		var req model.TrainerReq
 
 		if ok := util.BindData(context, &req); !ok {
 			return
@@ -266,7 +266,7 @@ func UpdateDataset(services *service.Services) gin.HandlerFunc {
 			})
 		}
 
-		dataset, getError := services.DatasetService.Get(req.ID)
+		trainer, getError := services.TrainerService.Get(req.ID)
 
 		if getError != nil {
 			log.Printf(getError.Error())
@@ -277,7 +277,7 @@ func UpdateDataset(services *service.Services) gin.HandlerFunc {
 			return
 		}
 
-		if dataset.UserID != user.ID {
+		if trainer.UserID != user.ID {
 			errorMessage := fmt.Sprint("Pipeline with id %v does not belong to user %v\n", req.ID, user.Username)
 			log.Printf(errorMessage)
 			err := errors.NewAuthorization("")
@@ -287,7 +287,7 @@ func UpdateDataset(services *service.Services) gin.HandlerFunc {
 			return
 		}
 
-		deleteError := services.DatasetService.Delete(req.ID)
+		deleteError := services.TrainerService.Delete(req.ID)
 
 		if deleteError != nil {
 			log.Printf(deleteError.Error())
@@ -302,10 +302,10 @@ func UpdateDataset(services *service.Services) gin.HandlerFunc {
 	}
 }
 
-func DeleteDataset(services *service.Services, I18n *i18n.Localizer) gin.HandlerFunc {
+func DeleteTrainer(services *service.Services, I18n *i18n.Localizer) gin.HandlerFunc {
 	return func(context *gin.Context) {
 
-		var req model.DatasetReq
+		var req model.TrainerReq
 
 		if ok := util.BindData(context, &req); !ok {
 			return
@@ -318,7 +318,7 @@ func DeleteDataset(services *service.Services, I18n *i18n.Localizer) gin.Handler
 			})
 		}
 
-		dataset, getError := services.DatasetService.Get(req.ID)
+		trainer, getError := services.TrainerService.Get(req.ID)
 
 		if getError != nil {
 			log.Printf(getError.Error())
@@ -329,7 +329,7 @@ func DeleteDataset(services *service.Services, I18n *i18n.Localizer) gin.Handler
 			return
 		}
 
-		if dataset.UserID != user.ID {
+		if trainer.UserID != user.ID {
 			errorMessage := fmt.Sprint("Pipeline with id %v does not belong to user %v\n", req.ID, user.Username)
 			log.Printf(errorMessage)
 			err := errors.NewAuthorization("")
@@ -339,7 +339,7 @@ func DeleteDataset(services *service.Services, I18n *i18n.Localizer) gin.Handler
 			return
 		}
 
-		deleteError := services.DatasetService.Delete(req.ID)
+		deleteError := services.TrainerService.Delete(req.ID)
 
 		if deleteError != nil {
 			log.Printf(deleteError.Error())

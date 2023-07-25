@@ -147,6 +147,8 @@ export const messages = {
                         general: 'General',
                         scikit: 'Scikit',
                         hitl: 'HITL',
+                        datasets: 'Datasets',
+                        trainers: 'Trainers',
                     },
                     dialog: {
                         create: {
@@ -205,8 +207,11 @@ export const messages = {
                             nr_queries: 'nr_queries',
                             isOversampled: 'isOversampled',
                             start_epoch: 'start_epoch',
-                            dataset: 'dataset',
+                            dataset: 'Dataset',
+                            trainer: 'Trainer',
+                            trained: 'Trained Model',
                             customArguments: 'Custom Arguments',
+                            isStaggered: 'Is Staggered?',
                         }
                     },
                     scheduling: {
@@ -352,11 +357,15 @@ export const messages = {
                 },
             },
             datasets: {
-                name: "Datasets",
-                header: "Datasets",
+                name: "Dataset Processors",
+                header: "Dataset Processors",
                 table: {
                     headers: {
-
+                        id: "ID",
+                        name: "Name",
+                        path: "File",
+                        modified: "Updated",
+                        created: "Created",
                     },
                 },
                 dialog: {
@@ -367,8 +376,99 @@ export const messages = {
                             help: "Dataset's name",
                         },
                     },
+                    upload: {
+                        header: "Upload dataset file?",
+                    },
                     delete: {
-                        header: "Delete Dataset?"
+                        header: "Delete Dataset?",
+                        body: ""
+                    },
+                }
+            },
+            trainers: {
+                name: "Trainers",
+                header: "Trainers",
+                table: {
+                    headers: {
+                        id: "ID",
+                        name: "Name",
+                        path: "File",
+                        modified: "Updated",
+                        created: "Created",
+                    },
+                },
+                dialog: {
+                    create: {
+                        header: "Create Trainer?",
+                        name: {
+                            label: "Name",
+                            help: "Trainer's name",
+                        },
+                    },
+                    upload: {
+                        header: "Upload trainer file?",
+                    },
+                    delete: {
+                        header: "Delete Trainer?",
+                        body: ""
+                    },
+                }
+            },
+            testers: {
+                name: "Testers",
+                header: "Testers",
+                table: {
+                    headers: {
+                        id: "ID",
+                        name: "Name",
+                        path: "File",
+                        modified: "Updated",
+                        created: "Created",
+                    },
+                },
+                dialog: {
+                    create: {
+                        header: "Create Tester?",
+                        name: {
+                            label: "Name",
+                            help: "Tester's name",
+                        },
+                    },
+                    upload: {
+                        header: "Upload tester file?",
+                    },
+                    delete: {
+                        header: "Delete Trainer?",
+                        body: ""
+                    },
+                }
+            },
+            trained: {
+                name: "Trained Models",
+                header: "Trained Models",
+                table: {
+                    headers: {
+                        id: "ID",
+                        name: "Name",
+                        path: "File",
+                        modified: "Updated",
+                        created: "Created",
+                    },
+                },
+                dialog: {
+                    create: {
+                        header: "Create Trained Model?",
+                        name: {
+                            label: "Name",
+                            help: "Trained Model's name",
+                        },
+                    },
+                    upload: {
+                        header: "Upload trained file?",
+                    },
+                    delete: {
+                        header: "Delete Trained Model?",
+                        body: ""
                     },
                 }
             },

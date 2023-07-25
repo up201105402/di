@@ -126,6 +126,27 @@ export const menubarSteps = [
         form: customHitlForm,
       },
     ]
+  },
+  {
+    type: 'datasets',
+    label: t('pages.pipelines.edit.menubar.datasets'),
+    items: [
+
+    ]
+  },
+  {
+    type: 'trainers',
+    label: t('pages.pipelines.edit.menubar.trainers'),
+    items: [
+      
+    ]
+  },
+  {
+    type: 'trained',
+    label: t('pages.pipelines.edit.menubar.trainedModels'),
+    items: [
+      
+    ]
   }
 ];
 

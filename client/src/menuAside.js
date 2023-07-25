@@ -2,6 +2,7 @@ import {
   mdiChartTimelineVariant,
   mdiRun,
   mdiDataMatrix,
+  mdiCodeBraces,
   mdiAccount
 } from "@mdi/js";
 import { i18n } from '@/i18n';
@@ -23,6 +24,16 @@ export default [
     to: "/datasets",
     icon: mdiDataMatrix,
     label: t('pages.datasets.name'),
+  },
+  {
+    to: "/trainers",
+    icon: mdiCodeBraces,
+    label: t('pages.trainers.name'),
+  },
+  {
+    to: "/trained",
+    icon: mdiCodeBraces,
+    label: t('pages.trained.name'),
   },
   {
     to: "/profile",

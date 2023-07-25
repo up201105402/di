@@ -4,6 +4,8 @@ import (
 	"di/model"
 	"di/repository"
 	"errors"
+	"log"
+	"os"
 
 	"github.com/hibiken/asynq"
 	"github.com/nicksnyder/go-i18n/v2/i18n"
@@ -116,8 +118,8 @@ func (service *datasetServiceImpl) GetByOwner(ownerId uint) ([]model.Dataset, er
 	return datasets, err
 }
 
-func (service *datasetServiceImpl) Create(userId uint, name string, entryPoint string) error {
-	if err := service.DatasetRepository.Create(&model.Dataset{UserID: userId, Name: name, EntryPoint: entryPoint}); err != nil {
+func (service *datasetServiceImpl) Create(userId uint, name string) error {
+	if err := service.DatasetRepository.Create(&model.Dataset{UserID: userId, Name: name}); err != nil {
 		errMessage := service.I18n.MustLocalize(&i18n.LocalizeConfig{
 			MessageID: "dataset.repository.create.dataset.failed",
 			TemplateData: map[string]interface{}{
@@ -152,7 +154,14 @@ func (service *datasetServiceImpl) Update(dataset *model.Dataset) error {
 }
 
 func (service *datasetServiceImpl) Delete(id uint) error {
-	err := service.DatasetRepository.Delete(id)
+
+	dataset, err := service.Get(id)
+
+	if err != nil {
+		return err
+	}
+
+	err = service.DatasetRepository.Delete(id)
 
 	if err != nil {
 		errMessage := service.I18n.MustLocalize(&i18n.LocalizeConfig{
@@ -164,6 +173,20 @@ func (service *datasetServiceImpl) Delete(id uint) error {
 			PluralCount: 1,
 		})
 
+		return errors.New(errMessage)
+	}
+
+	if err := os.Remove(dataset.Path); err != nil {
+		errMessage := service.I18n.MustLocalize(&i18n.LocalizeConfig{
+			MessageID: "os.cmd.mkdir.dir.failed",
+			TemplateData: map[string]interface{}{
+				"Path":   dataset.Path,
+				"Reason": err.Error(),
+			},
+			PluralCount: 1,
+		})
+
+		log.Println(errMessage)
 		return errors.New(errMessage)
 	}
 

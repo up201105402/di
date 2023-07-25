@@ -9,8 +9,10 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"io"
 	"log"
 	"os"
+	"path/filepath"
 	"time"
 
 	"github.com/dominikbraun/graph"
@@ -25,15 +27,17 @@ type runServiceImpl struct {
 	RunRepository   model.RunRepository
 	PipelineService PipelineService
 	NodeTypeService NodeTypeService
+	TrainedService  TrainedService
 	TaskQueueClient asynq.Client
 	I18n            *i18n.Localizer
 }
 
-func NewRunService(gormDB *gorm.DB, client *asynq.Client, i18n *i18n.Localizer, pipelineService *PipelineService, stepTypeService *NodeTypeService) RunService {
+func NewRunService(gormDB *gorm.DB, client *asynq.Client, i18n *i18n.Localizer, pipelineService *PipelineService, stepTypeService *NodeTypeService, trainedService *TrainedService) RunService {
 	return &runServiceImpl{
 		RunRepository:   repository.NewRunRepository(gormDB),
 		PipelineService: *pipelineService,
 		NodeTypeService: *stepTypeService,
+		TrainedService:  *trainedService,
 		TaskQueueClient: *client,
 		I18n:            i18n,
 	}
@@ -794,7 +798,7 @@ func (service *runServiceImpl) executeRunPipelineTask(runPipelinePayload RunPipe
 		return asynq.SkipRetry
 	}
 
-	return service.traverseAndExecuteSteps(runPipelinePayload.RunID, pipelineGraph, 0, logFile)
+	return service.traverseAndExecuteSteps(currentPipelineWorkDir, runPipelinePayload.RunID, pipelineGraph, 0, logFile)
 }
 
 func (service *runServiceImpl) resumeRunPipelineTask(runPipelinePayload RunPipelinePayload) error {
@@ -903,10 +907,10 @@ func (service *runServiceImpl) resumeRunPipelineTask(runPipelinePayload RunPipel
 		return asynq.SkipRetry
 	}
 
-	return service.traverseAndExecuteSteps(runPipelinePayload.RunID, pipelineGraph, int(runPipelinePayload.StepID.Int64), logFile)
+	return service.traverseAndExecuteSteps(currentPipelineWorkDir, runPipelinePayload.RunID, pipelineGraph, int(runPipelinePayload.StepID.Int64), logFile)
 }
 
-func (service *runServiceImpl) traverseAndExecuteSteps(runID uint, pipelineGraph graph.Graph[int, steps.Step], startAtStepID int, logFile *os.File) error {
+func (service *runServiceImpl) traverseAndExecuteSteps(currentPipelineWorkDir string, runID uint, pipelineGraph graph.Graph[int, steps.Step], startAtStepID int, logFile *os.File) error {
 
 	runLogger := log.New(logFile, "", log.Ldate|log.Ltime|log.Lmicroseconds|log.Llongfile)
 
@@ -1018,16 +1022,18 @@ func (service *runServiceImpl) traverseAndExecuteSteps(runID uint, pipelineGraph
 			}
 		}
 
-		if feedbackPayload, err := step.Execute(logFile, feebackRects, service.I18n); err != nil {
+		feedbackPayload, executeError := step.Execute(logFile, feebackRects, service.I18n)
 
-			stepErr = err
+		if executeError != nil {
+
+			stepErr = executeError
 			hasError = true
 
 			errMessage := service.I18n.MustLocalize(&i18n.LocalizeConfig{
 				MessageID: "run.service.execute.step.failed",
 				TemplateData: map[string]interface{}{
 					"ID":     step.GetID(),
-					"Reason": err.Error(),
+					"Reason": executeError.Error(),
 				},
 				PluralCount: 1,
 			})
@@ -1035,7 +1041,7 @@ func (service *runServiceImpl) traverseAndExecuteSteps(runID uint, pipelineGraph
 			runLogger.Println(errMessage)
 			log.Println(errMessage)
 
-			if err := service.updateStepRunStatus(runStepStatus, 3, err.Error()); err != nil {
+			if err := service.updateStepRunStatus(runStepStatus, 3, executeError.Error()); err != nil {
 				runLogger.Println(errMessage)
 				log.Println(errMessage)
 			}
@@ -1043,16 +1049,16 @@ func (service *runServiceImpl) traverseAndExecuteSteps(runID uint, pipelineGraph
 			return true
 		} else {
 			for _, feedback := range feedbackPayload {
-				err = service.CreateHumanFeedbackQuery(feedback.Epoch, feedback.RunID, feedback.StepID, feedback.QueryID, feedback.Rects)
+				executeError = service.CreateHumanFeedbackQuery(feedback.Epoch, feedback.RunID, feedback.StepID, feedback.QueryID, feedback.Rects)
 				hasFeedback = true
 			}
 
-			if err != nil {
+			if executeError != nil {
 				errMessage := service.I18n.MustLocalize(&i18n.LocalizeConfig{
 					MessageID: "run.service.execute.step.failed",
 					TemplateData: map[string]interface{}{
 						"ID":     step.GetID(),
-						"Reason": err.Error(),
+						"Reason": executeError.Error(),
 					},
 					PluralCount: 1,
 				})
@@ -1060,7 +1066,7 @@ func (service *runServiceImpl) traverseAndExecuteSteps(runID uint, pipelineGraph
 				runLogger.Println(errMessage)
 				log.Println(errMessage)
 
-				if err := service.updateStepRunStatus(runStepStatus, 3, err.Error()); err != nil {
+				if err := service.updateStepRunStatus(runStepStatus, 3, executeError.Error()); err != nil {
 					runLogger.Println(errMessage)
 					log.Println(errMessage)
 				}
@@ -1077,8 +1083,6 @@ func (service *runServiceImpl) traverseAndExecuteSteps(runID uint, pipelineGraph
 				log.Println(errMessage)
 			}
 		}
-
-		var err error
 
 		if step.GetIsStaggered() {
 			queryStatus, err := service.FindHumanFeedbackQueryStatusByID(3)
@@ -1104,18 +1108,131 @@ func (service *runServiceImpl) traverseAndExecuteSteps(runID uint, pipelineGraph
 				hasError = true
 				return true
 			}
+
+			if len(feedbackPayload) == 0 { // it means the execution finalized
+				filepath.Join(currentPipelineWorkDir, "trained_models")
+
+				trainedErr := filepath.Walk(filepath.Join(currentPipelineWorkDir, "trained_models"), func(path string, info os.FileInfo, err error) error {
+
+					pipeline, err := service.PipelineService.Get(step.GetPipelineID())
+
+					if err != nil {
+						return err
+					}
+
+					trained, err := service.TrainedService.Create(pipeline.UserID, filepath.Base(path)+"_"+fmt.Sprint(run.ID))
+
+					if err != nil {
+						return err
+					}
+
+					fileUploadDir, exists := os.LookupEnv("FILE_UPLOAD_DIR")
+
+					if !exists {
+						errMessage := service.I18n.MustLocalize(&i18n.LocalizeConfig{
+							MessageID: "env.variable.find.failed",
+							TemplateData: map[string]interface{}{
+								"Name": "FILE_UPLOAD_DIR",
+							},
+							PluralCount: 1,
+						})
+
+						log.Printf(errMessage)
+						return err
+					}
+
+					modelUploadDir := fileUploadDir + "trained/" + fmt.Sprint(trained.ID) + "/"
+					if err := os.MkdirAll(modelUploadDir, os.ModePerm); err != nil {
+						errMessage := service.I18n.MustLocalize(&i18n.LocalizeConfig{
+							MessageID: "os.cmd.mkdir.dir.failed",
+							TemplateData: map[string]interface{}{
+								"Path":   modelUploadDir,
+								"Reason": err.Error(),
+							},
+							PluralCount: 1,
+						})
+
+						log.Println(errMessage)
+						return err
+					}
+
+					sourceFile, err := os.Open(path)
+
+					if err != nil {
+						errMessage := service.I18n.MustLocalize(&i18n.LocalizeConfig{
+							MessageID: "os.cmd.read.dir.failed",
+							TemplateData: map[string]interface{}{
+								"Path":   modelUploadDir,
+								"Reason": err.Error(),
+							},
+							PluralCount: 1,
+						})
+
+						log.Println(errMessage)
+						return err
+					}
+
+					defer sourceFile.Close()
+
+					filePath := filepath.Join(modelUploadDir, filepath.Base(path))
+					datasetFileDestination, err := os.Create(filePath)
+
+					if err != nil {
+						errMessage := service.I18n.MustLocalize(&i18n.LocalizeConfig{
+							MessageID: "os.cmd.read.dir.failed",
+							TemplateData: map[string]interface{}{
+								"Path":   modelUploadDir,
+								"Reason": err.Error(),
+							},
+							PluralCount: 1,
+						})
+
+						log.Println(errMessage)
+						return err
+					}
+
+					defer datasetFileDestination.Close()
+
+					_, err = io.Copy(datasetFileDestination, sourceFile)
+
+					if err != nil {
+						errMessage := service.I18n.MustLocalize(&i18n.LocalizeConfig{
+							MessageID: "os.cmd.copy.dir.failed",
+							TemplateData: map[string]interface{}{
+								"Path":   modelUploadDir,
+								"Reason": err.Error(),
+							},
+							PluralCount: 1,
+						})
+
+						log.Println(errMessage)
+						return err
+					}
+
+					trained.Path = filePath
+					err = service.TrainedService.Update(trained)
+
+					if err != nil {
+						return err
+					}
+
+					return nil
+				})
+
+				runLogger.Print("Error creating trained models: " + trainedErr.Error())
+			}
 		}
 
 		if hasFeedback {
-			err = service.updateStepRunStatus(runStepStatus, 5, "") // waiting feedback
+			executeError = service.updateStepRunStatus(runStepStatus, 5, "") // waiting feedback
 		} else {
-			err = service.updateStepRunStatus(runStepStatus, 4, "") // success
+			executeError = service.updateStepRunStatus(runStepStatus, 4, "") // success
 		}
 
-		if err != nil {
-			runLogger.Println(err.Error())
-			log.Println(err.Error())
-			stepErr = err
+		if executeError != nil {
+			runLogger.Println(executeError.Error())
+			log.Println(executeError.Error())
+			stepErr = executeError
 			hasError = true
 			return true
 		}
