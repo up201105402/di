@@ -1,187 +1,183 @@
-
-import { watchEffect } from 'vue';
-import { storeTokens, getTokens, doRequest, getTokenPayload, removeTokens } from '../util';
+import jwt_decode from 'jwt-decode';
+import { doRequest } from '@/util';
 import { useRouter } from 'vue-router';
-
+import { useStorage } from '@vueuse/core'
 import { defineStore, storeToRefs } from "pinia";
-import axios from "axios";
+import { i18n } from '@/i18n';
+
+const { t } = i18n.global;
 
 export const useAuthStore = defineStore("auth", {
-  state: () => ({
-    /* User */
-    userName: null,
-    userEmail: null,
-    userAvatar: null,
+    state: () => ({
+        userName: useStorage('userName', null),
+        userEmail: null,
+        userAvatar: null,
+        accessToken: useStorage('accessToken', null),
+        refreshToken: useStorage('refreshToken', null),
 
-    error: null,
+        error: null,
 
-    /* Field focus with ctrl+k (to register only once) */
-    isFieldFocusRegistered: false,
+        isLoading: false,
 
-    /* Sample data (commonly used) */
-    clients: [],
-    history: [],
+        onAuthRoute: '/',
+        requireAuthRoute: '/login',
+        publicRoutePaths: ['/signup', '/login']
+    }),
+    actions: {
+        async logIn(username, password, router, redirectURL) {
+            this.isLoading = true;
 
-    onAuthRoute: '/',
-    requireAuthRoute: '/login',
-    publicRoutePaths: ['/signup']
-  }),
-  actions: {
-    setUser(payload) {
-      if (payload.name) {
-        this.userName = payload.name;
-      }
-      if (payload.email) {
-        this.userEmail = payload.email;
-      }
-      if (payload.avatar) {
-        this.userAvatar = payload.avatar;
-      }
-    },
+            const { data, error } = await authenticate(username, password, '/api/user/login')
 
-    fetch(sampleDataKey) {
-      axios
-        .get(`data-sources/${sampleDataKey}.json`)
-        .then((r) => {
-          if (r.data && r.data.data) {
-            this[sampleDataKey] = r.data.data;
-          }
-        })
-        .catch((error) => {
-          alert(error.message);
-        });
-    },
+            if (error) {
+                this.error = error;
+                this.isLoading = false;
+                return;
+            }
 
-    async signIn(username, password, router, redirectURL) {
-        const { data, error } = await authenticate(username, password, '/api/user/login')
+            this.userName = username;
+            this.error = null;
+            const { accessToken, refreshToken } = data.tokens;
+            this.accessToken = accessToken.signedString;
+            this.refreshToken = refreshToken.signedString;
+            router.push(redirectURL);
+            this.isLoading = false;
+        },
+        async editUsername(username, router, redirectURL) {
+            this.isLoading = true;
+            const { data, error } = await doRequest({
+                url: '/api/user',
+                method: 'POST',
+                headers: {
+                  Authorization: `${accessToken.value}`,
+                },
+                data: {
+                    username: username,
+                },
+            });
+              
 
-        if (error) {
-            // this.idToken = data.idToken;
-            this.error = error;
-            return;
+            if (error) {
+                toast.add({ severity: 'error', summary: 'Error', detail: error, life: 3000 });
+                return;
+            }
+
+            this.error = null;
+            const { accessToken, refreshToken } = data.tokens;
+            this.accessToken = accessToken.signedString;
+            this.refreshToken = refreshToken.signedString;
+            toast.add({ severity: 'error', summary: t('messages.types.success'), detail: t('pages.profile.form.success.usernameChanged'), life: 3000 });
+            this.isLoading = false;
+        },
+        async editPassword(password, toast) {
+            this.isLoading = true;
+            const { data, error } = await doRequest({
+                url: '/api/user',
+                method: 'POST',
+                headers: {
+                  Authorization: `${accessToken.value}`,
+                },
+                data: {
+                    oldPassword: oldPassword,
+                    password: password
+                },
+            });
+              
+
+            if (error) {
+                toast.add({ severity: 'error', summary: t('messages.types.error'), detail: error, life: 3000 });
+                return;
+            }
+
+            this.error = null;
+            const { accessToken, refreshToken } = data.tokens;
+            this.accessToken = accessToken.signedString;
+            this.refreshToken = refreshToken.signedString;
+            toast.add({ severity: 'error', summary: t('messages.types.success'), detail: t('pages.profile.form.success.passwordChanged'), life: 3000 });
+            this.isLoading = false;
+        },
+        async signUp(username, password, router, redirectURL) {
+            this.isLoading = true;
+            const { data, error } = await authenticate(username, password, '/api/user/signup');
+
+            if (error) {
+                this.accessToken = this.refreshToken = this.userName = null;
+                removeTokens();
+                this.error = error;
+                this.isLoading = false;
+                return;
+            }
+
+            this.userName = username;
+            this.error = null;
+            const { accessToken, refreshToken } = data.tokens;
+            this.accessToken = accessToken.signedString;
+            this.refreshToken = refreshToken.signedString;
+            router.push(redirectURL);
+            this.isLoading = false;
+        },
+        async signOut(router, redirectURL) {
+            this.isLoading = true;
+            const { error } = await doRequest({
+                url: '/api/user/signout',
+                method: 'POST',
+                headers: {
+                    Authorization: `${this.accessToken}`,
+                },
+            });
+
+            if (error) {
+                this.error = error;
+                this.isLoading = false;
+                return;
+            }
+
+            this.userName = this.accessToken = this.refreshToken = null;
+            removeTokens();
+            router.push(redirectURL);
+            this.isLoading = false;
         }
-
-        this.userName = username;
-        this.error = null;
-        // this.idToken = data.idToken;
-        router.push(redirectURL);
     },
-    
-    async signUp(username, password, router, redirectURL) {
-        const { data, error } = await authenticate(username, password, '/api/user/signup');
-
-        if (error) {
-            // this.idToken = data.idToken;
-            this.error = error;
-            return;
-        }
-
-        this.userName = username;
-        this.error = null;
-        // this.idToken = data.idToken;
-        router.push(redirectURL);
-    },
-
-    async signOut() {
-        const { error } = await doRequest({
-            url: '/api/user/signout',
-            method: 'POST',
-            headers: {
-                Authorization: `Bearer ${this.idToken}`,
-            },
-        });
-    
-        if (error) {
-            state.error = error;
-            state.isLoading = false;
-            return;
-        }
-    
-        // state.currentUser = null;
-        // state.idToken = null;
-
-        this.userName = null;
-        this.idToken = null;
-    
-        removeTokens();
-    }
-
-  },
 });
 
-const initializeUser = async () => {
-    state.isLoading = true;
-    state.error = null;
+export const useAuth = async () => {
 
-    const [idToken, refreshToken] = getTokens();
-
-    const idTokenClaims = getTokenPayload(idToken);
-    const refreshTokenClaims = getTokenPayload(refreshToken);
-
-    if (idTokenClaims) {
-        state.idToken = idToken;
-        state.currentUser = idTokenClaims.user;
-    }
-
-    state.isLoading = false;
-
-    // silently refresh tokens in local storage
-    // if we for some reason don't have refresh token (e.g., if the user deleted it manually)
-    // then we don't proceed
-    if (!refreshTokenClaims) {
-        return;
-    }
-
-    const { data, error } = await doRequest({
-        url: '/api/user/tokens',
-        method: 'POST',
-        data: {
-            refreshToken,
-        },
-    });
-
-    if (error) {
-        console.error('Error refreshing tokens\n', error);
-        return;
-    }
-
-    const { tokens } = data;
-    storeTokens(tokens.idToken, tokens.refreshToken);
-
-    const updatedIdTokenClaims = getTokenPayload(tokens.idToken);
-
-    state.currentUser = updatedIdTokenClaims.user;
-    state.idToken = tokens.idToken;
-};
-
-export const useAuth = () => {
-
-    const store = useAuthStore();
-
-    if (!store) {
-        throw new Error('Main store has not been initialized!');
-    }
-
+    const store = storeToRefs(useAuthStore());
     const router = useRouter();
 
-    watchEffect(() => {
-        const currentRoutePath = router.currentRoute.value.path;
+    const isAccessTokenValid = isTokenValid(store.accessToken.value);
+    const isRefreshTokenValid = isTokenValid(store.refreshToken.value);
 
-        const { userName, requireAuthRoute } = storeToRefs(store)
+    if (isRefreshTokenValid) {
+        if (!isAccessTokenValid) {
+            const result = await getNewAccessToken();
 
-        if (!store.publicRoutePaths.find(elem => elem === currentRoutePath)) {
-            if (!userName.value && requireAuthRoute.value) {
-                router.push(requireAuthRoute.value);
+            if (!result) {
+                redirectToAuthPage(router);
             }
         }
-    });
+    } else {
+        redirectToAuthPage(router);
+    }
 
     return store;
 }
 
+const redirectToAuthPage = async (router) => {
+
+    const store = storeToRefs(useAuthStore());
+
+    store.accessToken.value = store.refreshToken.value = store.userName.value = null;
+    removeTokens();
+
+    const currentRoutePath = router.currentRoute.value.path;
+
+    if (!store.publicRoutePaths.value.find(elem => elem === currentRoutePath)) {
+        router.push(store.requireAuthRoute.value);
+    }
+}
+
 const authenticate = async (username, password, url) => {
-    // state.isLoading = true;
-    // state.error = null;
 
     const { data, error } = await doRequest({
         url,
@@ -192,26 +188,57 @@ const authenticate = async (username, password, url) => {
         },
     });
 
-    // if (error) {
-    //     state.error = error;
-    //     state.isLoading = false;
-    //     return;
-    // }
-
-    // const { tokens } = data;
-
-    storeTokens('tokens.idToken_'  + username, 'tokens.refreshToken');
-
-    //const tokenClaims = getTokenPayload(tokens.idToken);
-
-    // set tokens to local storage with expiry (separate function)
-    // state.idToken = 'tokens.idToken_' + username;
-    //state.currentUser = tokenClaims.user;
-    // state.currentUser = username;
-    // state.isLoading = false;
-
     return {
         data,
         error
     }
 };
+
+const removeTokens = () => {
+    localStorage.removeItem("accessToken");
+    localStorage.removeItem("refreshToken");
+    localStorage.removeItem("userName");
+};
+
+const isTokenValid = (token) => {
+
+    if (!token) {
+        return false;
+    }
+
+    const payload = jwt_decode(token);
+
+    if (Date.now() / 1000 >= payload.exp) {
+        return false;
+    }
+
+    return true;
+};
+
+export const getNewAccessToken = async () => {
+
+    const store = storeToRefs(useAuthStore());
+    const router = useRouter();
+
+    const { data, status, error } = await doRequest({
+        url: '/api/user/tokens',
+        method: 'POST',
+        data: {
+            accessToken: store.accessToken.value,
+            refreshToken: store.refreshToken.value,
+        },
+    }, false);
+
+    if (error) {
+        store.accessToken.value = store.refreshToken = store.userName = null;
+        removeTokens();
+        router.push(store.requireAuthRoute.value);
+        return false;
+    } else {
+        const { accessToken, refreshToken } = data.tokens;
+        store.accessToken.value = accessToken.signedString;
+        store.refreshToken = refreshToken.signedString;
+    }
+
+    return true;
+}

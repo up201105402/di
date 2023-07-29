@@ -25,6 +25,10 @@ const props = defineProps({
     type: String,
     default: null,
   },
+  download: {
+    type: Boolean,
+    default: false,
+  },
   to: {
     type: [String, Object],
     default: null,
@@ -41,12 +45,21 @@ const props = defineProps({
     type: String,
     default: null,
   },
+  targetId: {
+    type: Number,
+  },
   small: Boolean,
   outline: Boolean,
   active: Boolean,
   disabled: Boolean,
   roundedFull: Boolean,
 });
+
+const emit = defineEmits(["clicked"]);
+
+const clicked = () => {
+  emit("clicked", props.targetId);
+};
 
 const is = computed(() => {
   if (props.as) {
@@ -109,15 +122,13 @@ const componentClass = computed(() => {
 </script>
 
 <template>
-  <component
-    :is="is"
-    :class="componentClass"
-    :href="href"
-    :type="computedType"
-    :to="to"
-    :target="target"
-    :disabled="disabled"
-  >
+  <component v-if="download" :is="is" :class="componentClass" :href="href" :type="computedType" :to="to" :target="target" download
+    :disabled="disabled" @click="clicked">
+    <BaseIcon v-if="icon" :path="icon" :size="iconSize" />
+    <span v-if="label" :class="labelClass">{{ label }}</span>
+  </component>
+  <component v-else :is="is" :class="componentClass" :href="href" :type="computedType" :to="to" :target="target"
+    :disabled="disabled" @click="clicked">
     <BaseIcon v-if="icon" :path="icon" :size="iconSize" />
     <span v-if="label" :class="labelClass">{{ label }}</span>
   </component>

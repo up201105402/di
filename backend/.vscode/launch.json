@@ -1,0 +1,61 @@
+{
+    // Use IntelliSense to learn about possible attributes.
+    // Hover to view descriptions of existing attributes.
+    // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "Python: Dynamic Import",
+            "type": "python",
+            "request": "launch",
+            "program": "/usr/src/di/dynamic_import.py",
+            "console": "integratedTerminal",
+            "justMyCode": true,
+            "args": [
+                "--src", 
+                "/usr/src/di/hitl/"
+            ]
+        },
+        {
+            "name": "Python: Current File",
+            "type": "python",
+            "request": "launch",
+            "program": "${file}",
+            "console": "integratedTerminal",
+            "justMyCode": true,
+            "args": [
+                "--model",
+                "leastSquares",
+                "--train_data_path",
+                "/usr/src/di/work/pipelines/1/22/filtered_training_data.csv",
+                "--train_target_path",
+                "/usr/src/di/work/pipelines/1/22/filtered_training_target.csv",
+                "--testing_data_path",
+                "/usr/src/di/work/pipelines/1/22/filtered_testing_data.csv",
+            ]
+        },
+        {
+            "name": "Launch file",
+            "type": "go",
+            "request": "launch",
+            "mode": "debug",
+            "program": "main.go",
+            "env": {
+                "WEB_SERVER_PORT": "8001",
+                "POSTGRES_PORT": "5432",
+                "REDIS_HOST": "redis",
+                "REDIS_PORT": "6379",
+                "TOKEN_REFRESH_SECRET": "areallynotsuperg00ds33cret",
+                "ID_TOKEN_DURATION": "3600",
+                "REFRESH_TOKEN_DURATION": "259200",
+                "PIPELINES_WORK_DIR": "/usr/src/di/work/pipelines",
+                "FILE_UPLOAD_DIR": "/usr/src/di/uploads/",
+                "RUN_LOGS_DIR": "/usr/src/di/logs",
+                "RUN_LOG_FILE_NAME": "run.log",
+                "SCIKIT_SNIPPETS_DIR": "/usr/src/di/backend/scikit/python",
+                "SCIKIT_VERSION": "1.2.2",
+                "HITL_DIR": "/usr/src/di/hitl",
+            }
+        },
+    ]
+}

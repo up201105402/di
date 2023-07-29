@@ -1,15 +1,9 @@
 import {
-  mdiMenu,
-  mdiClockOutline,
-  mdiCloud,
-  mdiCrop,
   mdiAccount,
   mdiCogOutline,
   mdiEmail,
   mdiLogout,
   mdiThemeLightDark,
-  mdiGithub,
-  mdiReact,
 } from "@mdi/js";
 import { useAuthStore } from '@/stores/auth'
 
@@ -43,14 +37,14 @@ export default [
         label: "My Profile",
         to: "/profile",
       },
-      {
-        icon: mdiCogOutline,
-        label: "Settings",
-      },
-      {
-        icon: mdiEmail,
-        label: "Messages",
-      },
+      // {
+      //   icon: mdiCogOutline,
+      //   label: "Settings",
+      // },
+      // {
+      //   icon: mdiEmail,
+      //   label: "Messages",
+      // },
       {
         isDivider: true,
       },
@@ -58,8 +52,8 @@ export default [
         icon: mdiLogout,
         label: "Log Out",
         isLogout: true,
-        handler: function () {
-          useAuthStore().signOut();
+        handler: function (router) {
+          useAuthStore().signOut(router, '/login');
         }
       },
     ],
@@ -75,5 +69,8 @@ export default [
     label: "Log out",
     isDesktopNoLabel: true,
     isLogout: true,
+    handler: function (router) {
+      useAuthStore().signOut(router, '/login');
+    }
   },
 ];

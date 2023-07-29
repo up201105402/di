@@ -1,0 +1,319 @@
+#
+# General
+#
+[unknown]
+one = "Unknown error"
+
+#
+# Environment
+#
+[env.variable.find.failed]
+one = "{{.Name}} is not defined!"
+
+#
+# Parsing, Binding
+#
+[sys.parsing.string.uint]
+one = "Failed to parse string to uint. Reason: {{.Reason}}"
+
+[sys.binding.req]
+one = "Failed to bind request. Reason: {{.Reason}}"
+
+#
+# Auth
+#
+[auth.header.authorization.empty]
+one = "Authorization header with format `{token}` is missing"
+
+#
+# OS interaction
+#
+[os.cmd.create.file.failed]
+one = "Error creating file {{.Path}}. Reason: {{.Reason}}"
+
+[os.cmd.read.file.failed]
+one = "Error reading file {{.Path}}. Reason: {{.Reason}}"
+
+[os.cmd.read.dir.failed]
+one = "Error reading directory {{.Path}}. Reason: {{.Reason}}"
+
+[os.cmd.copy.dir.failed]
+one = "Error reading directory {{.Path}}. Reason: {{.Reason}}"
+
+[os.cmd.rm.file.failed]
+one = "Error removing file {{.Path}}. Reason: {{.Reason}}"
+other = "Error removing files from {{.Path}}. Reason: {{.Reason}}"
+
+[os.cmd.mkdir.dir.failed]
+one = "Error creating directory {{.Path}}. Reason: {{.Reason}}"
+
+#
+# Users
+#
+[user.repository.find.user.id.failed]
+one = "Failed to get user with id {{.ID}}. Reason: {{.Reason}}"
+
+[user.repository.find.user.username.failed]
+one = "Failed to get user with username: {{.Username}}. Reason: {{.Reason}}"
+
+[user.repository.create.user.failed]
+one = "Failed to create user. Reason: {{.Reason}}"
+
+[user.repository.update.user.failed]
+one = "Failed to update user. Reason: {{.Reason}}"
+
+[user.service.user.signin.failed]
+one = "Failed to sign in. Reason: {{.Reason}}"
+
+[user.service.user.signin.password.failed]
+one = "Failed to sign in. Wrong password."
+
+[user.handler.edit.password.old.failed]
+one = "Old password is not correct!"
+
+#
+# Tokens
+#
+[token.service.id-token.generate.failed]
+one = "Error generating idToken for uid: {{.UID}}. Reason: {{.Reason}}"
+
+[token.service.refresh-token.generate.failed]
+one = "Error generating refreshToken for uid: {{.UID}}. Reason: {{.Reason}}"
+
+[token.service.id-token.store.failed]
+one = "Error storing idToken for uid: {{.UID}}. Reason: {{.Reason}}"
+
+[token.service.id-token.validate.failed]
+one = "Error validating idToken. Reason: {{.Reason}}"
+
+[token.service.refresh-token.validate.failed]
+one = "Error validating refreshToken. Reason: {{.Reason}}"
+
+[token.service.claims.parse.failed]
+one = "Error parsing Claims. Reason: {{.Reason}}"
+
+#
+# Pipelines
+#
+[pipeline.repository.find.pipeline.id.failed]
+one = "Failed to get pipeline with id {{.ID}}. Reason: {{.Reason}}"
+
+[pipeline.repository.find.schedule.id.failed]
+one = "Failed to get pipeline schedule with id {{.ID}}. Reason: {{.Reason}}"
+
+[pipeline.repository.find.schedule.all.failed]
+one = "Failed to get all pipeline schedules. Reason: {{.Reason}}"
+
+[pipeline.repository.find.pipeline.owner.failed]
+one = "Failed to get pipelines with username {{.OwnerID}}. Reason: {{.Reason}}"
+
+[pipeline.repository.find.schedule.pipelineID.failed]
+one = "Failed to get schedules for pipeline with id {{.ID}}. Reason: {{.Reason}}"
+
+[pipeline.repository.create.pipeline.failed]
+one = "Failed to create pipeline. Reason: {{.Reason}}"
+
+[pipeline.repository.update.pipeline.failed]
+one = "Failed to update pipeline with id {{.ID}}. Reason: {{.Reason}}"
+
+[pipeline.repository.create.schedule.failed]
+one = "Failed to create pipeline schedule. Reason: {{.Reason}}"
+
+[pipeline.repository.delete.pipeline.failed]
+one = "Failed to delete pipeline with id {{.ID}}. Reason: {{.Reason}}"
+
+[pipeline.repository.delete.schedule.failed]
+one = "Failed to delete pipeline schedule with id {{.ID}}. Reason: {{.Reason}}"
+
+#
+# Datasets
+#
+[dataset.repository.find.dataset.id.failed]
+one = "Failed to get dataset with id {{.ID}}. Reason: {{.Reason}}"
+
+[dataset.repository.find.scripts.id.failed]
+one = "Failed to get dataset scripts with id {{.ID}}. Reason: {{.Reason}}"
+
+[dataset.repository.find.dataset.owner.failed]
+one = "Failed to get dataset with username {{.OwnerID}}. Reason: {{.Reason}}"
+
+[dataset.repository.create.dataset.failed]
+one = "Failed to create dataset. Reason: {{.Reason}}"
+
+[dataset.repository.update.dataset.failed]
+one = "Failed to update dataset with id {{.ID}}. Reason: {{.Reason}}"
+
+[dataset.repository.delete.dataset.failed]
+one = "Failed to delete dataset with id {{.ID}}. Reason: {{.Reason}}"
+
+#
+# Trainers
+#
+[trainer.repository.find.trainer.id.failed]
+one = "Failed to get trainer with id {{.ID}}. Reason: {{.Reason}}"
+
+[trainer.repository.find.scripts.id.failed]
+one = "Failed to get trainer scripts with id {{.ID}}. Reason: {{.Reason}}"
+
+[trainer.repository.find.trainer.owner.failed]
+one = "Failed to get trainer with username {{.OwnerID}}. Reason: {{.Reason}}"
+
+[trainer.repository.create.trainer.failed]
+one = "Failed to create trainer. Reason: {{.Reason}}"
+
+[trainer.repository.update.trainer.failed]
+one = "Failed to update trainer with id {{.ID}}. Reason: {{.Reason}}"
+
+[trainer.repository.delete.trainer.failed]
+one = "Failed to delete trainer with id {{.ID}}. Reason: {{.Reason}}"
+
+#
+# Testers
+#
+[tester.repository.find.tester.id.failed]
+one = "Failed to get tester with id {{.ID}}. Reason: {{.Reason}}"
+
+[tester.repository.find.scripts.id.failed]
+one = "Failed to get tester scripts with id {{.ID}}. Reason: {{.Reason}}"
+
+[tester.repository.find.tester.owner.failed]
+one = "Failed to get tester with username {{.OwnerID}}. Reason: {{.Reason}}"
+
+[tester.repository.create.tester.failed]
+one = "Failed to create tester. Reason: {{.Reason}}"
+
+[tester.repository.update.tester.failed]
+one = "Failed to update tester with id {{.ID}}. Reason: {{.Reason}}"
+
+[tester.repository.delete.tester.failed]
+one = "Failed to delete tester with id {{.ID}}. Reason: {{.Reason}}"
+
+#
+# Trained models
+#
+[trained.repository.find.trained.id.failed]
+one = "Failed to get trained with id {{.ID}}. Reason: {{.Reason}}"
+
+[trained.repository.find.scripts.id.failed]
+one = "Failed to get trained scripts with id {{.ID}}. Reason: {{.Reason}}"
+
+[trained.repository.find.trained.owner.failed]
+one = "Failed to get trained with username {{.OwnerID}}. Reason: {{.Reason}}"
+
+[trained.repository.create.trained.failed]
+one = "Failed to create trained. Reason: {{.Reason}}"
+
+[trained.repository.update.trained.failed]
+one = "Failed to update trained with id {{.ID}}. Reason: {{.Reason}}"
+
+[trained.repository.delete.trained.failed]
+one = "Failed to delete trained with id {{.ID}}. Reason: {{.Reason}}"
+
+#
+# Runs
+#
+[run.repository.find.run.id.failed]
+one = "Failed to get run with id {{.ID}}. Reason: {{.Reason}}"
+
+[run.repository.find.run.pipeline.failed]
+one = "Failed to get runs for pipeline with id {{.ID}}. Reason: {{.Reason}}"
+
+[run.repository.find.step-status.run.failed]
+one = "Failed to get run step statuses for run with id {{.ID}}. Reason: {{.Reason}}"
+
+[run.repository.find.human-feedback-query.step.failed]
+one = "Failed to get human feedback queries for run step with id {{.ID}}. Reason: {{.Reason}}"
+
+[run.repository.find.human-feedback-query.run.failed]
+one = "Failed to get human feedback queries for run with id {{.ID}}. Reason: {{.Reason}}"
+
+[run.repository.find.query-status.failed]
+one = "Failed to get human feedback query status with id {{.ID}}. Reason: {{.Reason}}"
+
+[run.repository.find.human-feedback-rects.feedback-query.failed]
+one = "Failed to get human feedback query rectangles for humand feedback query with id {{.ID}}. Reason: {{.Reason}}"
+
+[run.repository.create.run.failed]
+one = "Failed to create run. Reason: {{.Reason}}"
+
+[run.repository.create.step-status.failed]
+one = "Failed to create run step status. Reason: {{.Reason}}"
+
+[run.repository.create.human-feedback-query.failed]
+one = "Failed to create human feedback query. Reason: {{.Reason}}"
+
+[run.repository.create.human-feedback-rect.failed]
+one = "Failed to create human feedback rectangle. Reason: {{.Reason}}"
+
+[run.repository.update.run.failed]
+one = "Failed to update run with id {{.ID}}. Reason: {{.Reason}}"
+
+[run.repository.update.step-status.failed]
+one = "Failed to update run step status with id {{.ID}}. Reason: {{.Reason}}"
+
+[run.repository.update.human-feedback-query.failed]
+one = "Failed to update human feedback query with id {{.ID}}. Reason: {{.Reason}}"
+
+[run.repository.update.human-feedback-rects.failed]
+one = "Failed to update human feedback rectangles for query with id {{.ID}}. Reason: {{.Reason}}"
+
+[run.repository.delete.run.failed]
+one = "Failed to delete run with id {{.ID}}. Reason: {{.Reason}}"
+
+[run.repository.delete.step-status.id.failed]
+one = "Failed to delete pipeline with id {{.ID}}. Reason: {{.Reason}}"
+
+[run.repository.delete.human-feedback-queries.run.failed]
+one = "Failed to delete human feedback queries for run with id {{.ID}}. Reason: {{.Reason}}"
+
+[run.repository.delete.step-status.all.failed]
+one = "Failed to delete run step statuses for run with id {{.ID}}. Reason: {{.Reason}}"
+
+[run.service.execute.run.failed]
+one = "Failed to execute run with id {{.ID}}. Reason: {{.Reason}}"
+
+[run.service.execute.demarshal.error]
+one = "Unable to unmarshal run {{.ID}} definition. Reason {{.Reason}}"
+
+[run.service.execute.run.success]
+one = "Run with id {{.ID}} executed with success."
+
+[run.service.execute.step.failed]
+one = "Failed to execute step with id {{.ID}}. Reason: {{.Reason}}"
+
+[run.service.execute.step.success]
+one = "Step with id {{.ID}} executed with success."
+
+[run.handler.feedback.status.error]
+one = "The Run with id {{.ID}} is not Waiting for Feedback."
+
+[run.service.resume.status.error]
+one = "The Run with id {{.ID}} is not Waiting for Feedback."
+
+[run.service.resume.queries-not-submitted.error]
+one = "The Run with id {{.ID}} has queries not submitted yet."
+
+[run.service.resume.steps.status.error]
+one = "The Run with id {{.ID}} has no steps Waiting for Feedback."
+
+[run.handler.feedback.find.fail]
+one = "Failed to get human feedback queries for step with {{.ID}}. Reason {{.Reason}}"
+
+[run.handler.feedback.image.fail]
+one = "Could not locate image for query {{.QueryID}}, epoch {{.Epoch}}, step id {{.StepID}}. Reason {{.Reason}}"
+
+#
+# Pipeline Steps
+#
+[steps.service.step.new-instance.failed]
+one = "Failed to create new step of type {{.Type}}. Step Type not found."
+
+[steps.service.edge.new-instance.failed]
+one = "Failed to create new step of type {{.Type}}. Step Type not found."
+
+
+#
+# Tasks
+#
+[tasks.client.enqueue.failed]
+one = "Failed to enqueue task into {{.Queue}} queue. Reason: {{.Reason}}"

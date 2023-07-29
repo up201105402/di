@@ -5,11 +5,39 @@
     "version": "0.2.0",
     "configurations": [
         {
+            "name": "Python: Current File",
+            "type": "python",
+            "request": "launch",
+            "program": "${file}",
+            "console": "integratedTerminal",
+            "justMyCode": true,
+            "args": [
+                "-f1", "backend/scikit/python/datasets/data.csv",
+                "-f2", "backend/scikit/python/datasets/target.csv",
+                "-d", "backend/scikit/python/datasets/filtered_data.csv",
+                "-t", "backend/scikit/python/datasets/filtered_target.csv",
+                "-l1", "0",
+                "-u1", "100",
+                "-l2", "0",
+                "-u2", "100"
+            ]
+        },
+        {
             "name": "Launch file",
             "type": "go",
             "request": "launch",
             "mode": "debug",
-            "program": "backend/main.go"
+            "program": "backend/main.go",
+            "env": {
+                "POSTGRES_PORT": "5432",
+                "REDIS_HOST": "redis",
+                "REDIS_PORT": "6379",
+                "TOKEN_REFRESH_SECRET": "areallynotsuperg00ds33cret",
+                "ID_TOKEN_DURATION": "900",
+                "REFRESH_TOKEN_DURATION": "259200",
+                "PIPELINES_WORK_DIR": "/usr/src/di/work/pipelines",
+                "SCIKIT_VERSION": "1.2.2",
+            }
         }
     ]
 }

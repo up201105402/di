@@ -1,61 +1,46 @@
 import {
-  mdiMonitor,
+  mdiChartTimelineVariant,
   mdiRun,
+  mdiDataMatrix,
+  mdiCodeBraces,
   mdiAccount
 } from "@mdi/js";
+import { i18n } from '@/i18n';
+
+const { t } = i18n.global;
 
 export default [
-  // {
-  //   to: "/dashboard",
-  //   icon: mdiMonitor,
-  //   label: "Dashboard",
-  // },
   {
     to: "/pipelines",
-    icon: mdiMonitor,
-    label: "Pipelines",
+    icon: mdiChartTimelineVariant,
+    label: t('pages.pipelines.name'),
   },
   {
     to: "/runs",
     icon: mdiRun,
-    label: "Runs",
+    label: t('pages.runs.name'),
+  },
+  {
+    to: "/datasets",
+    icon: mdiDataMatrix,
+    label: t('pages.datasets.name'),
+  },
+  {
+    to: "/trainers",
+    icon: mdiCodeBraces,
+    label: t('pages.trainers.name'),
+  },
+  {
+    to: "/trained",
+    icon: mdiCodeBraces,
+    label: t('pages.trained.name'),
   },
   {
     to: "/profile",
     icon: mdiAccount,
-    label: "Profile",
+    label: t('pages.profile.name'),
   },
   /*
-  {
-    to: "/tables",
-    label: "Tables",
-    icon: mdiTable,
-  },
-  {
-    to: "/forms",
-    label: "Forms",
-    icon: mdiSquareEditOutline,
-  },
-  {
-    to: "/ui",
-    label: "UI",
-    icon: mdiTelevisionGuide,
-  },
-  {
-    to: "/",
-    label: "Styles",
-    icon: mdiPalette,
-  },
-  {
-    to: "/profile",
-    label: "Profile",
-    icon: mdiAccountCircle,
-  },
-  {
-    to: "/error",
-    label: "Error",
-    icon: mdiAlertCircle,
-  },
   {
     label: "Dropdown",
     icon: mdiViewList,

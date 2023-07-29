@@ -12,11 +12,14 @@ import NavBar from "@/components/NavBar.vue";
 import NavBarItemPlain from "@/components/NavBarItemPlain.vue";
 import AsideMenu from "@/components/AsideMenu.vue";
 import FooterBar from "@/components/FooterBar.vue";
+import Loading from "vue-loading-overlay";
+import { storeToRefs } from "pinia";
 
 const layoutAsidePadding = "xl:pl-60";
 
 const styleStore = useStyleStore();
 
+const { isLoading } = storeToRefs(useAuthStore());
 const router = useRouter();
 
 const isAsideMobileExpanded = ref(false);
@@ -33,7 +36,7 @@ const menuClick = (event, item) => {
   }
 
   if (item.handler) {
-    item.handler();
+    item.handler(router);
   }
 };
 </script>
@@ -45,6 +48,7 @@ const menuClick = (event, item) => {
       'overflow-hidden lg:overflow-visible': isAsideMobileExpanded,
     }"
   >
+    <loading v-model:active="isLoading" :is-full-page="false" />
     <div
       :class="[layoutAsidePadding, { 'ml-60 lg:ml-0': isAsideMobileExpanded }]"
       class="pt-14 min-h-screen w-screen transition-position lg:w-auto bg-gray-50 dark:bg-slate-800 dark:text-slate-100"

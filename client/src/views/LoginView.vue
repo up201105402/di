@@ -1,5 +1,6 @@
 <script setup>
-  import { reactive, computed } from "vue";
+  import { ref, reactive, computed } from "vue";
+  import { storeToRefs } from "pinia";
   import { useRouter } from "vue-router";
   import { mdiAccount, mdiAsterisk, mdiClose } from "@mdi/js";
   import SectionFullScreen from "@/components/SectionFullScreen.vue";
@@ -11,13 +12,13 @@
   import BaseButton from "@/components/BaseButton.vue";
   import BaseButtons from "@/components/BaseButtons.vue";
   import LayoutGuest from "@/layouts/LayoutGuest.vue";
+  import SectionTitle from "@/components/SectionTitle.vue";
   import CardBoxComponentTitle from "@/components/CardBoxComponentTitle.vue";
   import ErrorModal from '@/components/ErrorModal.vue';
-  import { storeToRefs } from "pinia";
-
   import { useAuthStore } from '@/stores/auth.js';
+  import Loading from "vue-loading-overlay";
 
-  const { error } = storeToRefs(useAuthStore());
+  const { error, isLoading } = storeToRefs(useAuthStore());
 
   const form = reactive({
     username: "",
@@ -33,7 +34,7 @@
   const router = useRouter();
 
   const signInAndRedirect = () => {
-    useAuthStore().signIn(form.username, form.password, router, '/pipelines');
+    useAuthStore().logIn(form.username, form.password, router, '/pipelines');
   };
 
   const acknowledge = () => {
@@ -50,6 +51,7 @@
 
 <template>
   <LayoutGuest>
+    <loading v-model:active="isLoading" :is-full-page="false" />
     <SectionFullScreen v-slot="{ cardClass }" bg="purplePink">
       <CardBox :class="cardClass" is-form @submit.prevent="signInAndRedirect">
         <SectionTitle>{{ $t('pages.login.name') }}</SectionTitle>

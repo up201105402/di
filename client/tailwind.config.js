@@ -3,7 +3,10 @@
 const plugin = require("tailwindcss/plugin");
 
 module.exports = {
-  content: ["./index.html", "./src/**/*.{vue,js,ts,jsx,tsx}"],
+  content: ["./index.html", "./src/**/*.{vue,js,ts,jsx,tsx}",
+    './vueform.config.js', // or where `vueform.config.js` is located
+    './node_modules/@vueform/vueform/themes/tailwind/**/*.vue',
+    './node_modules/@vueform/vueform/themes/tailwind/**/*.js',],
   darkMode: "class", // or 'media' or 'class'
   theme: {
     asideScrollbars: {
@@ -43,6 +46,7 @@ module.exports = {
   },
   plugins: [
     require("@tailwindcss/forms"),
+    require('@vueform/vueform/tailwind'),
     plugin(function ({ matchUtilities, theme }) {
       matchUtilities(
         {

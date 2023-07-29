@@ -1,36 +1,31 @@
 import { createApp } from 'vue';
-import { createPinia } from "pinia";
-import { createI18n } from 'vue-i18n';
-import { useMainStore } from './stores/main';
-import { messages } from './i18n';
-import App from './App.vue';
+import { createPinia  } from "pinia";
+import { i18n } from '@/i18n';
+import App from '@/App.vue';
 
-import router from "./router";
+import router from "@/router";
 import { useAuthStore } from "@/stores/auth";
-import { usePipelinesStore } from "@/stores/pipelines";
 import { useStyleStore } from "@/stores/style.js";
 import { darkModeKey, styleKey } from "@/config.js";
-import './css/main.css';
+import '@/css/main.css';
 
-const i18n = createI18n({
-  legacy: false, // you must set `false`, to use Composition API
-  locale: 'en', // set locale
-  fallbackLocale: 'en', // set fallback locale
-  messages
-})
+import { plugin as formKitPlugin } from '@formkit/vue';
+import formkitConfig from './../formkit.config'
+import '@formkit/themes/genesis'
+import '@formkit/addons/css/multistep'
+
+// PrimeVue
+import PrimeVue from 'primevue/config';
+import ToastService from 'primevue/toastservice';
+//theme
+import "primevue/resources/themes/lara-light-indigo/theme.css";     
+//core
+import "primevue/resources/primevue.min.css";
 
 /* Init Pinia */
 const pinia = createPinia();
-
-const mainStore = useMainStore(pinia);
 const authStore = useAuthStore(pinia);
-const pipelinesStore = usePipelinesStore(pinia);
 const styleStore = useStyleStore(pinia);
-
-/* Fetch sample data */
-mainStore.fetch("clients");
-mainStore.fetch("history");
-pipelinesStore.fetch("pipelines");
 
 /* App style */
 styleStore.setStyle(localStorage[styleKey] ?? "basic");
@@ -54,5 +49,11 @@ router.afterEach((to) => {
     : defaultDocumentTitle;
 });
 
-const spa = createApp(App).use(authStore).use(router).use(i18n);
+const spa = createApp(App);
+spa.use(authStore);
+spa.use(router);
+spa.use(i18n);
+spa.use(PrimeVue);
+spa.use(ToastService);
+spa.use(formKitPlugin, formkitConfig);
 spa.mount('#app')

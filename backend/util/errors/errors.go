@@ -102,18 +102,18 @@ func NewConflict(name string, value string) *Error {
 }
 
 // NewInternal for 500 errors and unknown errors
-func NewInternal() *Error {
+func NewInternal(message string) *Error {
 	return &Error{
 		Type:    Internal,
-		Message: "Internal server error.",
+		Message: message,
 	}
 }
 
 // NewNotFound to create an error for 404
-func NewNotFound(name string, value string) *Error {
+func NewNotFound(message string) *Error {
 	return &Error{
 		Type:    NotFound,
-		Message: fmt.Sprintf("resource: %v with value: %v not found", name, value),
+		Message: message,
 	}
 }
 

@@ -1,13 +1,35 @@
 <script setup>
-    import { Panel, PanelPosition, VueFlow, isNode, useVueFlow } from '@vue-flow/core'
-    import { Background } from '@vue-flow/background'
-    import { Controls } from '@vue-flow/controls'
-    import { MiniMap } from '@vue-flow/minimap'
-    import { ref, reactive } from 'vue'
-    import { initialElements } from '@/flowChart.js'
-    import CardBoxModal from '@/components/CardBoxModal.vue'
-    import FormControl from "@/components/FormControl.vue"
-    import FormField from "@/components/FormField.vue"
+    import { Panel, PanelPosition, VueFlow, isNode, useVueFlow } from '@vue-flow/core';
+    import { Background } from '@vue-flow/background';
+    import { Controls } from '@vue-flow/controls';
+    import { MiniMap } from '@vue-flow/minimap';
+    import { ref, reactive, computed } from 'vue';
+    import CardBoxModal from '@/components/CardBoxModal.vue';
+    import FormControl from "@/components/FormControl.vue";
+    import FormField from "@/components/FormField.vue";
+    import UpsertStepDialog from '@/components/UpsertStepDialog.vue';
+    import { nodeTypes } from "@/pipelines/steps";
+    import deepEqual from 'deep-equal';
+
+    const props = defineProps({
+        modelValue: {
+            type: Object,
+            default: null,
+        },
+    });
+
+    const emit = defineEmits(["onUpdate", "onStepEdited"]);
+    const elements = computed({
+        get: () => props.modelValue,
+        set: (value) => {
+            console.error("set elements");
+            emit("onUpdate", value);
+        }
+    });
+    const stepData = ref({});
+    
+    const isEditStepModalActive = ref(false);
+    let editStepNodeId = null;
 
     /**
      * useVueFlow provides all event handlers and store properties
@@ -15,37 +37,44 @@
      */
     const { onPaneReady, onNodeDragStop, onConnect, addEdges, setTransform, toObject } = useVueFlow()
 
-    const isNodeModalActive = ref(false);
-
-    /**
-     * Our elements
-     */
-    const elements = ref(initialElements)
-
-    const form = reactive({
-        username: "",
-        password: "",
-        remember: true,
-    });
-
     /**
      * This is a Vue Flow event-hook which can be listened to from anywhere you call the composable, instead of only on the main component
      *
      * onPaneReady is called when viewpane & nodes have visible dimensions
      */
     onPaneReady(({ fitView }) => {
-        fitView()
+        fitView();
     })
 
-    onNodeDragStop((e) => console.log('drag stop', e));
+    // onNodeDragStop((e) => console.log('drag stop', e));
 
-    const onNodeDoubleClick = (e) => isNodeModalActive.value = !isNodeModalActive.value;
+    const onNodeDoubleClick = (e) => {
+        isEditStepModalActive.value = true;
+        editStepNodeId = e.node.id;
+        stepData.value = { ...e.node.data };
+    }
+
+    const onStepEdited = (step) => {
+        isEditStepModalActive.value = false;
+        const index = elements.value.findIndex(element => element.id === step.id);
+        const oldStepData = elements.value[index].data;
+        const newStepData = { ...step.data };
+        if (!deepEqual(oldStepData, newStepData)) {
+            emit("onStepEdited", step);
+        }
+    }
+
+    const onEdgeUpdate = (edge) => emit("onUpdate", elements.value);
 
     /**
      * onConnect is called when a new connection is created.
      * You can add additional properties to your new edge (like a type or label) or block the creation altogether
      */
-    onConnect((params) => addEdges([params]))
+    onConnect((edge) => {
+        edge.updatable = true;
+        addEdges([edge]);
+        emit("onUpdate", elements.value);
+    })
 
     const dark = ref(false)
 
@@ -84,8 +113,9 @@
 </script>
 
 <template>
-    <VueFlow v-model="elements" :class="{ dark }" class="basicflow" @nodeDoubleClick="onNodeDoubleClick"
-        :default-viewport="{ zoom: 1.5 }" :min-zoom="0.2" :max-zoom="4">
+    <VueFlow v-model="elements" :class="{ dark }" class="basicflow" :node-types="nodeTypes"
+        @nodeDoubleClick="onNodeDoubleClick" @edge-update="onEdgeUpdate" :default-viewport="{ zoom: 1.5 }"
+        :min-zoom="0.2" :max-zoom="4">
         <Background :pattern-color="dark ? '#FFFFFB' : '#aaa'" gap="8" />
         <MiniMap />
         <Controls />
@@ -131,13 +161,8 @@
         </Panel>
     </VueFlow>
 
-    <CardBoxModal v-model="isNodeModalActive" title="Please confirm" button="success" has-cancel>
-        <FormField label="Username" help="Please enter your username">
-            <FormControl v-model="form.username" name="login" autocomplete="username" placeholder="Username" />
-        </FormField>
-
-        <FormField label="Password" help="Please enter your password">
-            <FormControl v-model="form.password" type="password" name="password" autocomplete="current-password" placeholder="Password" />
-        </FormField>
+    <CardBoxModal v-model="isEditStepModalActive" title="Please confirm" :has-submit="false" :has-cancel="false">
+        <UpsertStepDialog :key="'createStepDialog_' + count" :nodeId="editStepNodeId" :nodeData="stepData"
+            @onSubmit="onStepEdited" />
     </CardBoxModal>
 </template>

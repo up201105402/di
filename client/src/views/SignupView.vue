@@ -1,24 +1,23 @@
 <script setup>
-  import { reactive, computed } from "vue";
+  import { ref, reactive, computed } from "vue";
   import { useRouter } from "vue-router";
-  import { mdiAccount, mdiAsterisk, mdiClose } from "@mdi/js";
+  import { mdiAccount, mdiAsterisk } from "@mdi/js";
   import SectionFullScreen from "@/components/SectionFullScreen.vue";
   import CardBox from "@/components/CardBox.vue";
-  import OverlayLayer from "@/components/OverlayLayer.vue";
-  import FormCheckRadio from "@/components/FormCheckRadio.vue";
   import FormField from "@/components/FormField.vue";
   import FormControl from "@/components/FormControl.vue";
   import BaseButton from "@/components/BaseButton.vue";
   import BaseButtons from "@/components/BaseButtons.vue";
   import LayoutGuest from "@/layouts/LayoutGuest.vue";
   import SectionTitle from "@/components/SectionTitle.vue";
-  import CardBoxComponentTitle from "@/components/CardBoxComponentTitle.vue";
   import ErrorModal from '@/components/ErrorModal.vue';
   import { storeToRefs } from "pinia";
+  import Loading from "vue-loading-overlay";
 
   import { useAuthStore } from '@/stores/auth.js';
 
-  const { error, userName } = storeToRefs(useAuthStore());
+  const { error, isLoading, userName } = storeToRefs(useAuthStore());
+  const router = useRouter();
 
   const form = reactive({
     username: "",
@@ -31,12 +30,7 @@
     set: (value) => !value ? error.value = null : error.value = error.value,
   })
 
-  const router = useRouter();
-
   const signUpAndRedirect = () => {
-    if (userName != null) {
-      useAuthStore().signOut();
-    }
     useAuthStore().signUp(form.username, form.password, router, '/pipelines');
   };
 
@@ -54,6 +48,7 @@
 
 <template>
   <LayoutGuest>
+    <loading v-model:active="isLoading" :is-full-page="false" />
     <SectionFullScreen v-slot="{ cardClass }" bg="purplePink">
       <CardBox :class="cardClass" is-form @submit.prevent="signUpAndRedirect">
         <SectionTitle>{{ $t('pages.signup.name') }}</SectionTitle>
@@ -68,12 +63,10 @@
             autocomplete="current-password" placeholder="Password" />
         </FormField>
 
-        <!-- <FormCheckRadio v-model="form.remember" name="remember" label="Remember" :input-value="true" /> -->
-
         <template #footer>
           <BaseButtons>
             <BaseButton type="submit" color="info" :label="$t('pages.signup.submit')" />
-            <BaseButton to="/dashboard" color="info" outline label="Cancel" />
+            <BaseButton to="/login" color="info" outline label="Cancel" />
           </BaseButtons>
         </template>
       </CardBox>

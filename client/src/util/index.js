@@ -1,107 +1,149 @@
 import axios from 'axios';
-import jwt_decode from 'jwt-decode';
-import { ref, onMounted } from 'vue';
+import moment from 'moment';
+import { i18n } from '@/i18n';
 
-// doRequest is a helper function for
-// handling axios responses - reqOptions follow axios req config
+const { t } = i18n.global;
+
 export const doRequest = async (reqOptions) => {
-    let error;
-    let data;
+  let status;
+  let error;
+  let data;
 
-    try {
-        const response = await axios.request(reqOptions);
-        data = response.data;
-    } catch (e) {
-        if (e.response) {
-            error = e.response.data.error;
-        } else if (e.request) {
-            error = e.request;
-        } else {
-            error = e;
-        }
+  try {
+    const response = await axios.request(reqOptions);
+    data = response.data;
+    status = response.status;
+  } catch (e) {
+    if (e.response) {
+      error = e.response.data.error;
+      status = e.response.status;
+    } else if (e.request) {
+      error = e.request;
+      status = e.request.status;
+    } else {
+      error = e;
+    }
+  }
+
+  return {
+    status,
+    data,
+    error,
+  };
+};
+
+export const cleanObject = (object) => {
+  Object.keys(object).forEach(key => {
+    if (object[key] == null) {
+      delete object[key];
+    }
+  });
+}
+
+export { customDelay, camel2title }
+
+const customDelay = () => {
+  return new Promise((resolve, reject) => {
+    setTimeout(() => {
+      resolve()
+    }, 500)
+  })
+}
+
+const camel2title = (str) => str
+  .replace(/([A-Z])/g, (match) => ` ${match}`)
+  .replace(/^./, (match) => match.toUpperCase())
+  .replace('C V', 'CV')
+  .replace('I C', 'IC')
+  .trim()
+
+export const removeDuplicates = (arr, uniqueProp) => {
+  const uniqueProps = [];
+
+  return arr.filter(element => {
+    const isDuplicate = uniqueProps.includes(element[uniqueProp]);
+
+    if (!isDuplicate) {
+      uniqueProps.push(element[uniqueProp]);
+
+      return true;
     }
 
-    return {
-        data,
-        error,
-    };
-};
+    return false;
+  });
 
-// request function to wrap the doRequest util method
-// this basically allows us to also add some state
-export const useRequest = (reqOptions, options) => {
-    const { execOnMounted } = options || {};
-    const error = ref(null);
-    const data = ref(null);
-    const loading = ref(false);
+}
 
-    // optional data param to merge into request options
-    const exec = async (reqData) => {
-        data.value = null;
-        loading.value = true;
-        error.value = null;
+export const formatDate = (date) => {
+  const m = moment(date);
 
-        if (reqData) {
-            reqOptions = {
-                ...reqOptions,
-                data: reqData,
-            };
-        }
+  if (!date || m.year() == 0) {
+    return "-"
+  }
+  
+  return moment(date).format('MMMM Do YYYY, h:mm:ss a');
+}
 
-        const resp = await doRequest(reqOptions);
+export const parsePipelineDefinition = (entity, toast) => {
+  try {
+    return JSON.parse(entity.definition)
+  } catch (e) {
+    if (entity.definition != "") {
+      toast.add({ severity: 'error', summary: t('global.errors.parsing.header'), detail: t('global.errors.parsing.detail'), life: 3000 });
+    }
+    return [];
+  }
+}
 
-        data.value = resp.data;
-        error.value = resp.error;
-        loading.value = false;
-    };
-
-    onMounted(() => {
-        if (execOnMounted) {
-            exec();
-        }
-    });
-
-    return {
-        exec,
-        error,
-        data,
-        loading,
-    };
-};
-
-const idTokenKey = '__malcorpId';
-const refreshTokenKey = '__malcorpRf';
-
-// storeTokens utility for storing idAndRefreshToken
-export const storeTokens = (idToken, refreshToken) => {
-    localStorage.setItem(idTokenKey, idToken);
-    localStorage.setItem(refreshTokenKey, refreshToken);
-};
-
-export const removeTokens = () => {
-    localStorage.removeItem(idTokenKey);
-    localStorage.removeItem(refreshTokenKey);
-};
-
-export const getTokens = () => {
-    return [
-        localStorage.getItem(idTokenKey),
-        localStorage.getItem(refreshTokenKey),
-    ];
-};
-
-// gets the token's payload, and returns null
-// if invalid
-export const getTokenPayload = (token) => {
-    if (!token) {
-        return null;
+export function validateCron(value) {
+    if (!value) {
+      return 'Cron expression is required!';
     }
 
-    const tokenClaims = jwt_decode(token);
-
-    if (Date.now() / 1000 >= tokenClaims.exp) {
-        return null;
+    if (!value.match('(@(annually|yearly|monthly|weekly|daily|hourly|reboot))|(@every (\\d+(ns|us|µs|ms|s|m|h))+)|((((\\d+,)+\\d+|(\\d+(\\/|-)\\d+)|\\d+|\\*) ?){5,7})')) {
+      return 'Cron expresion is not valid!';
     }
 
-    return tokenClaims;
+    return true;
 };
+
+export const deepFilterMenuBarSteps = (subject, key, value) => {
+  if (subject instanceof Array) {
+    return subject.map(elem => deepFilterMenuBarSteps(elem, key, value))
+                  .filter(elem => elem != null)[0];
+  }
+
+  if (subject[key] == value) {
+    return subject;
+  }
+
+  const items = subject['items'];
+
+  if (items && items.length) {
+    return items.map(item => deepFilterMenuBarSteps(item, key, value))
+                .filter(elem => elem != null)[0];
+  }
+
+  return null
+}
+
+export const i18nFromStepName = (stepName) => {
+  return t('pages.pipelines.edit.dialog.' + stepName + '.label');
+}
+
+export const getStatusTagSeverity = (statusID) => {
+  switch (statusID) {
+      case 1:
+          return "info";
+      case 2: 
+          return "info";
+      case 3: 
+          return "danger";
+      case 4:
+          return "success";
+      case 5:
+          return "warning";
+  }
+  
+  return "info";
+}

@@ -9,6 +9,25 @@
 
 @import '@vue-flow/core/dist/style.css';
 @import '@vue-flow/core/dist/theme-default.css';
+@import '@vue-flow/controls/dist/style.css';
+
+@import "@/css/formkit/multistep-form.css";
+
+.formkit-form {
+    max-width: none;
+    flex-shrink: 0;
+    margin-top: 1em;
+    margin-bottom: 1em;
+    background: #fff;
+    color: #000;
+    border: 1px solid var(--gray);
+    border-radius: 0.5em;
+    box-shadow: 0.25em 0.25em 1em 0 rgba(0, 0, 0, 0.1);
+}
+
+.formkit-wrapper {
+    max-width: none;
+}
 
 .vue-flow {
     margin: 0;
@@ -75,4 +94,96 @@
 .basicflow .controls button:hover {
     transform: scale(102%);
     transition: .25s all ease
+}
+
+.vue-flow__node {
+    border: 1px solid #777;
+    border-radius: 10px;
+    background: whitesmoke;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    align-items: center;
+    max-width: 250px
+}
+
+@-webkit-keyframes gradient {
+    0% {
+        background-position: 0% 22%
+    }
+
+    50% {
+        background-position: 100% 79%
+    }
+
+    to {
+        background-position: 0% 22%
+    }
+}
+
+@-moz-keyframes gradient {
+    0% {
+        background-position: 0% 22%
+    }
+
+    50% {
+        background-position: 100% 79%
+    }
+
+    to {
+        background-position: 0% 22%
+    }
+}
+
+@keyframes gradient {
+    0% {
+        background-position: 0% 22%
+    }
+
+    50% {
+        background-position: 100% 79%
+    }
+
+    to {
+        background-position: 0% 22%
+    }
+}
+
+.p-toast-message-content {
+    border: 0px;
+}
+
+.node-type {
+    text-transform: none;
+    color: blue;
+    border-bottom: 2px solid;
+}
+
+.node-id {
+    color: blue;
+    padding: 0 2px;
+    border-right: 2px solid;
+}
+
+.scikit-logo {
+    display: inline;
+}
+
+.node-type-label {
+    color: blue;
+    padding: 0 2px;
+}
+
+.node-config {
+    text-transform: none;
+}
+
+.node-description {
+    width: 100%;
+    padding: 0 5px;
+}
+
+.node-status-tag {
+    margin: 5px;
+    float: right;
 }

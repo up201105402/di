@@ -1,47 +1,123 @@
 import { createRouter, createWebHashHistory } from "vue-router";
-import Style from "@/views/StyleView.vue";
 import Home from "@/views/HomeView.vue";
 import Pipelines from "@/views/PipelinesView.vue";
+import Runs from "@/views/RunsView.vue";
+import PipelineRuns from "@/views/PipelineRunsView.vue";
 import PipelineEditor from "@/views/PipelineEditorView.vue";
+import RunResults from "@/views/RunResultsView.vue";
+import Feedback from "@/views/FeedbackView.vue";
+import SingleFeedback from "@/views/SingleQueryFeedbackView.vue";
+import Datasets from "@/views/DatasetsView.vue";
+import Trainers from "@/views/TrainersView.vue";
+import Trained from "@/views/TrainedView.vue";
 
 const routes = [
+  // {
+  //   meta: {
+  //     title: "Select style",
+  //   },
+  //   path: "/",
+  //   name: "style",
+  //   component: Style,
+  // },
   {
-    meta: {
-      title: "Select style",
-    },
-    path: "/",
-    name: "style",
-    component: Style,
-  },
-  {
-    // Document title tag
-    // We combine it with defaultDocumentTitle set in `src/main.js` on router.afterEach hook
     meta: {
       title: "Dashboard",
     },
     path: "/dashboard",
     name: "dashboard",
     component: Home,
+    private: true,
   },
   {
-    // Document title tag
-    // We combine it with defaultDocumentTitle set in `src/main.js` on router.afterEach hook
     meta: {
       title: "Pipelines",
     },
     path: "/pipelines",
     name: "pipelines",
     component: Pipelines,
+    private: true,
   },
   {
-    // Document title tag
-    // We combine it with defaultDocumentTitle set in `src/main.js` on router.afterEach hook
+    meta: {
+      title: "Runs",
+    },
+    path: "/runs",
+    name: "runs",
+    component: Runs,
+    private: true,
+  },
+  {
     meta: {
       title: "Pipeline Editor",
     },
-    path: "/pipeline/:id",
+    path: "/pipelines/edit/:id",
     name: "pipeline",
     component: PipelineEditor,
+    private: true,
+  },
+  {
+    meta: {
+      title: "Pipeline Runs",
+    },
+    path: "/pipelines/runs/:id",
+    name: "pipelineruns",
+    component: PipelineRuns,
+    private: true,
+  },
+  {
+    meta: {
+      title: "Run Results",
+    },
+    path: "/runresults/:id",
+    name: "runsresults",
+    component: RunResults,
+    private: true,
+  },
+  {
+    meta: {
+      title: "Human Feedback",
+    },
+    path: "/feedback/:id",
+    name: "feedback",
+    component: Feedback,
+    private: true,
+  },
+  {
+    meta: {
+      title: "Single Query Human Feedback",
+    },
+    path: "/feedback/:id/query/:queryId",
+    name: "singleFeedback",
+    component: SingleFeedback,
+    private: true,
+  },
+  {
+    meta: {
+      title: "Datasets",
+    },
+    path: "/datasets",
+    name: "datasets",
+    component: Datasets,
+    private: true,
+  },
+  {
+    meta: {
+      title: "Trainers",
+    },
+    path: "/trainers",
+    name: "trainers",
+    component: Trainers,
+    private: true,
+  },
+  {
+    meta: {
+      title: "Trained",
+    },
+    path: "/trained",
+    name: "trained",
+    component: Trained,
+    private: true,
   },
   {
     meta: {
@@ -66,6 +142,7 @@ const routes = [
     path: "/profile",
     name: "profile",
     component: () => import("@/views/ProfileView.vue"),
+    private: true,
   },
   {
     meta: {
@@ -107,6 +184,10 @@ const routes = [
     name: "error",
     component: () => import("@/views/ErrorView.vue"),
   },
+  {
+    path: '/:pathMatch(.*)*',
+    redirect: '/pipelines'
+  }
 ];
 
 const router = createRouter({

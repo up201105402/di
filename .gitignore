@@ -1,0 +1,5 @@
+backend/jwt/*.pem
+backend/jwt/*.pem
+work/**/*
+logs/**/*
+uploads/**/*
