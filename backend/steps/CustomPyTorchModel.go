@@ -39,7 +39,7 @@ func (step *CustomPyTorchModel) GetIsFirstStep() bool {
 }
 
 func (step *CustomPyTorchModel) SetData(stepDescription model.NodeDescription) error {
-	step.ID, _ = strconv.Atoi(stepDescription.ID)
+	step.ID, _ = strconv.Atoi(stepDescription.Data.ID)
 	step.Name = stepDescription.Data.NameAndType.Name
 	step.IsFirstStep = stepDescription.Data.NameAndType.IsFirstStep
 	step.ScriptType = stepDescription.Data.NameAndType.ScriptType

@@ -149,6 +149,7 @@ export const messages = {
                         hitl: 'HITL',
                         datasets: 'Datasets',
                         trainers: 'Trainers',
+                        trainedModels: 'Trained Models',
                     },
                     dialog: {
                         create: {

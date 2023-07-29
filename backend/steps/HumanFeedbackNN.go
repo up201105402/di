@@ -51,7 +51,7 @@ func (step *HumanFeedbackNN) GetIsFirstStep() bool {
 }
 
 func (step *HumanFeedbackNN) SetData(stepDescription model.NodeDescription) error {
-	step.ID, _ = strconv.Atoi(stepDescription.ID)
+	step.ID, _ = strconv.Atoi(stepDescription.Data.ID)
 	step.Name = stepDescription.Data.NameAndType.Name
 	step.IsFirstStep = stepDescription.Data.NameAndType.IsFirstStep
 	step.Data_dir = stepDescription.Data.StepConfig.Data_dir

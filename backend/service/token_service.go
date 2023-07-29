@@ -135,7 +135,7 @@ func (service *tokenService) NewFirstPairFromUser(ctx context.Context, u *model.
 		return nil, errors.New(errorMessage)
 	}
 
-	refreshToken, err := generateRefreshToken(u.ID, service.RefreshSecret, service.RefreshExpirationSecs)
+	refreshToken, err := generateRefreshToken(u.ID, service.PrivKey, service.RefreshExpirationSecs)
 
 	if err != nil {
 		errorMessage := service.I18n.MustLocalize(&i18n.LocalizeConfig{
@@ -214,7 +214,7 @@ func (service *tokenService) ValidateIDToken(tokenString string) (*model.User, e
 }
 
 func (service *tokenService) ValidateRefreshToken(tokenString string) (*model.RefreshToken, error) {
-	claims, err := validateRefreshToken(tokenString, service.RefreshSecret)
+	claims, err := validateRefreshToken(tokenString, service.PubKey)
 
 	if err != nil {
 		errorMessage := service.I18n.MustLocalize(&i18n.LocalizeConfig{
@@ -283,7 +283,7 @@ type refreshTokenCustomClaims struct {
 	jwt.StandardClaims
 }
 
-func generateRefreshToken(uid uint, key string, duration int64) (*refreshTokenData, error) {
+func generateRefreshToken(uid uint, key *rsa.PrivateKey, duration int64) (*refreshTokenData, error) {
 	timestamp := time.Now()
 	tokenExp := timestamp.Add(time.Duration(duration) * time.Second)
 	tokenID, err := uuid.NewRandom()
@@ -302,8 +302,8 @@ func generateRefreshToken(uid uint, key string, duration int64) (*refreshTokenDa
 		},
 	}
 
-	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
-	signedTokenString, err := token.SignedString([]byte(key))
+	token := jwt.NewWithClaims(jwt.SigningMethodRS256, claims)
+	signedTokenString, err := token.SignedString(key)
 
 	if err != nil {
 		log.Println("Failed to sign refresh token string")
@@ -340,10 +340,10 @@ func validateIDToken(tokenString string, key *rsa.PublicKey) (*idTokenCustomClai
 	return claims, nil
 }
 
-func validateRefreshToken(tokenString string, key string) (*refreshTokenCustomClaims, error) {
+func validateRefreshToken(tokenString string, key *rsa.PublicKey) (*refreshTokenCustomClaims, error) {
 	claims := &refreshTokenCustomClaims{}
 	token, err := jwt.ParseWithClaims(tokenString, claims, func(token *jwt.Token) (interface{}, error) {
-		return []byte(key), nil
+		return key, nil
 	})
 
 	// For now we'll just return the error and handle logging in service level

@@ -45,7 +45,7 @@ func (step *Trainer) GetIsFirstStep() bool {
 }
 
 func (step *Trainer) SetData(stepDescription model.NodeDescription) error {
-	step.ID, _ = strconv.Atoi(stepDescription.ID)
+	step.ID, _ = strconv.Atoi(stepDescription.Data.ID)
 	step.Name = stepDescription.Data.NameAndType.Name
 	step.IsFirstStep = stepDescription.Data.NameAndType.IsFirstStep
 	step.TrainerName = stepDescription.Data.StepConfig.TrainerName

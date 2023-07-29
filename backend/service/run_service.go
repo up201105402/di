@@ -26,13 +26,13 @@ import (
 type runServiceImpl struct {
 	RunRepository   model.RunRepository
 	PipelineService PipelineService
-	NodeTypeService NodeTypeService
-	TrainedService  TrainedService
+	NodeTypeService StepService
+	TrainedService  TrainedModelService
 	TaskQueueClient asynq.Client
 	I18n            *i18n.Localizer
 }
 
-func NewRunService(gormDB *gorm.DB, client *asynq.Client, i18n *i18n.Localizer, pipelineService *PipelineService, stepTypeService *NodeTypeService, trainedService *TrainedService) RunService {
+func NewRunService(gormDB *gorm.DB, client *asynq.Client, i18n *i18n.Localizer, pipelineService *PipelineService, stepTypeService *StepService, trainedService *TrainedModelService) RunService {
 	return &runServiceImpl{
 		RunRepository:   repository.NewRunRepository(gormDB),
 		PipelineService: *pipelineService,
@@ -1308,7 +1308,7 @@ func (service *runServiceImpl) createPipelineGraph(runPipelinePayload RunPipelin
 	pipelineGraph := graph.New(stepHash, graph.Directed(), graph.Acyclic())
 
 	stps := util.Map(stepDescriptions, func(stepDescription model.NodeDescription) steps.Step {
-		step, _ := service.NodeTypeService.NewStepInstance(runPipelinePayload.PipelineID, runPipelinePayload.RunID, stepDescription.Data.Type, stepDescription)
+		step, _ := service.NodeTypeService.NewStepInstance(runPipelinePayload.PipelineID, runPipelinePayload.RunID, stepDescription.Type, stepDescription)
 
 		if step != nil {
 			return *step

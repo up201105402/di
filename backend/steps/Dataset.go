@@ -36,7 +36,7 @@ func (step *Dataset) GetIsFirstStep() bool {
 }
 
 func (step *Dataset) SetData(stepDescription model.NodeDescription) error {
-	step.ID, _ = strconv.Atoi(stepDescription.ID)
+	step.ID, _ = strconv.Atoi(stepDescription.Data.ID)
 	step.Name = stepDescription.Data.NameAndType.Name
 	step.IsFirstStep = stepDescription.Data.NameAndType.IsFirstStep
 	step.DatasetName = stepDescription.Data.StepConfig.DatasetName

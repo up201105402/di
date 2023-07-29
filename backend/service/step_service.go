@@ -19,7 +19,7 @@ type nodeServiceImpl struct {
 	EdgeTypeRegistry map[string]reflect.Type
 }
 
-func NewNodeService(i18n *i18n.Localizer) NodeTypeService {
+func NewNodeService(i18n *i18n.Localizer) StepService {
 	return &nodeServiceImpl{
 		I18n:             i18n,
 		StepTypeRegistry: initStepTypeRegistry(),

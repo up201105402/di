@@ -18,7 +18,7 @@ type trainedServiceImpl struct {
 	I18n              *i18n.Localizer
 }
 
-func NewTrainedService(gormDB *gorm.DB, client *asynq.Client, i18n *i18n.Localizer) TrainedService {
+func NewTrainedService(gormDB *gorm.DB, client *asynq.Client, i18n *i18n.Localizer) TrainedModelService {
 	return &trainedServiceImpl{
 		TrainedRepository: repository.NewTrainedRepository(gormDB),
 		TaskQueueClient:   client,

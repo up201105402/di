@@ -15,7 +15,7 @@ type Services struct {
 	DatasetService  DatasetService
 	TrainerService  TrainerService
 	TesterService   TesterService
-	TrainedService  TrainedService
+	TrainedService  TrainedModelService
 	RunService      RunService
 	TokenService    TokenService
 }
@@ -77,7 +77,7 @@ type TesterService interface {
 	Delete(id uint) error
 }
 
-type TrainedService interface {
+type TrainedModelService interface {
 	Get(id uint) (*model.Trained, error)
 	GetByOwner(ownerId uint) ([]model.Trained, error)
 	Create(userId uint, name string) (*model.Trained, error)
@@ -121,7 +121,7 @@ type RunStepStatusService interface {
 	UpdateRunStatus()
 }
 
-type NodeTypeService interface {
+type StepService interface {
 	NewStepInstance(pipelineID uint, runID uint, nodeType string, nodeDescription model.NodeDescription) (*steps.Step, error)
 	NewEdgeInstance(pipelineID uint, runID uint, edgeType string, nodeDescription model.NodeDescription) (*steps.Edge, error)
 }

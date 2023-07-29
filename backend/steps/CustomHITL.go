@@ -45,7 +45,7 @@ func (step *CustomHITL) GetIsFirstStep() bool {
 }
 
 func (step *CustomHITL) SetData(stepDescription model.NodeDescription) error {
-	step.ID, _ = strconv.Atoi(stepDescription.ID)
+	step.ID, _ = strconv.Atoi(stepDescription.Data.ID)
 	step.Name = stepDescription.Data.NameAndType.Name
 	step.Filename = stepDescription.Data.StepConfig.Filename.String
 	step.CustomArguments = stepDescription.Data.StepConfig.CustomArguments

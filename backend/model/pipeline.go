@@ -160,6 +160,7 @@ type StepDataConfig struct {
 }
 
 type StepData struct {
+	ID          string              `json:"id"`
 	NameAndType StepDataNameAndType `json:"nameAndType"`
 	StepConfig  StepDataConfig      `json:"stepConfig"`
 	Type        string              `json:"type"`

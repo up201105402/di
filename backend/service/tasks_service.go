@@ -17,7 +17,7 @@ const (
 
 type taskServiceImpl struct {
 	I18n            *i18n.Localizer
-	NodeTypeService NodeTypeService
+	NodeTypeService StepService
 	RunService      RunService
 }
 
@@ -33,7 +33,7 @@ type ScheduledRunPipelinePayload struct {
 	PipelineScheduleID uint
 }
 
-func NewTaskService(i18n *i18n.Localizer, nodeTypeService *NodeTypeService, runService *RunService) TaskService {
+func NewTaskService(i18n *i18n.Localizer, nodeTypeService *StepService, runService *RunService) TaskService {
 	return &taskServiceImpl{
 		I18n:            i18n,
 		NodeTypeService: *nodeTypeService,

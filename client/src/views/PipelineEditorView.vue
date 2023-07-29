@@ -261,6 +261,7 @@ watch(fetchDatasetsResponse, (value) => {
   } else {
     const datasetGroupsIndex = menubarItems.value?.findIndex(group => group.type == 'datasets');
     if (datasetGroupsIndex > -1) {
+      menubarItems.value[datasetGroupsIndex].items = []
       value.data?.datasets?.forEach(dataset => menubarItems.value[datasetGroupsIndex].items.push({
         group: 'datasets',
         type: 'dataset',
@@ -286,6 +287,7 @@ watch(fetchTrainersResponse, (value) => {
   } else {
     const trainerGroupsIndex = menubarItems.value?.findIndex(group => group.type == 'trainers');
     if (trainerGroupsIndex > -1) {
+      menubarItems.value[trainerGroupsIndex].items = []
       value.data?.trainers?.forEach(trainer => menubarItems.value[trainerGroupsIndex].items.push({
         group: 'trainers',
         type: 'trainer',
@@ -309,9 +311,10 @@ watch(fetchTrainedResponse, (value) => {
 
     toast.add({ severity: 'error', summary: header, detail: detail, life: 3000 });
   } else {
-    const trainerGroupsIndex = menubarItems.value?.findIndex(group => group.type == 'trainers');
-    if (trainerGroupsIndex > -1) {
-      value.data?.trainers?.forEach(trainer => menubarItems.value[trainerGroupsIndex].items.push({
+    const trainedGroupsIndex = menubarItems.value?.findIndex(group => group.type == 'trainers');
+    if (trainedGroupsIndex > -1) {
+      menubarItems.value[trainedGroupsIndex].items = []
+      value.data?.trainers?.forEach(trainer => menubarItems.value[trainedGroupsIndex].items.push({
         group: 'trainedModels',
         type: 'trained',
         label: trainer.name,
