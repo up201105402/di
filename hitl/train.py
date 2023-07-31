@@ -14,6 +14,9 @@ from model_architectures import PretrainedModel
 from model_loops import train_model, active_train_model
 from staggered_train import staggered_active_train_model
 
+# Custom Dataset
+from importlib.machinery import SourceFileLoader
+
 parser = argparse.ArgumentParser(description='Run HITL training')
 
 # Directories
@@ -34,7 +37,8 @@ parser.add_argument('-ov', '--isOversampled', type=bool, metavar='', required=Tr
 parser.add_argument('-se', '--start_epoch', type=int, metavar='', required=True, help='HITL activation epoch')
 
 # Dataset
-parser.add_argument('-ds', '--dataset', type=str, choices=['APTOS19', 'ISIC17','NCI'], metavar='', required=True, help='Define the dataset (APTOS, ISIC,NCI)')
+parser.add_argument('-ds', '--dataset', type=str, choices=['APTOS19', 'ISIC17','NCI', 'Custom'], metavar='', required=True, help='Define the dataset (APTOS, ISIC,NCI, Custom)')
+parser.add_argument('-ed', '--custom_dataset_dir', type=str, metavar='', required=True, help='HITL dataset handler')
 
 # Modified HITL Options
 parser.add_argument('-ed', '--epochs_dir', type=str, metavar='', required=True, help='HITL epochs temp data directory')
@@ -123,6 +127,13 @@ elif args.dataset == "NCI":
     train_set = NCI_Dataset(fold="train", path=data_dir, transform=train_transforms, transform_orig=val_transforms, fraction=train_fraction)
     print(f"Number of Total Train Images: {len(train_set)}")
     val_set = NCI_Dataset(fold="test", path=data_dir, transform=val_transforms, transform_orig=val_transforms, fraction=val_fraction)
+    print(f"Number of Total Validation Images: {len(val_set)}")
+elif args.dataset == "Custom":
+    custom_dataset = SourceFileLoader("custom_dataset", args.custom_dataset_dir).load_module()
+    data_classes = custom_dataset.get_data_classes()
+    train_set = custom_dataset.get_train_set(fraction=train_fraction)
+    print(f"Number of Total Train Images: {len(train_set)}")
+    val_set = custom_dataset.get_val_set(fraction=val_fraction)
     print(f"Number of Total Validation Images: {len(val_set)}")
 
 

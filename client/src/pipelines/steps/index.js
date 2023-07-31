@@ -27,7 +27,6 @@ export const nodeTypes = {
   shellScript: markRaw(ShellScriptNode),
   pythonScript: markRaw(PythonScriptNode),
   humanFeedbackNN: markRaw(HITLNode),
-  customPyTorchModel: markRaw(HITLNode),
   customHitl: markRaw(HITLNode),
   dataset: markRaw(HITLNode),
   trainer: markRaw(HITLNode),
@@ -66,24 +65,12 @@ export const menubarSteps = [
     items: [
       {
         group: 'hitl',
-        type: 'customPyTorchModel',
-        label: t('pages.pipelines.steps.customPyTorchModel'),
-        form: scriptForm,
-      },
-      {
-        group: 'hitl',
         type: 'humanFeedbackNN',
         label: t('pages.pipelines.steps.humanFeedbackNN'),
         form: hitlForm,
       },
       {
         separator: true,
-      },
-      {
-        group: 'hitl',
-        type: 'customHitl',
-        label: t('pages.pipelines.steps.customHitl'),
-        form: customHitlForm,
       },
     ]
   },

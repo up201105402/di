@@ -92,7 +92,7 @@ export const stepConfigGroupChildren = [
         name: 'dataset',
         label: t('pages.pipelines.edit.dialog.stepConfig.dataset'),
         validation: 'required',
-        options: ['APTOS19', 'ISIC17','NCI'],
+        options: ['APTOS19', 'ISIC17','NCI','Custom'],
     }
 ];
 

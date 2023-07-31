@@ -292,6 +292,9 @@ func (step HumanFeedbackNN) appendArgs(args []string, currentPipelineWorkDir str
 	args = append(args, "--epochs_dir")
 	args = append(args, currentPipelineWorkDir+"epochs/")
 
+	args = append(args, "--custom_dataset_dir")
+	args = append(args, currentPipelineWorkDir+"datasets/custom_hitl_dataset.py")
+
 	return args, nil
 }
 
