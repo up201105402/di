@@ -150,6 +150,7 @@ export const messages = {
                         datasets: 'Datasets',
                         trainers: 'Trainers',
                         trainedModels: 'Trained Models',
+                        testers: 'Testers',
                     },
                     dialog: {
                         create: {
@@ -213,6 +214,7 @@ export const messages = {
                             trained: 'Trained Model',
                             customArguments: 'Custom Arguments',
                             isStaggered: 'Is Staggered?',
+                            datasetName: "Dataset Name",
                         }
                     },
                     scheduling: {
@@ -273,6 +275,11 @@ export const messages = {
                     ransacRegression: 'Ransac Regression',
                     theilSenRegression: 'Theil Sen Regression',
                     quantileRegression: 'Quantile Regressiom',
+                    customHitl: "Custom HITL",
+                    dataset: "Dataset Handler",
+                    trainer: "Trainer",
+                    trained: "Trained Model",
+                    tester: "Tester",
                 },
             },
             runs: {
@@ -358,8 +365,8 @@ export const messages = {
                 },
             },
             datasets: {
-                name: "Dataset Processors",
-                header: "Dataset Processors",
+                name: "Dataset Handlers",
+                header: "Dataset Handlers",
                 table: {
                     headers: {
                         id: "ID",

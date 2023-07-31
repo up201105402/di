@@ -24,7 +24,7 @@ import (
 )
 
 type runServiceImpl struct {
-	RunRepository   model.RunRepository
+	RunRepository   repository.RunRepository
 	PipelineService PipelineService
 	NodeTypeService StepService
 	TrainedService  TrainedModelService
@@ -1108,117 +1108,121 @@ func (service *runServiceImpl) traverseAndExecuteSteps(currentPipelineWorkDir st
 				hasError = true
 				return true
 			}
+		}
 
-			if len(feedbackPayload) == 0 { // it means the execution finalized
-				filepath.Join(currentPipelineWorkDir, "trained_models")
+		if len(feedbackPayload) == 0 { // it means the execution finalized
+			trainedErr := filepath.Walk(filepath.Join(currentPipelineWorkDir, "trained_models"), func(path string, info os.FileInfo, err error) error {
 
-				trainedErr := filepath.Walk(filepath.Join(currentPipelineWorkDir, "trained_models"), func(path string, info os.FileInfo, err error) error {
-
-					pipeline, err := service.PipelineService.Get(step.GetPipelineID())
-
-					if err != nil {
-						return err
-					}
-
-					trained, err := service.TrainedService.Create(pipeline.UserID, filepath.Base(path)+"_"+fmt.Sprint(run.ID))
-
-					if err != nil {
-						return err
-					}
-
-					fileUploadDir, exists := os.LookupEnv("FILE_UPLOAD_DIR")
-
-					if !exists {
-						errMessage := service.I18n.MustLocalize(&i18n.LocalizeConfig{
-							MessageID: "env.variable.find.failed",
-							TemplateData: map[string]interface{}{
-								"Name": "FILE_UPLOAD_DIR",
-							},
-							PluralCount: 1,
-						})
-
-						log.Printf(errMessage)
-						return err
-					}
-
-					modelUploadDir := fileUploadDir + "trained/" + fmt.Sprint(trained.ID) + "/"
-					if err := os.MkdirAll(modelUploadDir, os.ModePerm); err != nil {
-						errMessage := service.I18n.MustLocalize(&i18n.LocalizeConfig{
-							MessageID: "os.cmd.mkdir.dir.failed",
-							TemplateData: map[string]interface{}{
-								"Path":   modelUploadDir,
-								"Reason": err.Error(),
-							},
-							PluralCount: 1,
-						})
-
-						log.Println(errMessage)
-						return err
-					}
-
-					sourceFile, err := os.Open(path)
-
-					if err != nil {
-						errMessage := service.I18n.MustLocalize(&i18n.LocalizeConfig{
-							MessageID: "os.cmd.read.dir.failed",
-							TemplateData: map[string]interface{}{
-								"Path":   modelUploadDir,
-								"Reason": err.Error(),
-							},
-							PluralCount: 1,
-						})
-
-						log.Println(errMessage)
-						return err
-					}
-
-					defer sourceFile.Close()
-
-					filePath := filepath.Join(modelUploadDir, filepath.Base(path))
-					datasetFileDestination, err := os.Create(filePath)
-
-					if err != nil {
-						errMessage := service.I18n.MustLocalize(&i18n.LocalizeConfig{
-							MessageID: "os.cmd.read.dir.failed",
-							TemplateData: map[string]interface{}{
-								"Path":   modelUploadDir,
-								"Reason": err.Error(),
-							},
-							PluralCount: 1,
-						})
-
-						log.Println(errMessage)
-						return err
-					}
-
-					defer datasetFileDestination.Close()
-
-					_, err = io.Copy(datasetFileDestination, sourceFile)
-
-					if err != nil {
-						errMessage := service.I18n.MustLocalize(&i18n.LocalizeConfig{
-							MessageID: "os.cmd.copy.dir.failed",
-							TemplateData: map[string]interface{}{
-								"Path":   modelUploadDir,
-								"Reason": err.Error(),
-							},
-							PluralCount: 1,
-						})
-
-						log.Println(errMessage)
-						return err
-					}
-
-					trained.Path = filePath
-					err = service.TrainedService.Update(trained)
-
-					if err != nil {
-						return err
-					}
-
+				if filepath.Base(path) == "trained_models" {
 					return nil
-				})
+				}
 
+				pipeline, err := service.PipelineService.Get(step.GetPipelineID())
+
+				if err != nil {
+					return err
+				}
+
+				trained, err := service.TrainedService.Create(pipeline.UserID, filepath.Base(path)+"_"+fmt.Sprint(run.ID))
+
+				if err != nil {
+					return err
+				}
+
+				fileUploadDir, exists := os.LookupEnv("FILE_UPLOAD_DIR")
+
+				if !exists {
+					errMessage := service.I18n.MustLocalize(&i18n.LocalizeConfig{
+						MessageID: "env.variable.find.failed",
+						TemplateData: map[string]interface{}{
+							"Name": "FILE_UPLOAD_DIR",
+						},
+						PluralCount: 1,
+					})
+
+					log.Printf(errMessage)
+					return err
+				}
+
+				modelUploadDir := fileUploadDir + "trained/" + fmt.Sprint(trained.ID) + "/"
+				if err := os.MkdirAll(modelUploadDir, os.ModePerm); err != nil {
+					errMessage := service.I18n.MustLocalize(&i18n.LocalizeConfig{
+						MessageID: "os.cmd.mkdir.dir.failed",
+						TemplateData: map[string]interface{}{
+							"Path":   modelUploadDir,
+							"Reason": err.Error(),
+						},
+						PluralCount: 1,
+					})
+
+					log.Println(errMessage)
+					return err
+				}
+
+				sourceFile, err := os.Open(path)
+
+				if err != nil {
+					errMessage := service.I18n.MustLocalize(&i18n.LocalizeConfig{
+						MessageID: "os.cmd.read.dir.failed",
+						TemplateData: map[string]interface{}{
+							"Path":   modelUploadDir,
+							"Reason": err.Error(),
+						},
+						PluralCount: 1,
+					})
+
+					log.Println(errMessage)
+					return err
+				}
+
+				defer sourceFile.Close()
+
+				filePath := filepath.Join(modelUploadDir, filepath.Base(path))
+				datasetFileDestination, err := os.Create(filePath)
+
+				if err != nil {
+					errMessage := service.I18n.MustLocalize(&i18n.LocalizeConfig{
+						MessageID: "os.cmd.read.dir.failed",
+						TemplateData: map[string]interface{}{
+							"Path":   modelUploadDir,
+							"Reason": err.Error(),
+						},
+						PluralCount: 1,
+					})
+
+					log.Println(errMessage)
+					return err
+				}
+
+				defer datasetFileDestination.Close()
+
+				_, err = io.Copy(datasetFileDestination, sourceFile)
+
+				if err != nil {
+					errMessage := service.I18n.MustLocalize(&i18n.LocalizeConfig{
+						MessageID: "os.cmd.copy.dir.failed",
+						TemplateData: map[string]interface{}{
+							"Path":   modelUploadDir,
+							"Reason": err.Error(),
+						},
+						PluralCount: 1,
+					})
+
+					log.Println(errMessage)
+					return err
+				}
+
+				trained.Path = filePath
+				err = service.TrainedService.Update(trained)
+
+				if err != nil {
+					return err
+				}
+
+				return nil
+			})
+
+			if trainedErr != nil {
 				runLogger.Print("Error creating trained models: " + trainedErr.Error())
 			}
 		}

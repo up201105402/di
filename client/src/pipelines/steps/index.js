@@ -28,21 +28,12 @@ export const nodeTypes = {
   pythonScript: markRaw(PythonScriptNode),
   humanFeedbackNN: markRaw(HITLNode),
   customPyTorchModel: markRaw(HITLNode),
+  customHitl: markRaw(HITLNode),
+  dataset: markRaw(HITLNode),
+  trainer: markRaw(HITLNode),
+  trained: markRaw(HITLNode),
+  tester: markRaw(HITLNode),
 };
-
-Object.keys(scikitUnsupervisedModels).forEach(key => {
-  nodeTypes[key] = markRaw(ScikitUnsupervisedModels);
-});
-
-const scikitUnsupervisedSteps = Object.entries(scikitUnsupervisedModels)
-  .map(item => {
-    return {
-      group: 'scikitUnsupervisedModels',
-      type: item[0],
-      label: t('pages.pipelines.steps.' + item[0]),
-      form: item[1]
-    }
-  });
 
 export const menubarSteps = [
   {
@@ -69,37 +60,6 @@ export const menubarSteps = [
       }
     ]
   },
-  /*
-  {
-    type: 'scikit',
-    label: t('pages.pipelines.edit.menubar.scikit'),
-    items: [
-      {
-        type: 'scikitDatasets',
-        label: 'Scikit Datasets',
-        items: [
-          {
-            group: 'scikitDatasets',
-            type: 'scikitTrainingDataset',
-            label: t('pages.pipelines.steps.scikitTrainingDataset'),
-            form: scikitDatasetForm
-          },
-          {
-            group: 'scikitDatasets',
-            type: 'scikitTestingDataset',
-            label: t('pages.pipelines.steps.scikitTestingDataset'),
-            form: scikitDatasetForm
-          },
-        ]
-      },
-      {
-        type: 'scikitUnsupervisedModels',
-        label: t('pages.pipelines.steps.scikitUnsupervisedModels'),
-        items: scikitUnsupervisedSteps
-      },
-    ]
-  },
-  */
   {
     type: 'hitl',
     label: t('pages.pipelines.edit.menubar.hitl'),
@@ -144,6 +104,13 @@ export const menubarSteps = [
   {
     type: 'trainedModels',
     label: t('pages.pipelines.edit.menubar.trainedModels'),
+    items: [
+      
+    ]
+  },
+  {
+    type: 'testers',
+    label: t('pages.pipelines.edit.menubar.testers'),
     items: [
       
     ]

@@ -2,7 +2,6 @@ package repository
 
 import (
 	"context"
-	"di/model"
 	"di/util/errors"
 	"fmt"
 	"log"
@@ -15,7 +14,7 @@ type redisTokenRepository struct {
 	Redis *redis.Client
 }
 
-func NewTokenRepository(redisClient *redis.Client) model.TokenRepository {
+func NewTokenRepository(redisClient *redis.Client) TokenRepository {
 	return &redisTokenRepository{
 		Redis: redisClient,
 	}

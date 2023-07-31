@@ -153,6 +153,10 @@ type StepDataConfig struct {
 	TrainerName string `json:"trainerName"`
 	TrainerPath string `json:"trainerPath"`
 	IsStaggered bool   `json:"isStaggered"`
+	// Tester
+	TesterID   uint   `json:"testerID"`
+	TesterName string `json:"testerName"`
+	TesterPath string `json:"testerPath"`
 	// Trained
 	TrainedID   uint   `json:"trainedID"`
 	TrainedName string `json:"trainedName"`

@@ -31,16 +31,21 @@ export default [
     label: t('pages.trainers.name'),
   },
   {
+    to: "/testers",
+    icon: mdiCodeBraces,
+    label: t('pages.testers.name'),
+  },
+  {
     to: "/trained",
     icon: mdiCodeBraces,
     label: t('pages.trained.name'),
   },
+  /*
   {
     to: "/profile",
     icon: mdiAccount,
     label: t('pages.profile.name'),
   },
-  /*
   {
     label: "Dropdown",
     icon: mdiViewList,

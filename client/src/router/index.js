@@ -9,6 +9,7 @@ import Feedback from "@/views/FeedbackView.vue";
 import SingleFeedback from "@/views/SingleQueryFeedbackView.vue";
 import Datasets from "@/views/DatasetsView.vue";
 import Trainers from "@/views/TrainersView.vue";
+import Testers from "@/views/TestersView.vue";
 import Trained from "@/views/TrainedView.vue";
 
 const routes = [
@@ -108,6 +109,15 @@ const routes = [
     path: "/trainers",
     name: "trainers",
     component: Trainers,
+    private: true,
+  },
+  {
+    meta: {
+      title: "Testers",
+    },
+    path: "/testers",
+    name: "testers",
+    component: Testers,
     private: true,
   },
   {

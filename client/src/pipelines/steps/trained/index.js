@@ -26,11 +26,6 @@ export const stepConfigGroupChildren = (trained) => {
             value: trained.name,
         },
         {
-            $formkit: 'checkbox',
-            name: 'isStaggered',
-            label: t('pages.pipelines.edit.dialog.stepConfig.isStaggered'),
-        },
-        {
             $formkit: 'text',
             name: 'trainedID',
             value: trained.ID,

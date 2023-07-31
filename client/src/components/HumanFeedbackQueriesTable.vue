@@ -76,7 +76,7 @@ const pagesList = computed(() => {
                     <small class="text-gray-500 dark:text-slate-400" :title="formatDate(row.UpdatedAt)">{{ formatDate(row.UpdatedAt) }}</small>
                 </td>
                 <td :data-label="$t('pages.runs.results.humanFeedbackQueries.table.headers.stepID')" class="lg:w-1 whitespace-nowrap">
-                    <small class="text-gray-500 dark:text-slate-400" :title="row.StepID">{{ formatDate(row.StepID) }}</small>
+                    <small class="text-gray-500 dark:text-slate-400" :title="row.StepID">{{ row.StepID + 1 }}</small>
                 </td>
                 <td class="before:hidden lg:w-1 whitespace-nowrap">
                     <BaseButtons type="justify-start lg:justify-end" no-wrap>

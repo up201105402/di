@@ -12,7 +12,7 @@ type runRepositoryImpl struct {
 	DB *gorm.DB
 }
 
-func NewRunRepository(gormDB *gorm.DB) model.RunRepository {
+func NewRunRepository(gormDB *gorm.DB) RunRepository {
 	return &runRepositoryImpl{
 		DB: gormDB,
 	}

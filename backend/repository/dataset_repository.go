@@ -13,7 +13,7 @@ type datasetRepositoryImpl struct {
 }
 
 // NewPipelineRepository is a Pipeline Repository factory
-func NewDatasetRepository(gormDB *gorm.DB) model.DatasetRepository {
+func NewDatasetRepository(gormDB *gorm.DB) DatasetRepository {
 	return &datasetRepositoryImpl{
 		DB: gormDB,
 	}

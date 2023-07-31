@@ -12,7 +12,7 @@ type trainedRepositoryImpl struct {
 	DB *gorm.DB
 }
 
-func NewTrainedRepository(gormDB *gorm.DB) model.TrainedRepository {
+func NewTrainedRepository(gormDB *gorm.DB) TrainedModelRepository {
 	return &trainedRepositoryImpl{
 		DB: gormDB,
 	}

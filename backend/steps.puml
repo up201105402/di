@@ -1,0 +1,334 @@
+@startuml
+namespace steps {
+    class CheckoutRepo << (S,Aquamarine) >> {
+        + ID int
+        + PipelineID uint
+        + RunID uint
+        + IsFirstStep bool
+        + Name string
+        + RepoURL string
+
+        + GetID() int
+        + GetName() string
+        + GetIsFirstStep() bool
+        + SetData(stepDescription model.NodeDescription) error
+        + SetPipelineID(pipelineID uint) error
+        + SetRunID(runID uint) error
+        + GetPipelineID() uint
+        + GetRunID() uint
+        + GetIsStaggered() bool
+        + Execute(logFile *os.File, feedbackRects [][]model.HumanFeedbackRect, I18n *i18n.Localizer) ([]model.HumanFeedbackQueryPayload, error)
+
+    }
+    class CustomHITL << (S,Aquamarine) >> {
+        + ID int
+        + PipelineID uint
+        + RunID uint
+        + IsFirstStep bool
+        + Name string
+        + CustomTrainFilename string
+        + Filename string
+        + CustomArguments null.String
+        + Epochs_dir null.String
+        + Epochs null.Int
+        + Start_epoch null.Int
+
+        - appendArgs(args []string, currentPipelineWorkDir string, I18n *i18n.Localizer, runLogger *log.Logger) ([]string, error)
+        - getCreatedFeedbackQueries(oldResumeEpoch null.Int, currentPipelineWorkDir string) ([]model.HumanFeedbackQueryPayload, error)
+        - createTrainFile(logFile *os.File, I18n *i18n.Localizer) error
+
+        + GetID() int
+        + GetName() string
+        + GetIsFirstStep() bool
+        + SetData(stepDescription model.NodeDescription) error
+        + SetPipelineID(pipelineID uint) error
+        + SetRunID(runID uint) error
+        + GetPipelineID() uint
+        + GetRunID() uint
+        + GetIsStaggered() bool
+        + Execute(logFile *os.File, feedbackRects [][]model.HumanFeedbackRect, I18n *i18n.Localizer) ([]model.HumanFeedbackQueryPayload, error)
+
+    }
+    class CustomPyTorchModel << (S,Aquamarine) >> {
+        + ID int
+        + PipelineID uint
+        + RunID uint
+        + IsFirstStep bool
+        + Name string
+        + ScriptType string
+        + InlineScript string
+        + Filename string
+
+        + GetID() int
+        + GetName() string
+        + GetIsFirstStep() bool
+        + SetData(stepDescription model.NodeDescription) error
+        + SetPipelineID(pipelineID uint) error
+        + SetRunID(runID uint) error
+        + GetPipelineID() uint
+        + GetRunID() uint
+        + GetIsStaggered() bool
+        + Execute(logFile *os.File, feedbackRects [][]model.HumanFeedbackRect, I18n *i18n.Localizer) ([]model.HumanFeedbackQueryPayload, error)
+
+    }
+    class Dataset << (S,Aquamarine) >> {
+        + ID int
+        + PipelineID uint
+        + RunID uint
+        + IsFirstStep bool
+        + Name string
+        + DatasetName string
+        + DatasetID uint
+        + Filepath string
+
+        + GetID() int
+        + GetName() string
+        + GetIsFirstStep() bool
+        + SetData(stepDescription model.NodeDescription) error
+        + SetPipelineID(pipelineID uint) error
+        + SetRunID(runID uint) error
+        + GetPipelineID() uint
+        + GetRunID() uint
+        + GetIsStaggered() bool
+        + Execute(logFile *os.File, feedbackRects [][]model.HumanFeedbackRect, I18n *i18n.Localizer) ([]model.HumanFeedbackQueryPayload, error)
+
+    }
+    interface Edge  {
+        + SetData(stepDescription model.NodeDescription) 
+        + GetSourceID() int
+        + GetTargetID() int
+
+    }
+    class HumanFeedbackNN << (S,Aquamarine) >> {
+        + ID int
+        + PipelineID uint
+        + RunID uint
+        + IsFirstStep bool
+        + Name string
+        + Data_dir null.String
+        + Models_dir null.String
+        + Epochs_dir null.String
+        + Epochs null.Int
+        + Tr_fraction null.String
+        + Val_fraction null.String
+        + Train_desc null.String
+        + Sampling null.String
+        + Entropy_thresh null.String
+        + Nr_queries null.Int
+        + IsOversampled null.Bool
+        + Start_epoch null.Int
+        + Dataset null.String
+
+        - appendArgs(args []string, currentPipelineWorkDir string, I18n *i18n.Localizer, runLogger *log.Logger) ([]string, error)
+        - getCreatedFeedbackQueries(oldResumeEpoch null.Int, currentPipelineWorkDir string) ([]model.HumanFeedbackQueryPayload, error)
+
+        + GetID() int
+        + GetName() string
+        + GetIsFirstStep() bool
+        + SetData(stepDescription model.NodeDescription) error
+        + SetPipelineID(pipelineID uint) error
+        + SetRunID(runID uint) error
+        + GetPipelineID() uint
+        + GetRunID() uint
+        + GetIsStaggered() bool
+        + Execute(logFile *os.File, feedbackRects [][]model.HumanFeedbackRect, I18n *i18n.Localizer) ([]model.HumanFeedbackQueryPayload, error)
+
+    }
+    class PythonScript << (S,Aquamarine) >> {
+        + ID int
+        + PipelineID uint
+        + RunID uint
+        + IsFirstStep bool
+        + Name string
+        + ScriptType string
+        + InlineScript string
+        + Filename string
+
+        + GetID() int
+        + GetName() string
+        + GetIsFirstStep() bool
+        + SetData(stepDescription model.NodeDescription) error
+        + SetPipelineID(pipelineID uint) error
+        + SetRunID(runID uint) error
+        + GetPipelineID() uint
+        + GetRunID() uint
+        + GetIsStaggered() bool
+        + Execute(logFile *os.File, feedbackRects [][]model.HumanFeedbackRect, I18n *i18n.Localizer) ([]model.HumanFeedbackQueryPayload, error)
+
+    }
+    class ScikitTestingDataset << (S,Aquamarine) >> {
+        + ID int
+        + PipelineID uint
+        + RunID uint
+        + Dataset string
+        + Name string
+        + IsFirstStep bool
+        + DataConfig model.StepDataConfig
+
+        + GetID() int
+        + GetName() string
+        + GetIsFirstStep() bool
+        + SetData(stepDescription model.NodeDescription) error
+        + SetPipelineID(pipelineID uint) error
+        + SetRunID(runID uint) error
+        + GetPipelineID() uint
+        + GetRunID() uint
+        + GetIsStaggered() bool
+        + Execute(logFile *os.File, feedbackRects [][]model.HumanFeedbackRect, I18n *i18n.Localizer) ([]model.HumanFeedbackQueryPayload, error)
+
+    }
+    class ScikitTrainingDataset << (S,Aquamarine) >> {
+        + ID int
+        + PipelineID uint
+        + RunID uint
+        + Dataset string
+        + Name string
+        + IsFirstStep bool
+        + DataConfig model.StepDataConfig
+
+        + GetID() int
+        + GetName() string
+        + GetIsFirstStep() bool
+        + SetData(stepDescription model.NodeDescription) error
+        + SetPipelineID(pipelineID uint) error
+        + SetRunID(runID uint) error
+        + GetPipelineID() uint
+        + GetRunID() uint
+        + GetIsStaggered() bool
+        + Execute(logFile *os.File, feedbackRects [][]model.HumanFeedbackRect, I18n *i18n.Localizer) ([]model.HumanFeedbackQueryPayload, error)
+
+    }
+    class ScikitUnsupervisedModel << (S,Aquamarine) >> {
+        + ID int
+        + PipelineID uint
+        + RunID uint
+        + Model string
+        + Name string
+        + IsFirstStep bool
+        + DataConfig model.StepDataConfig
+
+        - appendArgs(args []string, I18n *i18n.Localizer, runLogger *log.Logger) ([]string, error)
+
+        + GetID() int
+        + GetName() string
+        + GetIsFirstStep() bool
+        + SetData(stepDescription model.NodeDescription) error
+        + SetPipelineID(pipelineID uint) error
+        + SetRunID(runID uint) error
+        + GetPipelineID() uint
+        + GetRunID() uint
+        + GetIsStaggered() bool
+        + Execute(logFile *os.File, feedbackRects [][]model.HumanFeedbackRect, I18n *i18n.Localizer) ([]model.HumanFeedbackQueryPayload, error)
+
+    }
+    class ShellScript << (S,Aquamarine) >> {
+        + ID int
+        + PipelineID uint
+        + RunID uint
+        + IsFirstStep bool
+        + Name string
+        + ScriptType string
+        + InlineScript string
+        + Filename string
+
+        + GetID() int
+        + GetName() string
+        + GetIsFirstStep() bool
+        + SetData(stepDescription model.NodeDescription) error
+        + SetPipelineID(pipelineID uint) error
+        + SetRunID(runID uint) error
+        + GetPipelineID() uint
+        + GetRunID() uint
+        + GetIsStaggered() bool
+        + Execute(logFile *os.File, feedbackRects [][]model.HumanFeedbackRect, I18n *i18n.Localizer) ([]model.HumanFeedbackQueryPayload, error)
+
+    }
+    class Smoothstep << (S,Aquamarine) >> {
+        + SourceID int
+        + TargetID int
+
+        + SetData(stepDescription model.NodeDescription) 
+        + GetSourceID() int
+        + GetTargetID() int
+
+    }
+    interface Step  {
+        + GetID() int
+        + GetName() string
+        + Execute(logFile *os.File, feedbackRects [][]model.HumanFeedbackRect, I18n *i18n.Localizer) ([]model.HumanFeedbackQueryPayload, error)
+        + SetData(stepDescription model.NodeDescription) error
+        + SetPipelineID(pipelineID uint) error
+        + SetRunID(runID uint) error
+        + GetPipelineID() uint
+        + GetRunID() uint
+        + GetIsFirstStep() bool
+        + GetIsStaggered() bool
+
+    }
+    class Trained << (S,Aquamarine) >> {
+        + ID int
+        + PipelineID uint
+        + RunID uint
+        + IsFirstStep bool
+        + Name string
+        + TrainedName string
+        + TrainedID uint
+        + Filepath string
+
+        + GetID() int
+        + GetName() string
+        + GetIsFirstStep() bool
+        + SetData(stepDescription model.NodeDescription) error
+        + SetPipelineID(pipelineID uint) error
+        + SetRunID(runID uint) error
+        + GetPipelineID() uint
+        + GetRunID() uint
+        + GetIsStaggered() bool
+        + Execute(logFile *os.File, feedbackRects [][]model.HumanFeedbackRect, I18n *i18n.Localizer) ([]model.HumanFeedbackQueryPayload, error)
+
+    }
+    class Trainer << (S,Aquamarine) >> {
+        + ID int
+        + PipelineID uint
+        + RunID uint
+        + IsFirstStep bool
+        + Name string
+        + TrainerName string
+        + TrainerID uint
+        + Filepath string
+        + Epochs null.Int
+        + IsStaggered bool
+        + CustomArguments null.String
+
+        - copyOriginalTrainFile(currentPipelineWorkDir string) error
+        - getCreatedFeedbackQueries(oldResumeEpoch null.Int, currentPipelineWorkDir string) ([]model.HumanFeedbackQueryPayload, error)
+
+        + GetID() int
+        + GetName() string
+        + GetIsFirstStep() bool
+        + SetData(stepDescription model.NodeDescription) error
+        + SetPipelineID(pipelineID uint) error
+        + SetRunID(runID uint) error
+        + GetPipelineID() uint
+        + GetRunID() uint
+        + GetIsStaggered() bool
+        + Execute(logFile *os.File, feedbackRects [][]model.HumanFeedbackRect, I18n *i18n.Localizer) ([]model.HumanFeedbackQueryPayload, error)
+
+    }
+}
+
+"steps.Step" <|-- "steps.CheckoutRepo"
+"steps.Step" <|-- "steps.CustomHITL"
+"steps.Step" <|-- "steps.CustomPyTorchModel"
+"steps.Step" <|-- "steps.Dataset"
+"steps.Step" <|-- "steps.HumanFeedbackNN"
+"steps.Step" <|-- "steps.PythonScript"
+"steps.Step" <|-- "steps.ScikitTestingDataset"
+"steps.Step" <|-- "steps.ScikitTrainingDataset"
+"steps.Step" <|-- "steps.ScikitUnsupervisedModel"
+"steps.Step" <|-- "steps.ShellScript"
+"steps.Edge" <|-- "steps.Smoothstep"
+"steps.Step" <|-- "steps.Trained"
+"steps.Step" <|-- "steps.Trainer"
+
+@enduml

@@ -8,6 +8,7 @@ import (
 	"os"
 	"path/filepath"
 	"strconv"
+	"strings"
 
 	"github.com/nicksnyder/go-i18n/v2/i18n"
 )
@@ -87,7 +88,25 @@ func (step Dataset) Execute(logFile *os.File, feedbackRects [][]model.HumanFeedb
 	}
 
 	currentPipelineWorkDir := pipelinesWorkDir + "/" + fmt.Sprint(step.PipelineID) + "/" + fmt.Sprint(step.RunID) + "/"
-	sourceFile, err := os.Open(step.Filepath)
+
+	fileUploadDir, exists := os.LookupEnv("FILE_UPLOAD_DIR")
+
+	if !exists {
+		errMessage := I18n.MustLocalize(&i18n.LocalizeConfig{
+			MessageID: "env.variable.find.failed",
+			TemplateData: map[string]interface{}{
+				"Name": "FILE_UPLOAD_DIR",
+			},
+			PluralCount: 1,
+		})
+
+		return nil, errors.New(errMessage)
+	}
+
+	relativeFilePath := strings.Split(step.Filepath, "/files")[1]
+	path := filepath.Join(fileUploadDir, relativeFilePath)
+
+	sourceFile, err := os.Open(path)
 
 	if err != nil {
 		errMessage := fmt.Sprintf("Error creating script file from file script: %v", err.Error())
@@ -96,7 +115,22 @@ func (step Dataset) Execute(logFile *os.File, feedbackRects [][]model.HumanFeedb
 
 	defer sourceFile.Close()
 
-	destinationFilePath := filepath.Join(currentPipelineWorkDir, "dataset", filepath.Base(step.Filepath))
+	datasetsDir := filepath.Join(currentPipelineWorkDir, "datasets")
+
+	if err := os.MkdirAll(datasetsDir, os.ModePerm); err != nil {
+		errMessage := I18n.MustLocalize(&i18n.LocalizeConfig{
+			MessageID: "os.cmd.mkdir.dir.failed",
+			TemplateData: map[string]interface{}{
+				"Path":   datasetsDir,
+				"Reason": err.Error(),
+			},
+			PluralCount: 1,
+		})
+
+		return nil, errors.New(errMessage)
+	}
+
+	destinationFilePath := filepath.Join(datasetsDir, filepath.Base(step.Filepath))
 	datasetFileDestination, err := os.Create(destinationFilePath)
 
 	if err != nil {

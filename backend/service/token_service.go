@@ -21,7 +21,7 @@ import (
 
 type tokenService struct {
 	I18n                  *i18n.Localizer
-	TokenRepository       model.TokenRepository
+	TokenRepository       repository.TokenRepository
 	PrivKey               *rsa.PrivateKey
 	PubKey                *rsa.PublicKey
 	RefreshSecret         string

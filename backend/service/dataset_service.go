@@ -13,7 +13,7 @@ import (
 )
 
 type datasetServiceImpl struct {
-	DatasetRepository model.DatasetRepository
+	DatasetRepository repository.DatasetRepository
 	TaskQueueClient   *asynq.Client
 	I18n              *i18n.Localizer
 }

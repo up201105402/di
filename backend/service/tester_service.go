@@ -13,7 +13,7 @@ import (
 )
 
 type testerServiceImpl struct {
-	TesterRepository model.TesterRepository
+	TesterRepository repository.TesterRepository
 	TaskQueueClient  *asynq.Client
 	I18n             *i18n.Localizer
 }

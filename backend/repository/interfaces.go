@@ -1,10 +1,93 @@
 package repository
 
-import "di/model"
+import (
+	"context"
+	"di/model"
+	"time"
+)
 
 type UserRepository interface {
 	FindByID(id uint) (*model.User, error)
 	FindByUsername(username string) (*model.User, error)
 	Create(u *model.User) error
 	Update(u *model.User) error
+}
+
+type TokenRepository interface {
+	SetRefreshToken(ctx context.Context, userID uint, tokenID uint, expiresIn time.Duration) error
+	DeleteRefreshToken(ctx context.Context, userID uint, prevTokenID uint) error
+	DeleteUserRefreshTokens(ctx context.Context, userID uint) error
+}
+
+type PipelineRepository interface {
+	FindByID(pipelineID uint) (*model.Pipeline, error)
+	FindPipelineScheduleByID(pipelineScheduleID uint) (*model.PipelineSchedule, error)
+	FindPipelineScheduleByPipeline(pipelineID uint) ([]model.PipelineSchedule, error)
+	GetAllPipelineSchedules() ([]model.PipelineSchedule, error)
+	FindByOwner(ownerID uint) ([]model.Pipeline, error)
+	Create(pipeline *model.Pipeline) error
+	CreatePipelineSchedule(pipelineSchedule *model.PipelineSchedule) error
+	Update(pipeline *model.Pipeline) error
+	Delete(pipelineID uint) error
+	DeletePipelineSchedule(pipelineID uint) error
+}
+
+type DatasetRepository interface {
+	FindByID(datasetID uint) (*model.Dataset, error)
+	FindScriptsByDatasetID(datasetID uint) ([]model.DatasetScript, error)
+	FindScriptByID(scriptID uint) (*model.DatasetScript, error)
+	FindByOwner(ownerID uint) ([]model.Dataset, error)
+	Create(dataset *model.Dataset) error
+	CreateDatasetScript(datasetScript *model.DatasetScript) error
+	Update(dataset *model.Dataset) error
+	Delete(datasetID uint) error
+	DeleteDatasetScript(datasetScriptId uint) error
+}
+
+type TrainerRepository interface {
+	FindByID(trainerID uint) (*model.Trainer, error)
+	FindByOwner(ownerID uint) ([]model.Trainer, error)
+	Create(trainer *model.Trainer) error
+	Update(trainer *model.Trainer) error
+	Delete(trainerID uint) error
+}
+
+type TesterRepository interface {
+	FindByID(testerID uint) (*model.Tester, error)
+	FindByOwner(ownerID uint) ([]model.Tester, error)
+	Create(tester *model.Tester) error
+	Update(tester *model.Tester) error
+	Delete(testerID uint) error
+}
+
+type TrainedModelRepository interface {
+	FindByID(trainedID uint) (*model.Trained, error)
+	FindByOwner(ownerID uint) ([]model.Trained, error)
+	Create(trained *model.Trained) error
+	Update(trained *model.Trained) error
+	Delete(trainedID uint) error
+}
+
+type RunRepository interface {
+	FindByID(runID uint) (*model.Run, error)
+	FindByPipeline(pipelineID uint) ([]model.Run, error)
+	FindRunStepStatusesByRun(runID uint) ([]model.RunStepStatus, error)
+	FindHumanFeedbackQueriesByStepID(runID uint, stepID uint) ([]model.HumanFeedbackQuery, error)
+	FindHumanFeedbackQueriesByRunID(runID uint) ([]model.HumanFeedbackQuery, error)
+	FindHumanFeedbackQueryByID(queryID uint) (*model.HumanFeedbackQuery, error)
+	FindHumanFeedbackRectsByHumanFeedbackQueryID(humanFeedbackQueryID uint) ([]model.HumanFeedbackRect, error)
+	FindHumanFeedbackQueryStatusByID(queryStatusID uint) (*model.QueryStatus, error)
+	Create(run *model.Run) error
+	CreateRunStepStatus(runStepStatus *model.RunStepStatus) error
+	CreateHumanFeedbackQuery(humanFeedbackQuery *model.HumanFeedbackQuery) error
+	CreateHumanFeedbackRect(humanFeedbackRect *model.HumanFeedbackRect) error
+	Update(run *model.Run) error
+	UpdateRunStepStatus(runStepStatus *model.RunStepStatus) error
+	UpdateHumanFeedbackQuery(query *model.HumanFeedbackQuery) error
+	UpdateHumanFeedbackRect(rect *model.HumanFeedbackRect) error
+	Delete(runID uint) error
+	DeleteRunStepStatus(runID uint) error
+	DeleteAllHumanFeedbackQueriesByRunID(runID uint) error
+	DeleteAllRunStepStatuses(runID uint) error
+	GetRunStatusByID(runID uint) (*model.RunStatus, error)
 }

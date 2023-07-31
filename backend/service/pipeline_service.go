@@ -17,7 +17,7 @@ import (
 )
 
 type pipelineServiceImpl struct {
-	PipelineRepository model.PipelineRepository
+	PipelineRepository repository.PipelineRepository
 	TaskQueueClient    *asynq.Client
 	I18n               *i18n.Localizer
 }

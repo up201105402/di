@@ -12,7 +12,7 @@ type testerRepositoryImpl struct {
 	DB *gorm.DB
 }
 
-func NewTesterRepository(gormDB *gorm.DB) model.TesterRepository {
+func NewTesterRepository(gormDB *gorm.DB) TesterRepository {
 	return &testerRepositoryImpl{
 		DB: gormDB,
 	}

@@ -13,7 +13,7 @@ import (
 )
 
 type trainerServiceImpl struct {
-	TrainerRepository model.TrainerRepository
+	TrainerRepository repository.TrainerRepository
 	TaskQueueClient   *asynq.Client
 	I18n              *i18n.Localizer
 }

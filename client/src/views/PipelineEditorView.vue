@@ -33,6 +33,7 @@ import InputText from 'primevue/inputtext';
 import { datasetForm } from '@/pipelines/steps/datasets'
 import { trainerForm } from '@/pipelines/steps/trainers'
 import { trainedForm } from '@/pipelines/steps/trained'
+import { testerForm } from '@/pipelines/steps/testers'
 import { useField } from 'vee-validate';
 import cronTime from "cron-time-generator";
 import { i18n } from '@/i18n';
@@ -174,10 +175,29 @@ const { isLoading: isFetchingDatasets, state: fetchDatasetsResponse, isReady: is
 );
 
 // FETCH TRAINERS
-const { isLoading: isFetchingTrainers, state: fetchTrainersResponse, isReady: isFetchModelsFinished, execute: fetchTrainers } = useAsyncState(
+const { isLoading: isFetchingTrainers, state: fetchTrainersResponse, isReady: isFetchTrainersFinished, execute: fetchTrainers } = useAsyncState(
   () => {
     return doRequest({
       url: `/api/trainer`,
+      method: 'GET',
+      headers: {
+        Authorization: `${accessToken.value}`
+      },
+    })
+  },
+  {},
+  {
+    immediate: true,
+    delay: 500,
+    resetOnExecute: false,
+  },
+);
+
+// FETCH TESTERS
+const { isLoading: isFetchingTesters, state: fetchTestersResponse, isReady: isFetchTestersFinished, execute: fetchTesters } = useAsyncState(
+  () => {
+    return doRequest({
+      url: `/api/tester`,
       method: 'GET',
       headers: {
         Authorization: `${accessToken.value}`
@@ -299,6 +319,32 @@ watch(fetchTrainersResponse, (value) => {
   }
 });
 
+watch(fetchTestersResponse, (value) => {
+  if (value.error) {
+    let header = t('global.errors.generic.header');
+    let detail = value.error;
+
+    if (value.status == 401) {
+      header = t('global.errors.authorization.header');
+      detail = t('global.errors.authorization.detail');
+    }
+
+    toast.add({ severity: 'error', summary: header, detail: detail, life: 3000 });
+  } else {
+    const testerGroupsIndex = menubarItems.value?.findIndex(group => group.type == 'testers');
+    if (testerGroupsIndex > -1) {
+      menubarItems.value[testerGroupsIndex].items = []
+      value.data?.testers?.forEach(tester => menubarItems.value[testerGroupsIndex].items.push({
+        group: 'testers',
+        type: 'tester',
+        label: tester.name,
+        form: testerForm(tester),
+        command: onMenubarClick,
+      }))
+    }
+  }
+});
+
 watch(fetchTrainedResponse, (value) => {
   if (value.error) {
     let header = t('global.errors.generic.header');
@@ -311,14 +357,14 @@ watch(fetchTrainedResponse, (value) => {
 
     toast.add({ severity: 'error', summary: header, detail: detail, life: 3000 });
   } else {
-    const trainedGroupsIndex = menubarItems.value?.findIndex(group => group.type == 'trainers');
+    const trainedGroupsIndex = menubarItems.value?.findIndex(group => group.type == 'trainedModels');
     if (trainedGroupsIndex > -1) {
       menubarItems.value[trainedGroupsIndex].items = []
-      value.data?.trainers?.forEach(trainer => menubarItems.value[trainedGroupsIndex].items.push({
+      value.data?.trained?.forEach(trained => menubarItems.value[trainedGroupsIndex].items.push({
         group: 'trainedModels',
         type: 'trained',
-        label: trainer.name,
-        form: trainedForm(trainer),
+        label: trained.name,
+        form: trainedForm(trained),
         command: onMenubarClick,
       }))
     }
@@ -420,7 +466,7 @@ watch(deletePipelineScheduleResponse, (value) => {
   }
 })
 
-const isLoading = computed(() => isFetchingPipeline.value || isFetchingPipelineSchedules.value || isUpdatingPipeline.value || isCreatingPipelineSchedule.value || isFetchingDatasets.value || isFetchingTrainers.value);
+const isLoading = computed(() => isFetchingPipeline.value || isFetchingPipelineSchedules.value || isUpdatingPipeline.value || isCreatingPipelineSchedule.value || isFetchingDatasets.value || isFetchingTrainers.value || isFetchingTesters.value);
 
 const hasChanges = ref(false);
 const isStepDialogActive = ref(false);

@@ -13,6 +13,7 @@ import (
 	"path/filepath"
 	"regexp"
 	"strconv"
+	"strings"
 
 	"github.com/nicksnyder/go-i18n/v2/i18n"
 	"gopkg.in/guregu/null.v4"
@@ -80,7 +81,7 @@ func (step *Trainer) GetRunID() uint {
 }
 
 func (step *Trainer) GetIsStaggered() bool {
-	return true
+	return step.IsStaggered
 }
 
 func (step Trainer) Execute(logFile *os.File, feedbackRects [][]model.HumanFeedbackRect, I18n *i18n.Localizer) ([]model.HumanFeedbackQueryPayload, error) {
@@ -103,7 +104,7 @@ func (step Trainer) Execute(logFile *os.File, feedbackRects [][]model.HumanFeedb
 
 	currentPipelineWorkDir := pipelinesWorkDir + "/" + fmt.Sprint(step.PipelineID) + "/" + fmt.Sprint(step.RunID) + "/"
 
-	err := step.copyOriginalTrainFile(currentPipelineWorkDir)
+	err := step.copyOriginalTrainFile(currentPipelineWorkDir, I18n)
 
 	if err != nil {
 		return nil, err
@@ -208,8 +209,25 @@ func (step Trainer) Execute(logFile *os.File, feedbackRects [][]model.HumanFeedb
 	return step.getCreatedFeedbackQueries(epochNumber, currentPipelineWorkDir)
 }
 
-func (step Trainer) copyOriginalTrainFile(currentPipelineWorkDir string) error {
-	sourceFile, err := os.Open(step.Filepath)
+func (step Trainer) copyOriginalTrainFile(currentPipelineWorkDir string, I18n *i18n.Localizer) error {
+	fileUploadDir, exists := os.LookupEnv("FILE_UPLOAD_DIR")
+
+	if !exists {
+		errMessage := I18n.MustLocalize(&i18n.LocalizeConfig{
+			MessageID: "env.variable.find.failed",
+			TemplateData: map[string]interface{}{
+				"Name": "FILE_UPLOAD_DIR",
+			},
+			PluralCount: 1,
+		})
+
+		return errors.New(errMessage)
+	}
+
+	relativeFilePath := strings.Split(step.Filepath, "/files")[1]
+	path := filepath.Join(fileUploadDir, relativeFilePath)
+
+	sourceFile, err := os.Open(path)
 
 	if err != nil {
 		errMessage := fmt.Sprintf("Error creating script file from file script: %v", err.Error())

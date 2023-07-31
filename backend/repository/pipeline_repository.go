@@ -13,7 +13,7 @@ type pipelineRepositoryImpl struct {
 }
 
 // NewPipelineRepository is a Pipeline Repository factory
-func NewPipelineRepository(gormDB *gorm.DB) model.PipelineRepository {
+func NewPipelineRepository(gormDB *gorm.DB) PipelineRepository {
 	return &pipelineRepositoryImpl{
 		DB: gormDB,
 	}
