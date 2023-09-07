@@ -992,6 +992,10 @@ func (service *runServiceImpl) traverseAndExecuteSteps(currentPipelineWorkDir st
 				}
 
 				for _, humanFeedbackQuery := range feedbackQueries {
+					if humanFeedbackQuery.QueryStatusID == 3 {
+						continue
+					}
+
 					rects, err := service.FindHumanFeedbackRectsByHumanFeedbackQueryID(humanFeedbackQuery.ID)
 
 					if err != nil {

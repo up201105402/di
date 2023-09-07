@@ -92,7 +92,14 @@ export const stepConfigGroupChildren = [
         name: 'dataset',
         label: t('pages.pipelines.edit.dialog.stepConfig.dataset'),
         validation: 'required',
-        options: ['APTOS19', 'ISIC17','NCI','Custom'],
+        options: ['APTOS19', 'ISIC17','NCI','ROSEYoutu','PornographyXXX','Custom'],
+    },
+    {
+        $formkit: 'select',
+        name: 'pretrained_model',
+        label: t('pages.pipelines.edit.dialog.stepConfig.pretrainedModel'),
+        validation: 'required',
+        options: ['efficientnet_b1', 'mobilenet_v2'],
     }
 ];
 

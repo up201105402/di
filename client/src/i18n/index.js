@@ -215,6 +215,7 @@ export const messages = {
                             customArguments: 'Custom Arguments',
                             isStaggered: 'Is Staggered?',
                             datasetName: "Dataset Name",
+                            pretrainedModel: "pretrained_model",
                         }
                     },
                     scheduling: {

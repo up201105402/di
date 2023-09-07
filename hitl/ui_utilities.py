@@ -60,8 +60,8 @@ class ChooseRectangles:
             plt.gca().add_patch(Rectangle(
                 (x1, y1), x2-x1, y2-y1,
                 facecolor='none', edgecolor=self.edgecolor, lw=3))
-        plt.connect('button_press_event', self.button_press)
-        plt.connect('key_press_event', self.key_press)
+        # plt.connect('button_press_event', self.button_press)
+        # plt.connect('key_press_event', self.key_press)
         plt.draw()
         plt.savefig('figure.png')
 
@@ -136,15 +136,16 @@ def GetOracleFeedback(image, label, idx, model_attributions, pred, rectSize, rec
     image = np.transpose(image, (1, 2, 0))
     
     ui = ChooseRectangles(image, rects, image_resize_factor)
-    ui.draw()
-    plt.title(f"True Label: {label}  Prediction: {pred}  Image idx: {idx}")
-    plt.show()
-    print(ui.selected)
+    # ui.draw()
+    # plt.title(f"True Label: {label}  Prediction: {pred}  Image idx: {idx}")
+    # plt.show()
+    # print(ui.selected)
     selected_rects = ui.get_selected_rectangles()
 
     ui.draw_trimmed()
     plt.show()
     plt.savefig(f"{epoch_dir}/query_{query_nr}_image.png")
+    plt.close('all')
     
     torch.save(rects, f"{epoch_dir}/rects_{query_nr}.pt")
 

@@ -6,11 +6,11 @@ import torchvision.models as models
 
 
 # Define backbone models
-resnet50 = models.resnet50(pretrained=True)
-alexnet = models.alexnet(pretrained=True)
-vgg16 = models.vgg16(pretrained=True)
-densenet121 = models.densenet121(pretrained=True)
-efficientnet_b1 = models.efficientnet_b1(pretrained=True)
+# resnet50 = models.resnet50(pretrained=True)
+# alexnet = models.alexnet(pretrained=True)
+# vgg16 = models.vgg16(pretrained=True)
+# densenet121 = models.densenet121(pretrained=True)
+# efficientnet_b1 = models.efficientnet_b1(pretrained=True)
 
 
 

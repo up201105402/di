@@ -9,7 +9,7 @@ import torch
 import torchvision
 
 # Project Imports
-from data_utilities import Aptos19_Dataset, ISIC17_Dataset, NCI_Dataset
+from data_utilities import Aptos19_Dataset, ISIC17_Dataset, NCI_Dataset, ROSEYoutu_Dataset, PornographyXXX_Dataset
 from model_architectures import PretrainedModel
 from model_loops import train_model, active_train_model
 from staggered_train import staggered_active_train_model
@@ -37,12 +37,14 @@ parser.add_argument('-ov', '--isOversampled', type=bool, metavar='', required=Tr
 parser.add_argument('-se', '--start_epoch', type=int, metavar='', required=True, help='HITL activation epoch')
 
 # Dataset
-parser.add_argument('-ds', '--dataset', type=str, choices=['APTOS19', 'ISIC17','NCI', 'Custom'], metavar='', required=True, help='Define the dataset (APTOS, ISIC,NCI, Custom)')
-parser.add_argument('-ed', '--custom_dataset_dir', type=str, metavar='', required=True, help='HITL dataset handler')
+parser.add_argument('-ds', '--dataset', type=str, choices=['APTOS19', 'ISIC17', 'NCI', 'ROSEYoutu', 'PornographyXXX', 'Custom'], metavar='', required=True, help='Define the dataset (APTOS, ISIC, NCI, ROSEYoutu, PornographyXXX)')
+parser.add_argument('-cd', '--custom_dataset_dir', type=str, metavar='', required=False, help='HITL dataset handler')
 
 # Modified HITL Options
 parser.add_argument('-ed', '--epochs_dir', type=str, metavar='', required=True, help='HITL epochs temp data directory')
-parser.add_argument('-re', '--resume_epoch', type=int, metavar='', required=False, default=0, help='HITL resuming epoch')
+parser.add_argument('-re', '--resume_epoch', type=int, metavar='', required=False, help='HITL resuming epoch')
+
+parser.add_argument('-pm', '--pretrained_model', type=str, metavar='', required=False, default="efficientnet_b1", help='Pre-Trained Model')
 
 args = parser.parse_args()
 
@@ -63,6 +65,7 @@ data_name = args.dataset
 #data_dir = os.path.join(your_datasets_dir, data_name)
 data_dir = your_datasets_dir
 
+
 # Model Directory
 #trained_models_dir = "results/ones_test"
 trained_models_dir = args.models_dir
@@ -78,7 +81,7 @@ STD = [0.229, 0.224, 0.225]
 # Train Transforms
 train_transforms = torchvision.transforms.Compose([
     torchvision.transforms.Resize((256, 256)),
-    torchvision.transforms.RandomAffine(degrees=(-180,180),translate=(0.05, 0.1), scale=(0.95, 1.05), shear=0, resample=0, fillcolor=(0, 0, 0)),
+    torchvision.transforms.RandomAffine(degrees=(-180,180),translate=(0.05, 0.1), scale=(0.95, 1.05), shear=0),
     torchvision.transforms.RandomHorizontalFlip(p=0.5),
     torchvision.transforms.RandomCrop((224, 224)),
     torchvision.transforms.ColorJitter(brightness=0.3),
@@ -94,6 +97,7 @@ val_transforms = torchvision.transforms.Compose([
     torchvision.transforms.Normalize(MEAN,STD)
 ])
 
+plt.switch_backend('Agg')
 
 if args.dataset == "APTOS19":
     # Train data
@@ -128,6 +132,20 @@ elif args.dataset == "NCI":
     print(f"Number of Total Train Images: {len(train_set)}")
     val_set = NCI_Dataset(fold="test", path=data_dir, transform=val_transforms, transform_orig=val_transforms, fraction=val_fraction)
     print(f"Number of Total Validation Images: {len(val_set)}")
+elif args.dataset == "ROSEYoutu":
+    data_classes = ('0', '1')
+    # Train Dataset
+    train_set = ROSEYoutu_Dataset(base_data_path=data_dir, transform=train_transforms, transform_orig=val_transforms, split='train', fraction=train_fraction)
+    print(f"Number of Total Train Images: {len(train_set)} | Label Dict: {train_set.labels_dict}")
+    val_set = ROSEYoutu_Dataset(base_data_path=data_dir, transform=val_transforms, transform_orig=val_transforms, split='test', fraction=val_fraction)
+    print(f"Number of Total Validation Images: {len(val_set)} | Label Dict: {val_set.labels_dict}")
+elif args.dataset == "PornographyXXX":
+    data_classes = ('0', '1')
+    # Train Dataset
+    train_set = PornographyXXX_Dataset(base_data_path=data_dir, transform=train_transforms, transform_orig=val_transforms, split='train', fraction=train_fraction)
+    print(f"Number of Total Train Images: {len(train_set)} | Label Dict: {train_set.labels_dict}")
+    val_set = PornographyXXX_Dataset(base_data_path=data_dir, transform=val_transforms, transform_orig=val_transforms, split='test', fraction=val_fraction)
+    print(f"Number of Total Validation Images: {len(val_set)} | Label Dict: {val_set.labels_dict}")
 elif args.dataset == "Custom":
     custom_dataset = SourceFileLoader("custom_dataset", args.custom_dataset_dir).load_module()
     data_classes = custom_dataset.get_data_classes()
@@ -139,11 +157,11 @@ elif args.dataset == "Custom":
 
 # get batch and build loaders
 BATCH_SIZE = 4
-train_loader = torch.utils.data.DataLoader(dataset=train_set, batch_size=BATCH_SIZE, shuffle=True, num_workers=4)
-val_loader = torch.utils.data.DataLoader(dataset=val_set, batch_size=BATCH_SIZE, shuffle=True, num_workers=4)
+train_loader = torch.utils.data.DataLoader(dataset=train_set, batch_size=BATCH_SIZE, shuffle=True, num_workers=3)
+val_loader = torch.utils.data.DataLoader(dataset=val_set, batch_size=BATCH_SIZE, shuffle=True, num_workers=3)
 
-model = PretrainedModel(pretrained_model="efficientnet_b1", n_outputs=5)
-model_name = "efficientNet_b1"
+model_name = args.pretrained_model
+model = PretrainedModel(pretrained_model=model_name, n_outputs=len(data_classes))
 
 # Set model path
 trained_model_name = f"{model_name}_{data_name}"
@@ -201,8 +219,9 @@ train_description = "auto_100_lr5_ones"
 # )
 
 resume_epoch = args.resume_epoch
+should_resume = args.resume_epoch is not None
 
-if (resume_epoch > 0):
+if (resume_epoch is not None):
     model_path = os.path.join(epochs_dir, str(resume_epoch), f"{model_name}_{percentage}p_{EPOCHS}e_{sampling_process}_epoch_{resume_epoch}.pt")
     model.load_state_dict(torch.load(model_path, map_location=DEVICE))
 
@@ -224,7 +243,8 @@ val_losses, train_losses, val_metrics, train_metrics = staggered_active_train_mo
     EPOCHS=EPOCHS,
     DEVICE=DEVICE,
     LOSS=LOSS,
-    resume_epoch=resume_epoch
+    resume_epoch=resume_epoch or 0,
+    should_resume=should_resume
 )
 
 
@@ -266,7 +286,7 @@ plt.xlabel("Iterations")
 plt.ylabel("Loss/Accuracy")
 plt.legend()
 plt.savefig(os.path.join(trained_models_dir,f"{trained_model_name}_{train_description}_metrics_{percentage}p.png"))
-plt.show()
+# plt.show()
 
 print("plot saved")
 
@@ -282,6 +302,6 @@ plt.xlabel("Iterations")
 plt.ylabel("Metrics")
 plt.legend()
 plt.savefig(os.path.join(trained_models_dir,f"{trained_model_name}_{train_description}_metrics2_{percentage}p.png"))
-plt.show()
+# plt.show()
 
 print("plot saved")

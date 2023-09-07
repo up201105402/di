@@ -30,7 +30,7 @@ def my_loss(Ypred, X, W):
     return (W *(grad**2).mean(1)).mean()
 
 # Train model and sample the most useful images for decision making (entropy based sampling)
-def staggered_active_train_model(model, model_name, train_loader, val_loader, history_dir, weights_dir, epochs_dir, entropy_thresh, nr_queries, start_epoch, data_classes, oversample, sampling_process, EPOCHS, DEVICE, LOSS, percentage=100, resume_epoch=0, image_resize_factor=1):
+def staggered_active_train_model(model, model_name, train_loader, val_loader, history_dir, weights_dir, epochs_dir, entropy_thresh, nr_queries, start_epoch, data_classes, oversample, sampling_process, EPOCHS, DEVICE, LOSS, percentage=100, resume_epoch=0, should_resume=False, image_resize_factor=1):
     
     assert sampling_process in ['low_entropy', 'high_entropy']
     # Hyper-parameters
@@ -77,14 +77,14 @@ def staggered_active_train_model(model, model_name, train_loader, val_loader, hi
         # Put model in training mode
         model.train()
 
-        if resume_epoch <= 0 or epoch != resume_epoch:
+        if (resume_epoch == 0 and not should_resume) or epoch != resume_epoch:
             # Iterate through dataloader
             for batch_idx, (images, images_og, labels, indices) in enumerate(tqdm(train_loader)):
                 # move data, labels and model to DEVICE (GPU or CPU)
                 if W.sum() > 0 and oversample == True:
                     # print('W sum 1,2:', W.sum([1, 2]) > 0)
                     # print('len(W):', len(W))
-                    ix_annotated = torch.arange(0, len(W))[W.sum([1, 2]) > 0]
+                    ix_annotated = torch.arange(0, len(W)).to(DEVICE)[W.sum([1, 2]) > 0]
                     # ix_annotated = [0, 4, 9, ...]
                     # print('ix_annotated:', ix_annotated)
                     i = ix_annotated[torch.randint(0, len(ix_annotated), ())]
@@ -244,7 +244,7 @@ def staggered_active_train_model(model, model_name, train_loader, val_loader, hi
             print(f"Successfully saved at: {model_path}")
             return val_losses,train_losses,val_metrics,train_metrics
         
-        if resume_epoch > 0 and resume_epoch == epoch:
+        if resume_epoch == epoch and should_resume:
             # Load needed information
             image_indexes = np.load(f"{epoch_dir}/image_indexes.npy")
             W = torch.load(f"{epoch_dir}/W.pt")
@@ -266,7 +266,7 @@ def staggered_active_train_model(model, model_name, train_loader, val_loader, hi
         for i in range(len(image_indexes)):
             if(i < nr_queries):
                 try:
-                    selectedRects = np.genfromtxt(f"{epoch_dir}/query_{i}_rects_selected.csv", dtype=np.int64 ,delimiter=",")
+                    selectedRects = np.genfromtxt(f"{epoch_dir}/query_{i}_rects_selected.csv", dtype=np.int64, delimiter=",", ndmin=2)
                     rectsTensors = torch.load(f"{epoch_dir}/rects_{i}.pt")
                     selectedRectangles = matchSelectedRects(selectedRects, rectsTensors)
 

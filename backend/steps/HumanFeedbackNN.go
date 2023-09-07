@@ -18,24 +18,25 @@ import (
 )
 
 type HumanFeedbackNN struct {
-	ID             int
-	PipelineID     uint
-	RunID          uint
-	IsFirstStep    bool
-	Name           string
-	Data_dir       null.String
-	Models_dir     null.String
-	Epochs_dir     null.String
-	Epochs         null.Int
-	Tr_fraction    null.String
-	Val_fraction   null.String
-	Train_desc     null.String
-	Sampling       null.String
-	Entropy_thresh null.String
-	Nr_queries     null.Int
-	IsOversampled  null.Bool
-	Start_epoch    null.Int
-	Dataset        null.String
+	ID               int
+	PipelineID       uint
+	RunID            uint
+	IsFirstStep      bool
+	Name             string
+	Data_dir         null.String
+	Models_dir       null.String
+	Epochs_dir       null.String
+	Epochs           null.Int
+	Tr_fraction      null.String
+	Val_fraction     null.String
+	Train_desc       null.String
+	Sampling         null.String
+	Entropy_thresh   null.String
+	Nr_queries       null.Int
+	IsOversampled    null.Bool
+	Start_epoch      null.Int
+	Dataset          null.String
+	Pretrained_model null.String
 }
 
 func (step HumanFeedbackNN) GetID() int {
@@ -67,6 +68,7 @@ func (step *HumanFeedbackNN) SetData(stepDescription model.NodeDescription) erro
 	step.IsOversampled = stepDescription.Data.StepConfig.IsOversampled
 	step.Start_epoch = stepDescription.Data.StepConfig.Start_epoch
 	step.Dataset = stepDescription.Data.StepConfig.Dataset
+	step.Pretrained_model = stepDescription.Data.StepConfig.Pretrained_model
 
 	return nil
 }
@@ -287,6 +289,10 @@ func (step HumanFeedbackNN) appendArgs(args []string, currentPipelineWorkDir str
 	if step.Dataset.Valid {
 		args = append(args, "--dataset")
 		args = append(args, step.Dataset.String)
+	}
+	if step.Pretrained_model.Valid {
+		args = append(args, "--pretrained_model")
+		args = append(args, step.Pretrained_model.String)
 	}
 
 	args = append(args, "--epochs_dir")
