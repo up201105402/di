@@ -115,7 +115,7 @@ func (step Trained) Execute(logFile *os.File, feedbackRects [][]model.HumanFeedb
 
 	defer sourceFile.Close()
 
-	trainedModelsDir := filepath.Join(currentPipelineWorkDir, "trained_models")
+	trainedModelsDir := filepath.Join(currentPipelineWorkDir, "base_models")
 
 	if err := os.MkdirAll(trainedModelsDir, os.ModePerm); err != nil {
 		errMessage := I18n.MustLocalize(&i18n.LocalizeConfig{
@@ -130,7 +130,7 @@ func (step Trained) Execute(logFile *os.File, feedbackRects [][]model.HumanFeedb
 		return nil, errors.New(errMessage)
 	}
 
-	destinationFilePath := filepath.Join(trainedModelsDir, filepath.Base(step.Filepath))
+	destinationFilePath := filepath.Join(trainedModelsDir, "trained_model.pt")
 	trainedFileDestination, err := os.Create(destinationFilePath)
 
 	if err != nil {

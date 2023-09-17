@@ -30,12 +30,35 @@ def my_loss(Ypred, X, W):
     return (W *(grad**2).mean(1)).mean()
 
 # Train model and sample the most useful images for decision making (entropy based sampling)
-def staggered_active_train_model(model, model_name, train_loader, val_loader, history_dir, weights_dir, epochs_dir, entropy_thresh, nr_queries, start_epoch, data_classes, oversample, sampling_process, EPOCHS, DEVICE, LOSS, percentage=100, resume_epoch=0, should_resume=False, image_resize_factor=1):
+def staggered_active_train_model(
+    model, 
+    model_name, 
+    train_loader, 
+    val_loader, 
+    history_dir, 
+    weights_dir, 
+    epochs_dir, 
+    entropy_thresh, 
+    nr_queries, 
+    start_epoch, 
+    data_classes, 
+    oversample, 
+    sampling_process, 
+    EPOCHS, 
+    DEVICE, 
+    LOSS, 
+    percentage=100, 
+    resume_epoch=0, 
+    should_resume=False, 
+    image_resize_factor=1,
+    optimizer=torch.optim.Adam,
+    learning_rate=1e-5
+    ):
     
     assert sampling_process in ['low_entropy', 'high_entropy']
     # Hyper-parameters
-    LEARNING_RATE = 1e-5
-    OPTIMISER = torch.optim.Adam(model.parameters(), lr=LEARNING_RATE)
+    LEARNING_RATE=learning_rate
+    OPTIMISER = optimizer(model.parameters(), lr=LEARNING_RATE)
 
     # Initialise min_train and min_val loss trackers
     min_train_loss = np.inf
@@ -429,6 +452,8 @@ def staggered_active_train_model(model, model_name, train_loader, val_loader, hi
                 print(f"Successfully saved at: {model_path}")
     
 
+    model_path = os.path.join(weights_dir, f"{model_name}_{percentage}p_{EPOCHS}e_{sampling_process}.pt")
+    torch.save(model.state_dict(), model_path)
     # Finish statement
     print("Finished.")
     return val_losses,train_losses,val_metrics,train_metrics

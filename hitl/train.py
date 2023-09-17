@@ -21,6 +21,7 @@ parser = argparse.ArgumentParser(description='Run HITL training')
 
 # Directories
 parser.add_argument('-dr', '--data_dir', type=str, metavar='', required=True, help='Train Data Directory')
+parser.add_argument('-tm', '--base_model_dir', type=str, metavar='', required=True, help='Base Model Directory')
 parser.add_argument('-md', '--models_dir', type=str, metavar='', required=True, help='Trained Models Directory')
 
 # Training Hyperparameters
@@ -45,6 +46,8 @@ parser.add_argument('-ed', '--epochs_dir', type=str, metavar='', required=True, 
 parser.add_argument('-re', '--resume_epoch', type=int, metavar='', required=False, help='HITL resuming epoch')
 
 parser.add_argument('-pm', '--pretrained_model', type=str, metavar='', required=False, default="efficientnet_b1", help='Pre-Trained Model')
+parser.add_argument('-op', '--optimizer', type=str, metavar='', required=False, default="Adam", help='Optimizer')
+parser.add_argument('-lr', '--learning_rate', type=float, metavar='', required=False, default=1e-5, help='Learning Rate')
 
 args = parser.parse_args()
 
@@ -149,9 +152,9 @@ elif args.dataset == "PornographyXXX":
 elif args.dataset == "Custom":
     custom_dataset = SourceFileLoader("custom_dataset", args.custom_dataset_dir).load_module()
     data_classes = custom_dataset.get_data_classes()
-    train_set = custom_dataset.get_train_set(fraction=train_fraction)
+    train_set = custom_dataset.TrainDataset(fraction=train_fraction)
     print(f"Number of Total Train Images: {len(train_set)}")
-    val_set = custom_dataset.get_val_set(fraction=val_fraction)
+    val_set = custom_dataset.ValidationDataset(fraction=val_fraction)
     print(f"Number of Total Validation Images: {len(val_set)}")
 
 
@@ -162,6 +165,9 @@ val_loader = torch.utils.data.DataLoader(dataset=val_set, batch_size=BATCH_SIZE,
 
 model_name = args.pretrained_model
 model = PretrainedModel(pretrained_model=model_name, n_outputs=len(data_classes))
+
+optimizer = getattr(torch.optim, args.optimizer)
+learning_rate = args.learning_rate
 
 # Set model path
 trained_model_name = f"{model_name}_{data_name}"
@@ -221,7 +227,16 @@ train_description = "auto_100_lr5_ones"
 resume_epoch = args.resume_epoch
 should_resume = args.resume_epoch is not None
 
+print(f'Looking for base model {os.path.join(args.base_model_dir, "trained_model.pt")}...')
+if os.path.isfile(os.path.join(args.base_model_dir, "trained_model.pt")):
+    print(f'Loading base model {os.path.join(args.base_model_dir, "trained_model.pt")}...')
+    model.load_state_dict(torch.load(os.path.join(args.base_model_dir, "trained_model.pt")))
+
+# model.load_state_dict(torch.load("/usr/src/di/work/pipelines/11/19/results/models/mobilenet_v2_ROSEYoutu/weights/mobilenet_v2_10.0p_20e_low_entropy.pt", map_location=DEVICE))
+# model.load_state_dict(torch.load("/usr/src/di/work/pipelines/9/15/results/models/mobilenet_v2_PornographyXXX/weights/mobilenet_v2_10.0p_100e_low_entropy.pt", map_location=DEVICE))
+
 if (resume_epoch is not None):
+    print("Loading previous epoch model")
     model_path = os.path.join(epochs_dir, str(resume_epoch), f"{model_name}_{percentage}p_{EPOCHS}e_{sampling_process}_epoch_{resume_epoch}.pt")
     model.load_state_dict(torch.load(model_path, map_location=DEVICE))
 
@@ -244,7 +259,9 @@ val_losses, train_losses, val_metrics, train_metrics = staggered_active_train_mo
     DEVICE=DEVICE,
     LOSS=LOSS,
     resume_epoch=resume_epoch or 0,
-    should_resume=should_resume
+    should_resume=should_resume,
+    optimizer=optimizer,
+    learning_rate=learning_rate
 )
 
 

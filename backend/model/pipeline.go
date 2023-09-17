@@ -143,6 +143,7 @@ type StepDataConfig struct {
 	Start_epoch      null.Int    `json:"start_epoch"`
 	Dataset          null.String `json:"dataset"`
 	Pretrained_model null.String `json:"pretrained_model"`
+	Optimizer        null.String `json:"optimizer"`
 	// Custom
 	CustomArguments null.String `json:"customArguments"`
 	// Dataset

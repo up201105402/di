@@ -130,7 +130,7 @@ func (step Dataset) Execute(logFile *os.File, feedbackRects [][]model.HumanFeedb
 		return nil, errors.New(errMessage)
 	}
 
-	destinationFilePath := filepath.Join(datasetsDir, filepath.Base(step.Filepath))
+	destinationFilePath := filepath.Join(datasetsDir, "handler.py")
 	datasetFileDestination, err := os.Create(destinationFilePath)
 
 	if err != nil {

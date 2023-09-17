@@ -187,3 +187,7 @@
     margin: 5px;
     float: right;
 }
+
+.p-menubar .p-submenu-list {
+    width: unset !important;
+}

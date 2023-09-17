@@ -37,6 +37,8 @@ type HumanFeedbackNN struct {
 	Start_epoch      null.Int
 	Dataset          null.String
 	Pretrained_model null.String
+	Optimizer        null.String
+	Learning_rate    null.String
 }
 
 func (step HumanFeedbackNN) GetID() int {
@@ -69,6 +71,8 @@ func (step *HumanFeedbackNN) SetData(stepDescription model.NodeDescription) erro
 	step.Start_epoch = stepDescription.Data.StepConfig.Start_epoch
 	step.Dataset = stepDescription.Data.StepConfig.Dataset
 	step.Pretrained_model = stepDescription.Data.StepConfig.Pretrained_model
+	step.Optimizer = stepDescription.Data.StepConfig.Optimizer
+	step.Learning_rate = stepDescription.Data.StepConfig.Learning_rate
 
 	return nil
 }
@@ -238,6 +242,10 @@ func (step HumanFeedbackNN) appendArgs(args []string, currentPipelineWorkDir str
 			args = append(args, currentPipelineWorkDir+"/"+step.Data_dir.String)
 		}
 	}
+
+	args = append(args, "--base_model_dir")
+	args = append(args, filepath.Join(currentPipelineWorkDir, "base_models"))
+
 	if step.Models_dir.Valid {
 		args = append(args, "--models_dir")
 		if filepath.IsAbs(step.Models_dir.String) {
@@ -294,12 +302,20 @@ func (step HumanFeedbackNN) appendArgs(args []string, currentPipelineWorkDir str
 		args = append(args, "--pretrained_model")
 		args = append(args, step.Pretrained_model.String)
 	}
+	if step.Optimizer.Valid {
+		args = append(args, "--optimizer")
+		args = append(args, step.Optimizer.String)
+	}
+	if step.Learning_rate.Valid {
+		args = append(args, "--learning_rate")
+		args = append(args, step.Learning_rate.String)
+	}
 
 	args = append(args, "--epochs_dir")
 	args = append(args, currentPipelineWorkDir+"epochs/")
 
 	args = append(args, "--custom_dataset_dir")
-	args = append(args, currentPipelineWorkDir+"datasets/custom_hitl_dataset.py")
+	args = append(args, currentPipelineWorkDir+"datasets/handler.py")
 
 	return args, nil
 }

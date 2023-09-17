@@ -3,6 +3,7 @@ package service
 import (
 	"di/model"
 	"di/repository"
+	"di/util"
 	"errors"
 	"log"
 	"os"
@@ -66,7 +67,20 @@ func (service *trainedServiceImpl) GetByOwner(ownerId uint) ([]model.Trained, er
 
 func (service *trainedServiceImpl) Create(userId uint, name string) (*model.Trained, error) {
 	trained := &model.Trained{UserID: userId, Name: name}
-	if err := service.TrainedRepository.Create(trained); err != nil {
+	err := service.TrainedRepository.Create(trained)
+
+	if errors.Is(err, gorm.ErrDuplicatedKey) {
+		models, getErr := service.GetByOwner(userId)
+
+		if getErr == nil {
+			models = util.Filter(models, func(trained model.Trained) bool {
+				return trained.Name == name
+			})
+			err = service.Update(&models[0])
+		}
+	}
+
+	if err != nil {
 		errMessage := service.I18n.MustLocalize(&i18n.LocalizeConfig{
 			MessageID: "trained.repository.create.trained.failed",
 			TemplateData: map[string]interface{}{
